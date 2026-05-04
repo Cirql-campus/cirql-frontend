@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --black: #0a0a0a;
+  --white: #ffffff;
+  --gray-50: #f8f8f8;
+  --gray-100: #f0f0f0;
+  --gray-200: #e0e0e0;
+  --gray-300: #c0c0c0;
+  --gray-500: #757575;
+  --gray-700: #424242;
+  --gray-900: #1a1a1a;
+  --accent: #23d160;
+  --accent-dark: #1aaa4a;
+  --danger: #e53e3e;
+  --warn: #f6ad55;
+  --blue: #3182ce;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --radius: 8px;
+  --radius-lg: 14px;
+  --shadow: 0 2px 8px rgba(0,0,0,.10);
+  --shadow-md: 0 4px 18px rgba(0,0,0,.13);
+  
+  /* Fallbacks for older components during transition */
+  --primary: var(--accent);
+  --primary-hover: var(--accent-dark);
+  --secondary: var(--black);
+  --bg-color: var(--gray-50);
+  --surface-color: var(--white);
+  --text-main: var(--gray-900);
+  --text-muted: var(--gray-500);
+  --border-color: var(--gray-200);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-full: 9999px;
+  --radius-md: var(--radius);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  outline: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--gray-50);
+  color: var(--gray-900);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all .18s ease;
+}
+
+input, select, textarea {
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  display: block;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 5px;
+}
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px;
+}

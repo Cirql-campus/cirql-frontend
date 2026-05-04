@@ -1,0 +1,241 @@
+/* ======= HOW IT WORKS PAGE ======= */
+.hiw-page {
+  padding: 60px 20px 80px;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* -- HERO HEADER -- */
+.hiw-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 60px;
+}
+.hiw-title {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  letter-spacing: -1.5px;
+  color: var(--black);
+}
+.hiw-title-accent {
+  background: linear-gradient(135deg, var(--accent) 0%, #00b840 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+.hiw-subtitle {
+  font-size: 18px;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+/* -- GRID LAYOUT -- */
+.hiw-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  margin-bottom: 80px;
+}
+
+/* -- STEP CARDS -- */
+.hiw-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 24px;
+  padding: 40px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+}
+.hiw-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--card-bg, #fff);
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 0;
+}
+.hiw-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--card-border, var(--accent));
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+}
+.hiw-card:hover::before {
+  opacity: 1;
+}
+
+/* -- WIDE HIGHLIGHT CARD -- */
+.hiw-card-wide {
+  grid-column: 1 / -1;
+  background: linear-gradient(to right, #fff, var(--icon-bg));
+}
+.hiw-content-horizontal {
+  flex-direction: row;
+  align-items: center;
+  gap: 30px;
+}
+.hiw-icon-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 30px;
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+.hiw-text-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+.hiw-badge {
+  background: var(--icon-color);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px var(--icon-shadow);
+}
+
+/* -- CARD CONTENT -- */
+.hiw-card-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.hiw-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: var(--icon-bg, #f8fafc);
+  color: var(--icon-color, var(--black));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  transition: transform 0.3s;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+.hiw-card:hover .hiw-icon-wrap {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 12px 24px var(--icon-shadow, rgba(0,0,0,0.1));
+}
+.hiw-step-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+.hiw-step-desc {
+  color: var(--gray-600);
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+/* -- PROMO BANNER -- */
+.hiw-promo {
+  background: linear-gradient(135deg, var(--black) 0%, #1a1a2e 100%);
+  border-radius: 24px;
+  padding: 60px 40px;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+.hiw-promo::after {
+  content: '';
+  position: absolute;
+  top: -50%; right: -10%;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(35,209,96,0.15), transparent 60%);
+  pointer-events: none;
+}
+.hiw-promo-icon {
+  margin-bottom: 20px;
+  color: var(--accent);
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.hiw-promo h2 {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 900;
+  margin-bottom: 32px;
+  letter-spacing: -0.5px;
+}
+.hiw-btn {
+  display: inline-block;
+  background: var(--accent);
+  color: #000;
+  padding: 16px 36px;
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  position: relative;
+  z-index: 1;
+}
+.hiw-btn:hover {
+  background: #00cf4c;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,229,84,0.3);
+}
+
+/* ======= RESPONSIVE ======= */
+@media (max-width: 1024px) {
+  .hiw-grid {
+    gap: 20px;
+  }
+}
+@media (max-width: 768px) {
+  .hiw-page {
+    padding: 40px 20px 60px;
+  }
+  .hiw-title {
+    font-size: 42px;
+  }
+  .hiw-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .hiw-content-horizontal {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .hiw-icon-large {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+  }
+  .hiw-promo {
+    padding: 40px 24px;
+  }
+  .hiw-promo h2 {
+    font-size: 32px;
+  }
+}

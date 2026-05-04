@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "cirql-backend-2",
+			"path": "../../../cirql-backend-2"
+		},
+		{
+			"name": "cirql-backend-fixed",
+			"path": "../../../../Downloads/cirql-backend-fixed"
+		}
+	],
+	"settings": {}
+}

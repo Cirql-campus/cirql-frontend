@@ -1,0 +1,144 @@
+.browse-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.browse-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.browse-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.mobile-filter-btn {
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .mobile-filter-btn {
+    display: none;
+  }
+}
+
+.browse-layout {
+  display: flex;
+  gap: 2rem;
+}
+
+/* Sidebar Filters */
+.filters-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .filters-sidebar {
+    display: block;
+  }
+}
+
+.filters-sidebar.show {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background-color: var(--surface-color);
+  z-index: 100;
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+}
+
+.filter-group {
+  margin-bottom: 2.5rem;
+}
+
+.filter-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+.checkbox-label input {
+  accent-color: var(--primary);
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  outline: none;
+}
+
+/* Main Content */
+.browse-content {
+  flex-grow: 1;
+}
+
+.browse-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.results-count {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.sort-btn {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-main);
+}
+
+.listings-grid-view {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .listings-grid-view {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .listings-grid-view {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

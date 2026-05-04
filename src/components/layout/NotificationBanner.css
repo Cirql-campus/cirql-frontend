@@ -1,0 +1,15 @@
+.notification-banner {
+  background-color: var(--primary);
+  color: var(--secondary);
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0.5rem 0;
+  text-align: center;
+  border-bottom: 2px solid var(--secondary);
+}
+
+.banner-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

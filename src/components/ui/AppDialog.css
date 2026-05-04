@@ -1,0 +1,137 @@
+.app-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.52);
+}
+
+.app-dialog {
+  width: min(440px, 100%);
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 14px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.app-dialog.text-dialog {
+  display: block;
+}
+
+.app-dialog-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: var(--gray-700);
+}
+
+.app-dialog-icon.danger {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.app-dialog-content {
+  position: relative;
+}
+
+.app-dialog h2 {
+  margin: 2px 36px 8px 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--gray-900);
+}
+
+.app-dialog p {
+  margin: 0;
+  color: var(--gray-600);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.app-dialog-close {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  cursor: pointer;
+}
+
+.app-dialog-textarea {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.app-dialog-textarea:focus {
+  border-color: var(--black);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.app-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.app-dialog-primary,
+.app-dialog-secondary {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.app-dialog-primary {
+  border: 1px solid var(--black);
+  background: var(--black);
+  color: #fff;
+}
+
+.app-dialog-primary.danger {
+  border-color: #dc2626;
+  background: #dc2626;
+}
+
+.app-dialog-secondary {
+  border: 1px solid var(--gray-200);
+  background: #fff;
+  color: var(--gray-700);
+}
+
+.app-dialog-primary:disabled,
+.app-dialog-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 520px) {
+  .app-dialog {
+    grid-template-columns: 1fr;
+  }
+}

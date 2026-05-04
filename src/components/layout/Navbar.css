@@ -1,0 +1,413 @@
+/* -- NAVBAR -- */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--black);
+  border-bottom: 1px solid #1a1a1a;
+}
+.navbar-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 28px;
+  height: 64px;
+}
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  text-decoration: none;
+  margin-right: auto;
+}
+.search-wrap {
+  position: relative;
+  flex: 0 1 460px;
+  max-width: 460px;
+  display: flex;
+  height: 42px;
+}
+.search-cat {
+  height: 100%;
+  padding: 0 12px;
+  background: #fff;
+  border: none;
+  border-right: 1px solid var(--gray-200);
+  border-radius: var(--radius) 0 0 var(--radius);
+  font-size: 13px;
+  color: var(--gray-700);
+  min-width: 120px;
+  font-family: inherit;
+}
+.search-input {
+  flex: 1;
+  height: 100%;
+  padding: 0 12px;
+  border: none;
+  background: #fff;
+  font-size: 14px;
+  color: var(--gray-900);
+}
+.search-input::placeholder {
+  color: var(--gray-300);
+}
+.search-btn {
+  height: 100%;
+  padding: 0 18px;
+  background: var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: #000;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.search-btn:hover {
+  background: var(--accent-dark);
+}
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+/* search-wrap defined above */
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  transition: all .18s;
+}
+.nav-btn:hover {
+  background: rgba(255,255,255,.1);
+}
+.nav-btn-outline {
+  border: 1.5px solid rgba(255,255,255,.25);
+}
+.nav-btn-green {
+  background: var(--accent);
+  color: #000;
+}
+.nav-btn-green:hover {
+  background: var(--accent-dark);
+}
+.cart-btn {
+  position: relative;
+}
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--danger);
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--black);
+}
+.profile-dropdown {
+  position: relative;
+}
+.profile-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #0ea5e9);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255,255,255,.3);
+  cursor: pointer;
+}
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  min-width: 180px;
+  overflow: hidden;
+  display: none;
+  z-index: 300;
+}
+.dropdown-menu.open {
+  display: block;
+}
+.drop-item {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.drop-item:hover {
+  background: var(--gray-50);
+  color: var(--gray-900);
+}
+.drop-divider {
+  border-top: 1px solid var(--gray-100);
+}
+.drop-user-info {
+  padding: 12px 16px 10px;
+}
+.drop-user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+.drop-user-campus {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+.drop-item-danger {
+  color: #dc2626 !important;
+}
+.drop-item-danger:hover {
+  background: #fef2f2 !important;
+}
+.suggestion-item {
+  width: 100%;
+  border: 0;
+  background: #fff;
+  text-align: left;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: background .1s;
+}
+.suggestion-item:hover {
+  background: var(--gray-50);
+}
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border: 1px solid var(--gray-200);
+  border-top: none;
+  z-index: 50;
+  overflow: hidden;
+}
+
+/* -- NOTIF BAR -- */
+#notif-bar {
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 9px 20px;
+  position: sticky;
+  top: 64px;
+  z-index: 190;
+}
+.notif-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #000;
+}
+.notif-enable {
+  height: 30px;
+  padding: 0 16px;
+  border-radius: 30px;
+  background: #000;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.notif-enable:hover {
+  background: #222;
+}
+.notif-x {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.notif-x:hover {
+  background: rgba(0,0,0,.22);
+}
+
+/* -- SUBNAV -- */
+.subnav {
+  background: #fff;
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: 64px; /* Without notif bar this sticks nicely. With notif bar it naturally follows flex flow but sticky offset will vary */
+  z-index: 150;
+}
+.subnav-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subnav-inner::-webkit-scrollbar {
+  display: none;
+}
+.cat-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-700);
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  font-family: inherit;
+  transition: all .15s;
+}
+.cat-pill:hover {
+  color: var(--black);
+}
+.cat-pill.active {
+  color: var(--black);
+  border-bottom-color: var(--black);
+  font-weight: 700;
+}
+.cat-pill span {
+  font-size: 16px;
+}
+
+/* ======= RESPONSIVE NAVBAR ======= */
+@media (max-width: 768px) {
+  .navbar-inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .logo-wrap {
+    flex: 1;
+  }
+  .search-wrap {
+    flex: 1 1 100%;
+    max-width: 100%;
+    order: 3;
+    height: 44px;
+  }
+  .search-cat {
+    display: none;
+  }
+  .search-input {
+    border-radius: var(--radius) 0 0 var(--radius);
+  }
+  .nav-actions {
+    gap: 4px;
+  }
+  .nav-btn {
+    padding: 0 10px;
+  }
+  /* Hide text labels for logged in tools to save space */
+  .nav-btn:not(.nav-btn-outline):not(.nav-btn-green) .nav-label {
+    display: none;
+  }
+  /* For login/signup buttons, reduce padding and text size */
+  .nav-btn-outline, .nav-btn-green {
+    padding: 0 12px;
+    font-size: 12px;
+  }
+}
+
+/* -- LIVE BADGES & TOAST -- */
+.nav-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 10px;
+  line-height: 1;
+  border: 2px solid var(--black);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.live-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--accent);
+  color: #000;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  cursor: pointer;
+  animation: slideUpFade 0.3s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.live-toast span {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+@keyframes slideUpFade {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
