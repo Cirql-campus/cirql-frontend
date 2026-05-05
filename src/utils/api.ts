@@ -109,6 +109,12 @@ export const fetchAPI = async <T>(
     headers.set("Content-Type", "application/json");
   }
 
+  // Fallback to Bearer token in case cross-site cookies are blocked by the browser
+  const token = localStorage.getItem("cirql_token");
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
   const config: RequestInit = {
     ...options,
     headers,
@@ -120,16 +126,21 @@ export const fetchAPI = async <T>(
   let data: Record<string, unknown>;
 
   try {
-    response = await fetch(`${BASE_URL}${endpoint}`, config);
+    const url = `${BASE_URL}${endpoint}`;
+    console.log(`[API] Fetching: ${url}`);
+    response = await fetch(url, config);
     data = await readJsonSafely(response);
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
-      captureFrontendException(err, { endpoint, timeoutMs });
+      captureFrontendException(err, { endpoint, timeoutMs, baseUrl: BASE_URL });
       throw new Error(
         "Request timed out. Please check your connection and try again.",
       );
     }
-    captureFrontendException(err, { endpoint });
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error(`[API] Connection failed for ${endpoint}:`, errorMessage);
+    console.error(`[API] Base URL: ${BASE_URL}`);
+    captureFrontendException(err, { endpoint, baseUrl: BASE_URL });
     throw new Error(
       "Could not connect to the server. Please check your internet and try again.",
     );
@@ -236,4 +247,20 @@ export const api = {
     }),
 
   delete: <T>(endpoint: string) => fetchAPI<T>(endpoint, { method: "DELETE" }),
+};
+
+// Health check to verify backend connectivity
+export const checkBackendHealth = async (): Promise<boolean> => {
+  try {
+    console.log(`[API] Checking backend health at: ${BASE_URL}`);
+    const response = await fetch(`${BASE_URL}/health`, {
+      method: "GET",
+      credentials: "include",
+    });
+    console.log(`[API] Health check response: ${response.status}`);
+    return response.ok;
+  } catch (error) {
+    console.error(`[API] Backend health check failed:`, error);
+    return false;
+  }
 };

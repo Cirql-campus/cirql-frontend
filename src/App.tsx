@@ -60,7 +60,9 @@ function App() {
               <Route path="saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
               <Route path="notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
               <Route path="admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+              <Route path="*" element={<Navigate to="/marketplace" replace />} />
             </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
     </AuthProvider>

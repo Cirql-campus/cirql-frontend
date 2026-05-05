@@ -3,6 +3,7 @@ import { Bell, CheckCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { api, getErrorMessage } from '../utils/api';
+import { normalizeAppLink } from '../utils/navigation';
 import './WorkspacePages.css';
 
 interface NotificationItem {
@@ -65,7 +66,7 @@ export const NotificationsPage = () => {
 
   const openNotification = async (notification: NotificationItem) => {
     if (!notification.read) await api.put(`/notifications/${notification._id}/read`, {});
-    if (notification.link) navigate(notification.link);
+    if (notification.link) navigate(normalizeAppLink(notification.link));
     else await load();
   };
 

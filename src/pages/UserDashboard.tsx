@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
+import { normalizeAppLink } from '../utils/navigation';
 import { Button } from '../components/ui/Button';
 import { ConfirmDialog } from '../components/ui/AppDialog';
 import { ListingCard } from '../components/ui/ListingCard';
@@ -310,7 +311,7 @@ export const UserDashboard = () => {
             </div>
             <div className="dash-stack">
               {notifications.slice(0, 3).map(notification => (
-                <button key={notification._id} onClick={() => navigate(notification.link || '/notifications')} className="dash-row">
+                <button key={notification._id} onClick={() => navigate(normalizeAppLink(notification.link))} className="dash-row">
                   <span>{notification.text}</span>
                   <strong>{notification.read ? 'read' : 'new'}</strong>
                 </button>

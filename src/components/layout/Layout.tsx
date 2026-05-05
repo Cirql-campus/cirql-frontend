@@ -1,22 +1,24 @@
 import React from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { Plus } from 'lucide-react';
 
 export const Layout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMessagesRoute = location.pathname === '/messages' || location.pathname.startsWith('/messages/');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <main style={{ flexGrow: 1 }}>
+      <main style={{ flexGrow: 1, minHeight: 0 }}>
         <Outlet />
       </main>
-      <Footer />
+      {!isMessagesRoute && <Footer />}
 
       {/* Floating Action Button for Selling */}
-      <button 
+      {!isMessagesRoute && <button
         style={{
           position: 'fixed', bottom: '28px', right: '28px', zIndex: 100, 
           height: '52px', padding: '0 22px', background: 'var(--accent)', 
@@ -28,7 +30,7 @@ export const Layout = () => {
         onClick={() => navigate('/create')}
       >
         <Plus size={18} strokeWidth={3} /> Post Item
-      </button>
+      </button>}
     </div>
   );
 };

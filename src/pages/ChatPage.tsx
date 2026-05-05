@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Flag, Send, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, Flag, Send, ShoppingBag, Wifi, WifiOff } from 'lucide-react';
 import { TextDialog } from '../components/ui/AppDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
@@ -23,10 +23,12 @@ interface ApiMessage {
 
 interface ChatMessage {
   _id?: string;
+  clientId?: string;
   senderId: string;
   senderName: string;
   text: string;
   createdAt?: string;
+  status?: 'sending' | 'sent' | 'failed';
 }
 
 interface SocketMessagePayload {
@@ -38,6 +40,7 @@ interface ConversationMeta {
   _id: string;
   participants: Sender[];
   listing?: {
+    _id?: string;
     title?: string;
     price?: number;
     images?: string[];
@@ -62,16 +65,57 @@ const normalizeMessage = (message: ApiMessage): ChatMessage => ({
   senderName: getSenderName(message.sender),
   text: message.text,
   createdAt: message.createdAt,
+  status: 'sent',
 });
 
-const appendUnique = (current: ChatMessage[], next: ChatMessage) => {
+const reconcileMessage = (current: ChatMessage[], next: ChatMessage) => {
   if (next._id && current.some(message => message._id === next._id)) return current;
+  if (next._id) {
+    const optimisticIndex = current.findIndex(message =>
+      !message._id &&
+      message.status === 'sending' &&
+      message.senderId === next.senderId &&
+      message.text === next.text
+    );
+    if (optimisticIndex >= 0) {
+      return current.map((message, index) => index === optimisticIndex ? next : message);
+    }
+  }
   return [...current, next];
 };
 
 const prependUnique = (current: ChatMessage[], older: ChatMessage[]) => {
   const existing = new Set(current.map(message => message._id).filter(Boolean));
   return [...older.filter(message => !message._id || !existing.has(message._id)), ...current];
+};
+
+const getMessageDayKey = (timestamp?: string) => {
+  const date = timestamp ? new Date(timestamp) : new Date();
+  return date.toDateString();
+};
+
+const formatMessageDay = (timestamp?: string) => {
+  const date = timestamp ? new Date(timestamp) : new Date();
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return 'Today';
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return date.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: date.getFullYear() === today.getFullYear() ? undefined : 'numeric',
+  });
+};
+
+const formatPrice = (price?: number) => {
+  if (typeof price !== 'number') return '';
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(price);
 };
 
 export const ChatPage = () => {
@@ -90,7 +134,10 @@ export const ChatPage = () => {
   const [reportingMessage, setReportingMessage] = useState<ChatMessage | null>(null);
   const [reportDetails, setReportDetails] = useState('');
   const [reporting, setReporting] = useState(false);
+  const messagesRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const shouldStickToBottomRef = useRef(true);
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -102,6 +149,7 @@ export const ChatPage = () => {
         setMessages(res.messages.map(normalizeMessage));
         setConversation(res.conversation || null);
         setPagination(res.pagination || { hasMore: false, page: 1 });
+        shouldStickToBottomRef.current = true;
         
         // Refresh global unread count since this marks them as read
         fetchUnreadCounts();
@@ -149,7 +197,7 @@ export const ChatPage = () => {
       // Actually, since we joined conv_roomId, we might get it twice if we don't check.
       // Wait, backend sends 'new_message' with { message: { conversationId, text... } } ?
       // Let's just append it, appendUnique handles duplicates by _id.
-      setMessages(prev => appendUnique(prev, normalizeMessage(msg)));
+      setMessages(prev => reconcileMessage(prev, normalizeMessage(msg)));
       
       // Since we are actively viewing it, tell backend to mark as read, or just refresh counts
       setTimeout(() => fetchUnreadCounts(), 1000); 
@@ -172,16 +220,36 @@ export const ChatPage = () => {
 
   const prevLastMessageRef = useRef<string | null>(null);
 
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
+  };
+
+  const updateStickiness = () => {
+    const container = messagesRef.current;
+    if (!container) return;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    shouldStickToBottomRef.current = distanceFromBottom < 120;
+  };
+
   useEffect(() => {
     if (messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
-      const lastMsgId = lastMsg._id || lastMsg.text;
+      const lastMsgId = lastMsg._id || lastMsg.clientId || lastMsg.text;
       if (prevLastMessageRef.current !== lastMsgId) {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (!prevLastMessageRef.current || lastMsg.senderId === user?._id || shouldStickToBottomRef.current) {
+          scrollToBottom(prevLastMessageRef.current ? 'smooth' : 'auto');
+        }
         prevLastMessageRef.current = lastMsgId;
       }
     }
-  }, [messages]);
+  }, [messages, user?._id]);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+  }, [text]);
 
   const partnerName = useMemo(() => {
     const partner = conversation?.participants.find(participant => participant._id !== user?._id);
@@ -190,23 +258,60 @@ export const ChatPage = () => {
     return messagePartner?.senderName || 'Conversation';
   }, [conversation, messages, user?._id]);
 
-  const sendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const sendMessage = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!text.trim() || !roomId || sending) return;
 
     const draft = text.trim();
+    const clientId = `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const optimisticMessage: ChatMessage = {
+      clientId,
+      senderId: user?._id || 'me',
+      senderName: user?.name || 'You',
+      text: draft,
+      createdAt: new Date().toISOString(),
+      status: 'sending',
+    };
+
     setText('');
     setSending(true);
     setError('');
+    shouldStickToBottomRef.current = true;
+    setMessages(prev => reconcileMessage(prev, optimisticMessage));
 
     try {
       const res = await api.post<{ message: ApiMessage }>(`/chat/conversations/${roomId}/messages`, { text: draft });
-      setMessages(prev => appendUnique(prev, normalizeMessage(res.message)));
+      const confirmed = normalizeMessage(res.message);
+      setMessages(prev => {
+        let replaced = false;
+        const next = prev.map(message => {
+          if (message.clientId !== clientId) return message;
+          replaced = true;
+          return confirmed;
+        });
+        return replaced ? next : reconcileMessage(prev, confirmed);
+      });
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Failed to send message'));
-      setText(draft);
+      setMessages(prev => prev.map(message =>
+        message.clientId === clientId ? { ...message, status: 'failed' } : message
+      ));
     } finally {
       setSending(false);
+    }
+  };
+
+  const retryMessage = (message: ChatMessage) => {
+    if (message.status !== 'failed') return;
+    setMessages(prev => prev.filter(item => item.clientId !== message.clientId));
+    setText(message.text);
+    textareaRef.current?.focus();
+  };
+
+  const handleComposerKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
@@ -259,7 +364,26 @@ export const ChatPage = () => {
         </div>
       </div>
 
-      <div className="chat-messages">
+      {conversation?.listing && (
+        <button
+          type="button"
+          className="chat-listing-card"
+          onClick={() => conversation.listing?._id && navigate(`/item/${conversation.listing._id}`)}
+        >
+          {conversation.listing.images?.[0] ? (
+            <img src={conversation.listing.images[0]} alt="" />
+          ) : (
+            <div className="chat-listing-fallback"><ShoppingBag size={18} /></div>
+          )}
+          <div className="chat-listing-card-main">
+            <span>{conversation.listing.title || 'Marketplace listing'}</span>
+            <strong>{formatPrice(conversation.listing.price)}</strong>
+          </div>
+          {!conversation.listing.isActive && <em>Inactive</em>}
+        </button>
+      )}
+
+      <div className="chat-messages" ref={messagesRef} onScroll={updateStickiness}>
         {loading && (
           <div className="chat-empty">
             <p>Loading messages...</p>
@@ -286,22 +410,35 @@ export const ChatPage = () => {
 
         {messages.map((message, index) => {
           const isOwn = message.senderId === user?._id;
+          const previous = messages[index - 1];
+          const showDateSeparator = !previous || getMessageDayKey(previous.createdAt) !== getMessageDayKey(message.createdAt);
           return (
-            <div key={message._id ?? index} className={`msg-row ${isOwn ? 'own' : 'other'}`}>
-              {!isOwn && <div className="msg-avatar">{message.senderName[0]?.toUpperCase()}</div>}
-              <div className="msg-bubble-wrap">
-                {!isOwn && <div className="msg-sender-name">{message.senderName}</div>}
-                <div className="msg-bubble">{message.text}</div>
-                <div className="msg-time">
-                  {formatTime(message.createdAt)}
-                  {!isOwn && message._id && (
-                    <button type="button" onClick={() => openReportMessage(message)} className="msg-report-btn" aria-label="Report message">
-                      <Flag size={12} />
-                    </button>
-                  )}
+            <React.Fragment key={message._id ?? message.clientId ?? index}>
+              {showDateSeparator && (
+                <div className="chat-date-separator">
+                  <span>{formatMessageDay(message.createdAt)}</span>
+                </div>
+              )}
+              <div className={`msg-row ${isOwn ? 'own' : 'other'} ${message.status === 'failed' ? 'failed' : ''}`}>
+                {!isOwn && <div className="msg-avatar">{message.senderName[0]?.toUpperCase()}</div>}
+                <div className="msg-bubble-wrap">
+                  {!isOwn && <div className="msg-sender-name">{message.senderName}</div>}
+                  <div className="msg-bubble">{message.text}</div>
+                  <div className="msg-time">
+                    {message.status === 'sending' ? 'Sending...' : message.status === 'failed' ? (
+                      <button type="button" className="msg-retry-btn" onClick={() => retryMessage(message)}>
+                        Failed. Tap to edit
+                      </button>
+                    ) : formatTime(message.createdAt)}
+                    {!isOwn && message._id && (
+                      <button type="button" onClick={() => openReportMessage(message)} className="msg-report-btn" aria-label="Report message">
+                        <Flag size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            </React.Fragment>
           );
         })}
         <div ref={bottomRef} />
@@ -312,12 +449,14 @@ export const ChatPage = () => {
       )}
 
       <form className="chat-input-bar" onSubmit={sendMessage}>
-        <input
-          type="text"
+        <textarea
+          ref={textareaRef}
           className="chat-input"
           placeholder="Type a message..."
           value={text}
           onChange={e => setText(e.target.value)}
+          onKeyDown={handleComposerKeyDown}
+          rows={1}
           autoFocus
         />
         <button type="submit" className="chat-send" disabled={!text.trim() || sending}>
