@@ -181,6 +181,7 @@ export const CreateListing = () => {
               { value: 'rides', label: 'Rides' },
               { value: 'living', label: 'Living' },
               { value: 'attire', label: 'Attire' },
+              { value: 'gifts', label: 'Gifts' },
               { value: 'misc', label: 'Misc' }
             ]} required />
             <Select label="Condition*" value={condition} onChange={(e) => setCondition(e.target.value)} options={[
@@ -281,3 +282,4 @@ export const CreateListing = () => {
     </div>
   );
 };
+

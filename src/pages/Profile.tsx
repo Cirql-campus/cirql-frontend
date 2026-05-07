@@ -186,6 +186,17 @@ export const Profile = () => {
             )}
             <h2 className="profile-name">{user?.name || 'Your Profile'}</h2>
             <p className="profile-college">{user?.college || 'Campus member'}</p>
+            {user?.role === 'admin' && (
+              <div className="settings-card" style={{ marginTop: 16, textAlign: 'left' }}>
+                <div className="settings-card-icon">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <h3>Admin account</h3>
+                  <p>You can moderate listings, reports, users, and unsafe chat content.</p>
+                </div>
+              </div>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -213,6 +224,17 @@ export const Profile = () => {
             >
               <Package size={18} /> My Listings
             </button>
+            {user?.role === 'admin' && (
+              <button
+                className="menu-item"
+                onClick={() => {
+                  setError('');
+                  navigate('/admin');
+                }}
+              >
+                <ShieldCheck size={18} /> Admin Control
+              </button>
+            )}
             <button
               className={`menu-item ${activeSection === 'settings' ? 'active' : ''}`}
               onClick={() => {

@@ -58,6 +58,9 @@ export const Browse = () => {
             <label className="checkbox-label">
               <input type="radio" name="category" /> Projects
             </label>
+            <label className="checkbox-label">
+              <input type="radio" name="category" /> Gifts
+            </label>
           </div>
 
           <div className="filter-group">
@@ -102,3 +105,4 @@ export const Browse = () => {
     </div>
   );
 };
+

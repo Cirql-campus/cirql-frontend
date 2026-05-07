@@ -138,6 +138,11 @@ export const ChatPage = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const shouldStickToBottomRef = useRef(true);
+  const fetchUnreadCountsRef = useRef(fetchUnreadCounts);
+
+  useEffect(() => {
+    fetchUnreadCountsRef.current = fetchUnreadCounts;
+  }, [fetchUnreadCounts]);
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -152,7 +157,7 @@ export const ChatPage = () => {
         shouldStickToBottomRef.current = true;
         
         // Refresh global unread count since this marks them as read
-        fetchUnreadCounts();
+        fetchUnreadCountsRef.current();
       } catch (err: unknown) {
         setError(getErrorMessage(err, 'Failed to load messages'));
       } finally {
@@ -200,7 +205,7 @@ export const ChatPage = () => {
       setMessages(prev => reconcileMessage(prev, normalizeMessage(msg)));
       
       // Since we are actively viewing it, tell backend to mark as read, or just refresh counts
-      setTimeout(() => fetchUnreadCounts(), 1000); 
+      setTimeout(() => fetchUnreadCountsRef.current(), 1000); 
     };
 
     if (socket.connected) {

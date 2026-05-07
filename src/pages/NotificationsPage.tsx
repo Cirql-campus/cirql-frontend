@@ -65,8 +65,13 @@ export const NotificationsPage = () => {
   };
 
   const openNotification = async (notification: NotificationItem) => {
-    if (!notification.read) await api.put(`/notifications/${notification._id}/read`, {});
-    if (notification.link) navigate(normalizeAppLink(notification.link));
+    const target = notification.link ? normalizeAppLink(notification.link) : '';
+    try {
+      if (!notification.read) await api.put(`/notifications/${notification._id}/read`, {});
+    } catch (err) {
+      setError(getErrorMessage(err, 'Could not mark notification as read'));
+    }
+    if (target) navigate(target);
     else await load();
   };
 

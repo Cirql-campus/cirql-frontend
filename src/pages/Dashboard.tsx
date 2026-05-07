@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ListingCard } from '../components/ui/ListingCard';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Logo } from '../components/ui/Logo';
-import { Grid, BookOpen, Laptop, Bike, Bed, Shirt, Package } from 'lucide-react';
+import { Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package } from 'lucide-react';
 import './Dashboard.css';
 
 import { api } from '../utils/api';
@@ -58,6 +58,7 @@ const CATEGORIES = [
   { label: 'Rides', value: 'Rides', icon: Bike },
   { label: 'Living', value: 'Living', icon: Bed },
   { label: 'Attire', value: 'Attire', icon: Shirt },
+  { label: 'Gifts', value: 'Gifts', icon: Gift },
   { label: 'Misc', value: 'Misc', icon: Package },
 ];
 
@@ -285,6 +286,7 @@ export const Dashboard = () => {
               { value: 'Rides',    icon: Bike, label: 'Rides',    sub: 'Cycles & Bikes', color: 'rgba(249, 115, 22, 0.12)', accent: '#f97316' },
               { value: 'Living',   icon: Bed, label: 'Living',   sub: 'Room & Hostel',  color: 'rgba(168, 85, 247, 0.12)', accent: '#a855f7' },
               { value: 'Attire',   icon: Shirt, label: 'Attire',   sub: 'Clothes & Gear', color: 'rgba(244, 63, 94, 0.12)', accent: '#f43f5e' },
+              { value: 'Gifts',    icon: Gift, label: 'Gifts',    sub: 'Treats & Presents', color: 'rgba(236, 72, 153, 0.12)', accent: '#ec4899' },
               { value: 'Misc',     icon: Package, label: 'Misc',     sub: 'Everything Else', color: 'rgba(100, 116, 139, 0.12)', accent: '#64748b' },
             ].map(cat => (
               <button
@@ -313,7 +315,11 @@ export const Dashboard = () => {
             <button onClick={() => {
               setErrorNotice('');
               setSuccessNotice('');
-              isLoggedIn ? navigate('/wanted/new') : setErrorNotice('Log in to post a wanted item.')
+              if (isLoggedIn) {
+                navigate('/wanted/new');
+              } else {
+                setErrorNotice('Log in to post a wanted item.');
+              }
             }}>
               + Wanted Item
             </button>
@@ -469,3 +475,4 @@ export const Dashboard = () => {
     </>
   );
 };
+

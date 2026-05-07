@@ -1,5 +1,3 @@
-let monitoringEnabled = false;
-
 export const initMonitoring = () => {
   // Monitoring removed
 };

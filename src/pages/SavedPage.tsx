@@ -19,10 +19,22 @@ interface ApiListing {
   status?: string;
 }
 
+interface SavedListingCard {
+  id: string;
+  title: string;
+  price: number;
+  type: 'Sell' | 'Rent' | 'Free';
+  category: string;
+  condition: string;
+  image: string;
+  college: string;
+  status: string;
+}
+
 export const SavedPage = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
-  const [listings, setListings] = useState<any[]>([]);
+  const [listings, setListings] = useState<SavedListingCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -30,7 +42,7 @@ export const SavedPage = () => {
     setLoading(true);
     try {
       const res = await api.get<{ listings: ApiListing[] }>('/listings/saved/me?limit=50');
-      const mapped = res.listings.map(l => ({
+      const mapped: SavedListingCard[] = res.listings.map(l => ({
         id: l._id,
         title: l.title,
         price: l.price,
@@ -60,7 +72,7 @@ export const SavedPage = () => {
       await api.post(`/listings/${id}/save`, {});
       // Remove from cart instantly if unsaved
       setListings(prev => prev.filter(l => l.id !== id));
-    } catch (err) {
+    } catch {
       // ignore
     }
   };

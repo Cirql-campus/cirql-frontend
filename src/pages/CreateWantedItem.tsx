@@ -90,6 +90,7 @@ export const CreateWantedItem = () => {
               { value: 'rides', label: 'Rides' },
               { value: 'living', label: 'Living' },
               { value: 'attire', label: 'Attire' },
+              { value: 'gifts', label: 'Gifts' },
               { value: 'misc', label: 'Misc' },
             ]} required />
             <div className="input-wrapper">
@@ -130,3 +131,4 @@ export const CreateWantedItem = () => {
     </div>
   );
 };
+

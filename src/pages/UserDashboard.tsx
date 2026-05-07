@@ -17,7 +17,6 @@ import { api, getErrorMessage } from '../utils/api';
 import { normalizeAppLink } from '../utils/navigation';
 import { Button } from '../components/ui/Button';
 import { ConfirmDialog } from '../components/ui/AppDialog';
-import { ListingCard } from '../components/ui/ListingCard';
 import './UserDashboard.css';
 
 interface Listing {
@@ -67,9 +66,6 @@ interface WantedItem {
   status: 'open' | 'fulfilled' | 'closed';
   responseCount?: number;
 }
-
-const mapType = (type: Listing['type']) =>
-  type === 'sell' ? 'Sell' : type === 'rent' ? 'Rent' : 'Free';
 
 const getFirstName = (name = '') => name.trim().split(/\s+/)[0] || 'there';
 

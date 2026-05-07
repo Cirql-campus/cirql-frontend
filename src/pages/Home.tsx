@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ListingCard } from '../components/ui/ListingCard';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Grid, BookOpen, Laptop, Bike, Bed, Shirt, Package } from 'lucide-react';
+import { Search, Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package } from 'lucide-react';
 import { WhyCirql } from './WhyCirql';
 import { HowItWorks } from './HowItWorks';
 import { Faq } from './Faq';
@@ -45,6 +45,7 @@ const CATEGORIES = [
   { label: 'Rides', value: 'Rides', icon: Bike },
   { label: 'Living', value: 'Living', icon: Bed },
   { label: 'Attire', value: 'Attire', icon: Shirt },
+  { label: 'Gifts', value: 'Gifts', icon: Gift },
   { label: 'Misc', value: 'Misc', icon: Package },
 ];
 
@@ -418,3 +419,4 @@ export const Home = () => {
     </>
   );
 };
+

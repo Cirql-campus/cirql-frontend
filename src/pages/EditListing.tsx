@@ -151,6 +151,7 @@ export const EditListing = () => {
             { value: 'rides', label: 'Rides' },
             { value: 'living', label: 'Living' },
             { value: 'attire', label: 'Attire' },
+            { value: 'gifts', label: 'Gifts' },
             { value: 'misc', label: 'Misc' },
           ]} />
           <Select label="Type" value={listing.type} onChange={e => setField('type', e.target.value as Listing['type'])} options={[
@@ -189,3 +190,4 @@ export const EditListing = () => {
     </div>
   );
 };
+

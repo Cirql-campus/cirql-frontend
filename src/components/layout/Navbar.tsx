@@ -13,6 +13,7 @@ import {
   Search,
   ShieldCheck,
   Shirt,
+  ShoppingBag,
   ShoppingCart,
   User,
 } from 'lucide-react';
@@ -27,6 +28,7 @@ const NAV_CATEGORIES = [
   { label: 'Vehicles', value: 'Rides', Icon: Bike },
   { label: 'Room & Living', value: 'Living', Icon: Bed },
   { label: 'Clothing', value: 'Attire', Icon: Shirt },
+  { label: 'Gifts', value: 'Gifts', Icon: ShoppingBag },
 ];
 
 export const Navbar = () => {
@@ -38,7 +40,7 @@ export const Navbar = () => {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const searchRef = useRef<HTMLFormElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const [toast, setToast] = useState('');
+  const [toast, setToast] = useState<{ title: string; id?: string } | null>(null);
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -72,9 +74,9 @@ export const Navbar = () => {
       const socket = getSocket();
       if (!socket) return;
       
-      const handleNewListing = (data: { title: string, id: string }) => {
-        setToast(`New listing posted: ${data.title}`);
-        setTimeout(() => setToast(''), 4000);
+      const handleNewListing = (data: { title: string, id?: string }) => {
+        setToast({ title: data.title, id: data.id });
+        setTimeout(() => setToast(null), 4000);
       };
       
       socket.on('new_listing', handleNewListing);
@@ -128,6 +130,8 @@ export const Navbar = () => {
               <option value="Tech">Electronics</option>
               <option value="Rides">Vehicles</option>
               <option value="Living">Room & Living</option>
+              <option value="Attire">Clothing</option>
+              <option value="Gifts">Gifts</option>
             </select>
             <input
               type="text"
@@ -231,10 +235,19 @@ export const Navbar = () => {
       </div>
       
       {toast && (
-        <div className="live-toast" onClick={() => window.location.reload()}>
-          {toast} <span>Click to refresh</span>
+        <div
+          className="live-toast"
+          onClick={() => {
+            if (toast.id) navigate(`/item/${toast.id}`);
+            else navigate('/marketplace');
+            setToast(null);
+          }}
+        >
+          New listing posted: {toast.title} <span>{toast.id ? 'Click to view' : 'Open marketplace to view'}</span>
         </div>
       )}
     </>
   );
 };
+
+

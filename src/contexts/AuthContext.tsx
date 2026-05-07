@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { api, getErrorMessage } from '../utils/api';
 import { GlobalLoadingShell } from '../components/ui/GlobalLoadingShell';
-import { initSocket, disconnectSocket, getSocket } from '../utils/socket';
+import { initSocket, disconnectSocket } from '../utils/socket';
 
 export interface User {
   _id: string;

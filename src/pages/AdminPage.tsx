@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, Flag, MessageSquareWarning, Users, Search, Trash2 } from 'lucide-react';
+import { ShieldCheck, Flag, MessageSquareWarning, Users, Search, Trash2, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { api, getErrorMessage } from '../utils/api';
 import { Button } from '../components/ui/Button';
 import { ConfirmDialog } from '../components/ui/AppDialog';
@@ -41,6 +42,7 @@ interface AdminUser {
 }
 
 export const AdminPage = () => {
+  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [listingReports, setListingReports] = useState<Report[]>([]);
   const [messageReports, setMessageReports] = useState<Report[]>([]);
@@ -52,9 +54,13 @@ export const AdminPage = () => {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
   const [pendingDeleteEndpoint, setPendingDeleteEndpoint] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const formatPrice = (price: number) => `Rs.${Number(price || 0).toLocaleString('en-IN')}`;
 
   const load = async () => {
     setError('');
+    setLoading(true);
     try {
       const [dash, listings, messages, userReportRes, moderation, flagged, userRes] = await Promise.all([
         api.get<AdminDashboard>('/admin/dashboard'),
@@ -74,6 +80,8 @@ export const AdminPage = () => {
       setUsers(userRes.users);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to load admin dashboard'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -137,6 +145,9 @@ export const AdminPage = () => {
       <p className="muted">Reporter: {report.reporter?.name || 'Student'}</p>
       {report.details && <p>{report.details}</p>}
       <div className="workspace-actions">
+        {report.listing?._id && (
+          <Button size="sm" variant="outline" onClick={() => navigate(`/item/${report.listing?._id}`)}><Eye size={14} /> View Item</Button>
+        )}
         <Button size="sm" onClick={() => patch(`/admin/${type}-reports/${report._id}/status`, { status: 'reviewed' })} disabled={busy.includes(report._id)}>Reviewed</Button>
         <Button size="sm" variant="outline" onClick={() => patch(`/admin/${type}-reports/${report._id}/status`, { status: 'dismissed' })} disabled={busy.includes(report._id)}>Dismiss</Button>
         {type === 'message' && (
@@ -157,6 +168,7 @@ export const AdminPage = () => {
         </div>
       </div>
       {error && <div className="auth-error">{error}</div>}
+      {loading && <div className="empty-state">Loading admin dashboard...</div>}
 
       <div className="admin-grid">
         {dashboard && Object.entries(dashboard.metrics).map(([key, value]) => (
@@ -175,8 +187,9 @@ export const AdminPage = () => {
           <article className="workspace-card" key={listing._id}>
             <div className="card-kicker"><Flag size={14} /> {listing.moderationStatus}</div>
             <h2>{listing.title}</h2>
-            <p>₹{listing.price} / {listing.seller?.name || 'Seller'}</p>
+            <p>{formatPrice(listing.price)} / {listing.seller?.name || 'Seller'}</p>
             <div className="workspace-actions">
+              <Button size="sm" variant="outline" onClick={() => navigate(`/item/${listing._id}`)}><Eye size={14} /> View</Button>
               <Button size="sm" onClick={() => patch(`/admin/listings/${listing._id}/moderation`, { moderationStatus: 'approved' })}>Approve</Button>
               <Button size="sm" variant="outline" onClick={() => patch(`/admin/listings/${listing._id}/moderation`, { moderationStatus: 'rejected', moderationReason: 'Rejected by admin review' })}>Reject</Button>
             </div>
@@ -192,8 +205,9 @@ export const AdminPage = () => {
           <article className="workspace-card" key={listing._id}>
             <div className="card-kicker"><Flag size={14} /> flagged</div>
             <h2>{listing.title}</h2>
-            <p>₹{listing.price} / {listing.seller?.name || 'Seller'}</p>
+            <p>{formatPrice(listing.price)} / {listing.seller?.name || 'Seller'}</p>
             <div className="workspace-actions">
+              <Button size="sm" variant="outline" onClick={() => navigate(`/item/${listing._id}`)}><Eye size={14} /> View</Button>
               <Button size="sm" onClick={() => put(`/admin/listings/${listing._id}/unflag`)}>Unflag</Button>
               <Button size="sm" variant="outline" onClick={() => patch(`/admin/listings/${listing._id}/moderation`, { moderationStatus: 'rejected', moderationReason: 'Rejected after flag review' })}>Hide</Button>
               <Button size="sm" variant="outline" className="text-danger" onClick={() => setPendingDeleteEndpoint(`/admin/listings/${listing._id}`)}>
@@ -236,9 +250,9 @@ export const AdminPage = () => {
         {users.map(user => (
           <article className="workspace-card admin-user-row" key={user._id}>
             <div>
-              <div className="card-kicker">{user.role || 'user'} · {user.isVerified ? 'verified' : 'disabled'}</div>
+              <div className="card-kicker">{user.role || 'user'} / {user.isVerified ? 'verified' : 'disabled'}</div>
               <h2>{user.name}</h2>
-              <p className="muted">{user.email} · {user.college || user.collegeDomain || 'Campus'}</p>
+              <p className="muted">{user.email} / {user.college || user.collegeDomain || 'Campus'}</p>
             </div>
             <div className="workspace-actions">
               {user.role === 'admin' ? (
@@ -265,3 +279,4 @@ export const AdminPage = () => {
     </div>
   );
 };
+

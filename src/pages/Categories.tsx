@@ -20,6 +20,7 @@ const categories = [
   { name: 'Musical', icon: '🎸' },
   { name: 'Clothing', icon: '👕' },
   { name: 'Backpacks', icon: '🎒' },
+  { name: 'Gifts', icon: '🎁' },
   { name: 'Calculators', icon: '🧮' },
   { name: 'Services', icon: '🤝' },
 ];
@@ -115,8 +116,8 @@ export const Categories = () => {
 
       <div className="categories-grid">
         {categories.map((cat, idx) => (
-          <div 
-            key={idx} 
+          <div
+            key={idx}
             className="category-card"
             onClick={() => navigate(`/dashboard?category=${encodeURIComponent(cat.name)}`)}
           >
