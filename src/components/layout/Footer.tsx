@@ -66,10 +66,10 @@ export const Footer = () => {
 
             <div>
               <div className="footer-col-title">Support</div>
-              <a href="#" className="footer-link"><HelpCircle size={12} style={{ display: 'inline', marginRight: '4px' }}/> Help Center</a>
+              <a href="mailto:cirqlofficial1@gmail.com" className="footer-link"><HelpCircle size={12} style={{ display: 'inline', marginRight: '4px' }}/> Help Center</a>
               <a href="#" className="footer-link"><Lock size={12} style={{ display: 'inline', marginRight: '4px' }}/> Safety Center</a>
-              <a href="#" className="footer-link">Report an Issue</a>
-              <a href="#" className="footer-link">Guidelines</a>
+              <a href="mailto:cirqlofficial1@gmail.com" className="footer-link">Report an Issue</a>
+              <a href="mailto:cirqlofficial1@gmail.com" className="footer-link" style={{ textTransform: 'none' }}>cirqlofficial1@gmail.com</a>
             </div>
 
             <div>
