@@ -857,6 +857,22 @@
   margin-top: 12px; font-family: inherit; border: none; cursor: pointer;
 }
 .apply-btn:hover { background: #333; }
+.enable-alerts-btn {
+  width: auto;
+  margin-top: 0;
+  margin-left: 8px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+}
+.enable-alerts-btn:hover {
+  background: #b91c1c;
+}
+.enable-alerts-btn:disabled {
+  background: var(--gray-200);
+  color: var(--gray-600);
+  cursor: not-allowed;
+}
 
 /* -- ABOUT SECTION -- */
 .about-section {

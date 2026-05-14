@@ -100,7 +100,7 @@ export const fetchAPI = async <T>(
   options: FetchOptions = {},
 ): Promise<T> => {
   const headers = new Headers(options.headers);
-  const timeoutMs = options.timeoutMs ?? (options.isFormData ? 60000 : 25000);
+  const timeoutMs = options.timeoutMs ?? (options.isFormData ? 60000 : 60000);
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
 
@@ -246,7 +246,11 @@ export const api = {
       isFormData,
     }),
 
-  delete: <T>(endpoint: string) => fetchAPI<T>(endpoint, { method: "DELETE" }),
+  delete: <T, TBody = unknown>(endpoint: string, body?: TBody) =>
+    fetchAPI<T>(endpoint, {
+      method: "DELETE",
+      body: body === undefined ? undefined : JSON.stringify(body),
+    }),
 };
 
 // Health check to verify backend connectivity

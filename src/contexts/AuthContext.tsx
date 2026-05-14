@@ -17,6 +17,15 @@ export interface User {
   soldCount?: number;
   isVerified: boolean;
   role?: 'user' | 'admin';
+  pushSubscriptionCount?: number;
+  notificationPreferences?: {
+    pushEnabled: boolean;
+    messages: boolean;
+    deals: boolean;
+    wanted: boolean;
+    moderation: boolean;
+    messagePreview: boolean;
+  };
   trust?: {
     score: number;
     badges: string[];

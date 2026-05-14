@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, Package, LogOut, Edit2, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { Settings, Package, LogOut, Edit2, ShieldCheck, ArrowLeft, Bell } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { ListingCard } from '../components/ui/ListingCard';
@@ -7,13 +7,19 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Input } from '../components/ui/Input';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
+import {
+  getPushNotificationStatus,
+  subscribeUserToPush,
+  unsubscribeUserFromPush,
+} from '../utils/pushNotifications';
+import type { PushNotificationStatus } from '../utils/pushNotifications';
 import './Profile.css';
 
 interface ApiListing {
   _id: string;
   title: string;
   price: number;
-  type: 'sell' | 'rent' | 'free';
+  type: 'sell' | 'rent' | 'free' | 'service';
   images?: string[];
   college?: string;
   isActive?: boolean;
@@ -22,7 +28,16 @@ interface ApiListing {
 }
 
 const mapType = (type: ApiListing['type']) =>
-  type === 'sell' ? 'Sell' : type === 'rent' ? 'Rent' : 'Free';
+  type === 'sell' ? 'Sell' : type === 'rent' ? 'Rent' : type === 'free' ? 'Free' : 'Service';
+
+const DEFAULT_NOTIFICATION_PREFERENCES = {
+  pushEnabled: true,
+  messages: true,
+  deals: true,
+  wanted: true,
+  moderation: true,
+  messagePreview: false,
+};
 
 type ProfileSection = 'listings' | 'edit' | 'settings';
 
@@ -49,6 +64,11 @@ export const Profile = () => {
   const [profileMessage, setProfileMessage] = useState('');
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState('');
+  const [pushStatus, setPushStatus] = useState<PushNotificationStatus>('not-enabled');
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    ...DEFAULT_NOTIFICATION_PREFERENCES,
+    ...(user?.notificationPreferences || {}),
+  });
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -74,6 +94,15 @@ export const Profile = () => {
 
   useEffect(() => {
     setProfileForm({ name: user?.name || '', avatar: user?.avatar || '' });
+    setNotificationPreferences({
+      ...DEFAULT_NOTIFICATION_PREFERENCES,
+      ...(user?.notificationPreferences || {}),
+    });
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    getPushNotificationStatus().then(setPushStatus);
   }, [user]);
 
   const handleDelete = async (id: string) => {
@@ -161,6 +190,52 @@ export const Profile = () => {
       setSettingsMessage('Password changed successfully. Please log in again if your session expires.');
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Failed to change password'));
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const handlePushToggle = async () => {
+    setSettingsSaving(true);
+    setError('');
+    setSettingsMessage('');
+
+    try {
+      const result = pushStatus === 'enabled'
+        ? await unsubscribeUserFromPush()
+        : await subscribeUserToPush();
+      setPushStatus(result.status);
+      await refreshUser();
+      if (result.ok) setSettingsMessage(result.message || 'Notification setting updated.');
+      else setError(result.message || 'Failed to update notification setting.');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const updateNotificationPreference = async (key: keyof typeof DEFAULT_NOTIFICATION_PREFERENCES, value: boolean) => {
+    const nextPreferences = { ...notificationPreferences, [key]: value };
+    setNotificationPreferences(nextPreferences);
+    setSettingsSaving(true);
+    setError('');
+    setSettingsMessage('');
+
+    try {
+      const res = await api.patch<{ notificationPreferences: typeof DEFAULT_NOTIFICATION_PREFERENCES }>('/users/notification-preferences', {
+        [key]: value,
+      });
+      setNotificationPreferences({
+        ...DEFAULT_NOTIFICATION_PREFERENCES,
+        ...(res.notificationPreferences || {}),
+      });
+      await refreshUser();
+      setSettingsMessage('Notification preferences updated.');
+    } catch (err: unknown) {
+      setNotificationPreferences({
+        ...DEFAULT_NOTIFICATION_PREFERENCES,
+        ...(user?.notificationPreferences || {}),
+      });
+      setError(getErrorMessage(err, 'Failed to update notification preferences'));
     } finally {
       setSettingsSaving(false);
     }
@@ -315,6 +390,60 @@ export const Profile = () => {
                 <div>
                   <h3>Verified student account</h3>
                   <p>{user?.email} is linked to {user?.college || 'your campus'}.</p>
+                </div>
+              </div>
+
+              <div className="settings-card notification-settings-card">
+                <div className="settings-card-icon">
+                  <Bell size={20} />
+                </div>
+                <div className="notification-settings-body">
+                  <div className="notification-settings-head">
+                    <div>
+                      <h3>Desktop alerts</h3>
+                      <p>
+                        {pushStatus === 'enabled'
+                          ? 'This browser is subscribed to CirQl alerts.'
+                          : pushStatus === 'blocked'
+                            ? 'Notifications are blocked in your browser settings.'
+                            : pushStatus === 'unsupported'
+                              ? 'This browser does not support web push notifications.'
+                              : 'Enable alerts for important marketplace activity.'}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={pushStatus === 'enabled' ? 'outline' : 'primary'}
+                      disabled={settingsSaving || pushStatus === 'blocked' || pushStatus === 'unsupported'}
+                      onClick={handlePushToggle}
+                    >
+                      {pushStatus === 'enabled' ? 'Disable Alerts' : 'Enable Alerts'}
+                    </Button>
+                  </div>
+
+                  <div className="notification-toggle-list">
+                    {[
+                      ['messages', 'Messages'],
+                      ['deals', 'Deal updates'],
+                      ['wanted', 'Wanted responses'],
+                      ['moderation', 'Moderation updates'],
+                      ['messagePreview', 'Show message previews'],
+                    ].map(([key, label]) => (
+                      <label className="notification-toggle" key={key}>
+                        <span>{label}</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(notificationPreferences[key as keyof typeof DEFAULT_NOTIFICATION_PREFERENCES])}
+                          disabled={settingsSaving}
+                          onChange={(event) => updateNotificationPreference(
+                            key as keyof typeof DEFAULT_NOTIFICATION_PREFERENCES,
+                            event.target.checked
+                          )}
+                        />
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
 

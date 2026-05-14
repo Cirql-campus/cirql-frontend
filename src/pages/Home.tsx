@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ListingCard } from '../components/ui/ListingCard';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package } from 'lucide-react';
+import { Search, Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package, Briefcase } from 'lucide-react';
 import { WhyCirql } from './WhyCirql';
 import { HowItWorks } from './HowItWorks';
 import { Faq } from './Faq';
@@ -25,7 +25,7 @@ interface ApiListing {
   _id: string;
   title: string;
   price: number;
-  type: 'sell' | 'rent' | 'free';
+  type: 'sell' | 'rent' | 'free' | 'service';
   category: string;
   condition?: string;
   images?: string[];
@@ -47,6 +47,7 @@ const CATEGORIES = [
   { label: 'Attire', value: 'Attire', icon: Shirt },
   { label: 'Gifts', value: 'Gifts', icon: Gift },
   { label: 'Misc', value: 'Misc', icon: Package },
+  { label: 'Services', value: 'Services', icon: Briefcase },
 ];
 
 const CONDITIONS = ['Brand New', 'Like New', 'Good', 'Fair'];

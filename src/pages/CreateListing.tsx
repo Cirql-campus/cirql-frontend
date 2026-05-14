@@ -23,7 +23,7 @@ const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'im
 export const CreateListing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [type, setType] = useState<'sell' | 'rent' | 'free'>('sell');
+  const [type, setType] = useState<'sell' | 'rent' | 'free' | 'service'>('sell');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('academia');
   const [condition, setCondition] = useState('Good');
@@ -167,9 +167,9 @@ export const CreateListing = () => {
             <div className="type-toggle">
               <label className="input-label">Type*</label>
               <div className="toggle-buttons">
-                {(['sell', 'rent', 'free'] as const).map(value => (
+                {(['sell', 'rent', 'free', 'service'] as const).map(value => (
                   <button key={value} type="button" className={`toggle-btn ${type === value ? `active ${value}` : ''}`} onClick={() => setType(value)}>
-                    {value === 'sell' ? 'Sell' : value === 'rent' ? 'Rent' : 'Free'}
+                    {value === 'sell' ? 'Sell' : value === 'rent' ? 'Rent' : value === 'free' ? 'Free' : 'Service'}
                   </button>
                 ))}
               </div>
@@ -182,7 +182,8 @@ export const CreateListing = () => {
               { value: 'living', label: 'Living' },
               { value: 'attire', label: 'Attire' },
               { value: 'gifts', label: 'Gifts' },
-              { value: 'misc', label: 'Misc' }
+              { value: 'misc', label: 'Misc' },
+              { value: 'services', label: 'Services & Gigs' }
             ]} required />
             <Select label="Condition*" value={condition} onChange={(e) => setCondition(e.target.value)} options={[
               { value: 'Brand New', label: 'Brand New' },

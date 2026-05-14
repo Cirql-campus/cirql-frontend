@@ -229,6 +229,46 @@
   line-height: 1.55;
 }
 
+.notification-settings-card {
+  max-width: 680px;
+}
+
+.notification-settings-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.notification-toggle-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.notification-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.notification-toggle input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--primary);
+}
+
 .profile-success {
   margin-bottom: 1rem;
   padding: 0.85rem 1rem;
@@ -287,5 +327,9 @@
 
   .profile-form-actions .btn {
     flex: 1;
+  }
+
+  .notification-settings-head {
+    flex-direction: column;
   }
 }

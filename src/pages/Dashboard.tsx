@@ -2,11 +2,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ListingCard } from '../components/ui/ListingCard';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Logo } from '../components/ui/Logo';
-import { Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package } from 'lucide-react';
+import { Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package, Briefcase } from 'lucide-react';
 import './Dashboard.css';
 
 import { api } from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
+import { getPushNotificationStatus, subscribeUserToPush } from '../utils/pushNotifications';
+import type { PushNotificationStatus } from '../utils/pushNotifications';
 
 interface Listing {
   id: string;
@@ -24,7 +26,7 @@ interface ApiListing {
   _id: string;
   title: string;
   price: number;
-  type: 'sell' | 'rent' | 'free';
+  type: 'sell' | 'rent' | 'free' | 'service';
   category: string;
   condition?: string;
   images?: string[];
@@ -60,6 +62,7 @@ const CATEGORIES = [
   { label: 'Attire', value: 'Attire', icon: Shirt },
   { label: 'Gifts', value: 'Gifts', icon: Gift },
   { label: 'Misc', value: 'Misc', icon: Package },
+  { label: 'Services', value: 'Services', icon: Briefcase },
 ];
 
 const CONDITIONS = ['Brand New', 'Like New', 'Good', 'Fair'];
@@ -82,18 +85,25 @@ export const Dashboard = () => {
   const [loadingMoreListings, setLoadingMoreListings] = useState(false);
   const [errorNotice, setErrorNotice] = useState('');
   const [successNotice, setSuccessNotice] = useState('');
+  const [pushStatus, setPushStatus] = useState<PushNotificationStatus>('not-enabled');
 
   const mapListing = (l: ApiListing): Listing => ({
     id: l._id,
     title: l.title,
     price: l.price,
-    type: l.type === 'sell' ? 'Sell' : l.type === 'rent' ? 'Rent' : 'Free',
+    type: l.type === 'sell' ? 'Sell' : l.type === 'rent' ? 'Rent' : l.type === 'free' ? 'Free' : 'Service',
     category: l.category,
     condition: l.condition || 'Good',
     image: l.images?.[0] || '',
     college: l.college || 'Campus',
     status: l.status || 'available',
   });
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    getPushNotificationStatus().then(setPushStatus);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (!isLoggedIn || !user?.college) {
@@ -282,12 +292,13 @@ export const Dashboard = () => {
           <div className="category-showcase-grid">
             {[
               { value: 'Academia', icon: BookOpen, label: 'Academia', sub: 'Books & Notes', color: 'rgba(79, 110, 247, 0.12)', accent: '#4f6ef7' },
-              { value: 'Tech',     icon: Laptop, label: 'Tech',     sub: 'Gadgets & Kits', color: 'rgba(0, 184, 64, 0.12)', accent: '#00b840' },
-              { value: 'Rides',    icon: Bike, label: 'Rides',    sub: 'Cycles & Bikes', color: 'rgba(249, 115, 22, 0.12)', accent: '#f97316' },
-              { value: 'Living',   icon: Bed, label: 'Living',   sub: 'Room & Hostel',  color: 'rgba(168, 85, 247, 0.12)', accent: '#a855f7' },
-              { value: 'Attire',   icon: Shirt, label: 'Attire',   sub: 'Clothes & Gear', color: 'rgba(244, 63, 94, 0.12)', accent: '#f43f5e' },
-              { value: 'Gifts',    icon: Gift, label: 'Gifts',    sub: 'Treats & Presents', color: 'rgba(236, 72, 153, 0.12)', accent: '#ec4899' },
-              { value: 'Misc',     icon: Package, label: 'Misc',     sub: 'Everything Else', color: 'rgba(100, 116, 139, 0.12)', accent: '#64748b' },
+              { value: 'Tech', icon: Laptop, label: 'Tech', sub: 'Gadgets & Kits', color: 'rgba(0, 184, 64, 0.12)', accent: '#00b840' },
+              { value: 'Rides', icon: Bike, label: 'Rides', sub: 'Cycles & Bikes', color: 'rgba(249, 115, 22, 0.12)', accent: '#f97316' },
+              { value: 'Living', icon: Bed, label: 'Living', sub: 'Room & Hostel', color: 'rgba(168, 85, 247, 0.12)', accent: '#a855f7' },
+              { value: 'Attire', icon: Shirt, label: 'Attire', sub: 'Clothes & Gear', color: 'rgba(244, 63, 94, 0.12)', accent: '#f43f5e' },
+              { value: 'Gifts', icon: Gift, label: 'Gifts', sub: 'Treats & Presents', color: 'rgba(236, 72, 153, 0.12)', accent: '#ec4899' },
+              { value: 'Misc', icon: Package, label: 'Misc', sub: 'Everything Else', color: 'rgba(100, 116, 139, 0.12)', accent: '#64748b' },
+              { value: 'Services', icon: Briefcase, label: 'Services', sub: 'Gigs & Tutoring', color: 'rgba(217, 70, 239, 0.12)', accent: '#d946ef' },
             ].map(cat => (
               <button
                 key={cat.value}
@@ -429,6 +440,18 @@ export const Dashboard = () => {
               <button className="apply-btn" style={{ width: 'auto', marginTop: 0 }} onClick={saveCurrentSearch}>
                 Save Search
               </button>
+              {isLoggedIn && (
+                <button className="apply-btn enable-alerts-btn" disabled={pushStatus === 'enabled' || pushStatus === 'unsupported' || pushStatus === 'blocked'} onClick={async () => {
+                  setErrorNotice('');
+                  setSuccessNotice('');
+                  const result = await subscribeUserToPush();
+                  setPushStatus(result.status);
+                  if (result.ok) setSuccessNotice(result.message || 'Push notifications enabled successfully!');
+                  else setErrorNotice(result.message || 'Failed to enable push notifications. Check browser permissions.');
+                }}>
+                  {pushStatus === 'enabled' ? 'Alerts Enabled' : pushStatus === 'blocked' ? 'Alerts Blocked' : 'Enable Alerts'}
+                </button>
+              )}
             </div>
             {errorNotice && <div className="auth-error" style={{ marginBottom: 12 }}>{errorNotice}</div>}
             {successNotice && <div className="profile-success" style={{ marginBottom: 12, padding: '12px', background: 'rgba(0, 184, 64, 0.1)', color: 'var(--primary)', borderRadius: 'var(--radius)', border: '1px solid rgba(0, 184, 64, 0.2)', fontSize: '14px', fontWeight: 600 }}>{successNotice}</div>}
@@ -475,4 +498,3 @@ export const Dashboard = () => {
     </>
   );
 };
-

@@ -19,7 +19,7 @@ interface Listing {
   price: number;
   originalPrice?: number;
   category: string;
-  type: 'sell' | 'rent' | 'free';
+  type: 'sell' | 'rent' | 'free' | 'service';
   condition?: string;
   location?: string;
   pickupLocation?: string;
@@ -153,11 +153,13 @@ export const EditListing = () => {
             { value: 'attire', label: 'Attire' },
             { value: 'gifts', label: 'Gifts' },
             { value: 'misc', label: 'Misc' },
+            { value: 'services', label: 'Services & Gigs' },
           ]} />
           <Select label="Type" value={listing.type} onChange={e => setField('type', e.target.value as Listing['type'])} options={[
             { value: 'sell', label: 'Sell' },
             { value: 'rent', label: 'Rent' },
             { value: 'free', label: 'Free' },
+            { value: 'service', label: 'Service / Gig' },
           ]} />
           <Select label="Condition" value={listing.condition || 'Good'} onChange={e => setField('condition', e.target.value)} options={[
             { value: 'Brand New', label: 'Brand New' },
