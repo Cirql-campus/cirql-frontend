@@ -101,7 +101,7 @@ export const subscribeUserToPush = async (): Promise<PushResult> => {
     
     let message = 'Failed to enable push notifications.';
     if (error?.message?.includes('push service error') || error?.name === 'AbortError') {
-      message = 'Push blocked by browser (check Incognito/Brave settings).';
+      message = 'Browser blocked notifications (cannot enable push in Incognito or Brave).';
     } else if (error?.response?.status === 404) {
       message = 'Push notifications are not supported on the server yet.';
     }
