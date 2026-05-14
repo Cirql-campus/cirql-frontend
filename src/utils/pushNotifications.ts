@@ -96,9 +96,17 @@ export const subscribeUserToPush = async (): Promise<PushResult> => {
     await api.post('/users/push/subscribe', { subscription });
 
     return { ok: true, status: 'enabled', message: 'Push notifications enabled successfully.' };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error subscribing to push notifications:', error);
-    return { ok: false, status: 'not-enabled', message: 'Failed to enable push notifications.' };
+    
+    let message = 'Failed to enable push notifications.';
+    if (error?.message?.includes('push service error') || error?.name === 'AbortError') {
+      message = 'Browser push service is disabled. If using Brave, enable "Use Google Services for Push Messaging" in Privacy settings.';
+    } else if (error?.response?.status === 404) {
+      message = 'Push notifications are not supported on the server yet.';
+    }
+
+    return { ok: false, status: 'not-enabled', message };
   }
 };
 
