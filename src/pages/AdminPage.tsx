@@ -17,7 +17,8 @@ interface Report {
   details?: string;
   status: string;
   listing?: { _id: string; title: string };
-  message?: { _id: string; text: string };
+  message?: { _id: string; text: string; conversation?: string; conversationId?: string };
+  conversation?: { _id: string };
   reporter?: { name: string; email: string };
   reportedUser?: { name: string; email: string };
 }
@@ -41,6 +42,14 @@ interface AdminUser {
   listingCount?: number;
 }
 
+interface PendingAdminAction {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  danger?: boolean;
+  run: () => Promise<void>;
+}
+
 export const AdminPage = () => {
   const navigate = useNavigate();
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
@@ -53,7 +62,7 @@ export const AdminPage = () => {
   const [userSearch, setUserSearch] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
-  const [pendingDeleteEndpoint, setPendingDeleteEndpoint] = useState('');
+  const [pendingAction, setPendingAction] = useState<PendingAdminAction | null>(null);
   const [loading, setLoading] = useState(true);
 
   const formatPrice = (price: number) => `Rs.${Number(price || 0).toLocaleString('en-IN')}`;
@@ -94,6 +103,7 @@ export const AdminPage = () => {
     try {
       await api.patch(endpoint, body);
       await load();
+      setPendingAction(null);
     } catch (err) {
       setError(getErrorMessage(err, 'Admin action failed'));
     } finally {
@@ -106,6 +116,7 @@ export const AdminPage = () => {
     try {
       await api.put(endpoint, {});
       await load();
+      setPendingAction(null);
     } catch (err) {
       setError(getErrorMessage(err, 'Admin action failed'));
     } finally {
@@ -118,12 +129,16 @@ export const AdminPage = () => {
     try {
       await api.delete(endpoint);
       await load();
-      setPendingDeleteEndpoint('');
+      setPendingAction(null);
     } catch (err) {
       setError(getErrorMessage(err, 'Admin delete failed'));
     } finally {
       setBusy('');
     }
+  };
+
+  const confirmAction = (action: PendingAdminAction) => {
+    setPendingAction(action);
   };
 
   const searchUsers = async (event: React.FormEvent) => {
@@ -148,10 +163,29 @@ export const AdminPage = () => {
         {report.listing?._id && (
           <Button size="sm" variant="outline" onClick={() => navigate(`/item/${report.listing?._id}`)}><Eye size={14} /> View Item</Button>
         )}
+        {type === 'message' && (report.conversation?._id || report.message?.conversationId || report.message?.conversation) && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate(`/messages/${report.conversation?._id || report.message?.conversationId || report.message?.conversation}`)}
+          >
+            <Eye size={14} /> View Conversation
+          </Button>
+        )}
         <Button size="sm" onClick={() => patch(`/admin/${type}-reports/${report._id}/status`, { status: 'reviewed' })} disabled={busy.includes(report._id)}>Reviewed</Button>
         <Button size="sm" variant="outline" onClick={() => patch(`/admin/${type}-reports/${report._id}/status`, { status: 'dismissed' })} disabled={busy.includes(report._id)}>Dismiss</Button>
         {type === 'message' && (
-          <Button size="sm" variant="secondary" onClick={() => patch(`/admin/message-reports/${report._id}/status`, { status: 'actioned', hiddenByAdmin: true, hiddenReason: 'Hidden after admin review' })}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => confirmAction({
+              title: 'Hide this message?',
+              description: 'This will hide the reported message after admin review. Use this only when the content is unsafe, abusive, or policy-breaking.',
+              confirmLabel: 'Hide Message',
+              danger: true,
+              run: () => patch(`/admin/message-reports/${report._id}/status`, { status: 'actioned', hiddenByAdmin: true, hiddenReason: 'Hidden after admin review' }),
+            })}
+          >
             Hide Message
           </Button>
         )}
@@ -191,7 +225,19 @@ export const AdminPage = () => {
             <div className="workspace-actions">
               <Button size="sm" variant="outline" onClick={() => navigate(`/item/${listing._id}`)}><Eye size={14} /> View</Button>
               <Button size="sm" onClick={() => patch(`/admin/listings/${listing._id}/moderation`, { moderationStatus: 'approved' })}>Approve</Button>
-              <Button size="sm" variant="outline" onClick={() => patch(`/admin/listings/${listing._id}/moderation`, { moderationStatus: 'rejected', moderationReason: 'Rejected by admin review' })}>Reject</Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => confirmAction({
+                  title: 'Reject this listing?',
+                  description: 'This will reject the pending listing and keep it from appearing in the marketplace.',
+                  confirmLabel: 'Reject Listing',
+                  danger: true,
+                  run: () => patch(`/admin/listings/${listing._id}/moderation`, { moderationStatus: 'rejected', moderationReason: 'Rejected by admin review' }),
+                })}
+              >
+                Reject
+              </Button>
             </div>
           </article>
         ))}
@@ -209,8 +255,31 @@ export const AdminPage = () => {
             <div className="workspace-actions">
               <Button size="sm" variant="outline" onClick={() => navigate(`/item/${listing._id}`)}><Eye size={14} /> View</Button>
               <Button size="sm" onClick={() => put(`/admin/listings/${listing._id}/unflag`)}>Unflag</Button>
-              <Button size="sm" variant="outline" onClick={() => patch(`/admin/listings/${listing._id}/moderation`, { moderationStatus: 'rejected', moderationReason: 'Rejected after flag review' })}>Hide</Button>
-              <Button size="sm" variant="outline" className="text-danger" onClick={() => setPendingDeleteEndpoint(`/admin/listings/${listing._id}`)}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => confirmAction({
+                  title: 'Hide this listing?',
+                  description: 'This will reject the flagged listing after review and remove it from normal marketplace visibility.',
+                  confirmLabel: 'Hide Listing',
+                  danger: true,
+                  run: () => patch(`/admin/listings/${listing._id}/moderation`, { moderationStatus: 'rejected', moderationReason: 'Rejected after flag review' }),
+                })}
+              >
+                Hide
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-danger"
+                onClick={() => confirmAction({
+                  title: 'Delete this item?',
+                  description: 'This admin action is permanent and cannot be undone.',
+                  confirmLabel: 'Delete',
+                  danger: true,
+                  run: () => remove(`/admin/listings/${listing._id}`),
+                })}
+              >
                 <Trash2 size={14} /> Delete
               </Button>
             </div>
@@ -258,7 +327,20 @@ export const AdminPage = () => {
               {user.role === 'admin' ? (
                 <Button size="sm" variant="outline" disabled>Admin</Button>
               ) : user.isVerified ? (
-                <Button size="sm" variant="outline" className="text-danger" onClick={() => put(`/admin/users/${user._id}/ban`)}>Ban</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-danger"
+                  onClick={() => confirmAction({
+                    title: 'Ban this user?',
+                    description: 'This disables login for the user and hides their listings. Confirm only after checking reports or suspicious activity.',
+                    confirmLabel: 'Ban User',
+                    danger: true,
+                    run: () => put(`/admin/users/${user._id}/ban`),
+                  })}
+                >
+                  Ban
+                </Button>
               ) : (
                 <Button size="sm" onClick={() => put(`/admin/users/${user._id}/unban`)}>Unban</Button>
               )}
@@ -267,14 +349,14 @@ export const AdminPage = () => {
         ))}
       </div>
       <ConfirmDialog
-        open={Boolean(pendingDeleteEndpoint)}
-        title="Delete this item?"
-        description="This admin action is permanent and cannot be undone."
-        confirmLabel="Delete"
-        danger
+        open={Boolean(pendingAction)}
+        title={pendingAction?.title || 'Confirm admin action'}
+        description={pendingAction?.description || 'Please confirm this admin action.'}
+        confirmLabel={pendingAction?.confirmLabel || 'Confirm'}
+        danger={pendingAction?.danger}
         loading={Boolean(busy)}
-        onCancel={() => setPendingDeleteEndpoint('')}
-        onConfirm={() => pendingDeleteEndpoint && remove(pendingDeleteEndpoint)}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={() => pendingAction?.run()}
       />
     </div>
   );

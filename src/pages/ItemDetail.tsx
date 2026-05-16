@@ -71,6 +71,7 @@ export const ItemDetail = () => {
   const [busy, setBusy] = useState('');
   const [reportTarget, setReportTarget] = useState<ReportTarget>(null);
   const [reportDetails, setReportDetails] = useState('');
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     const loadListing = async () => {
@@ -80,6 +81,7 @@ export const ItemDetail = () => {
       try {
         const res = await api.get<{ listing: Listing }>(`/listings/${id}`);
         setListing(res.listing);
+        setSelectedImageIndex(0);
         const [profileRes, reviewsRes] = await Promise.all([
           api.get<{ user: Seller }>(`/users/${res.listing.seller._id}`),
           api.get<{ reviews: Review[] }>(`/users/${res.listing.seller._id}/reviews?limit=3`),
@@ -95,7 +97,11 @@ export const ItemDetail = () => {
     loadListing();
   }, [id]);
 
-  const mainImage = useMemo(() => listing?.images?.[0], [listing]);
+  const listingImages = useMemo(
+    () => listing?.images?.filter(Boolean) ?? [],
+    [listing?.images]
+  );
+  const mainImage = listingImages[selectedImageIndex] || listingImages[0];
   const isOwnListing = Boolean(user && listing?.seller?._id === user._id);
   const unavailable = Boolean(listing?.isSold || listing?.status === 'sold' || listing?.status === 'hidden');
   const sellerReviewCount = sellerTrust?.reviewCount ?? listing?.seller?.reviewCount ?? 0;
@@ -215,6 +221,22 @@ export const ItemDetail = () => {
               <div className="detail-main-image">
                 {mainImage ? <img src={mainImage} alt={listing.title} /> : <span>No photo</span>}
               </div>
+              {listingImages.length > 1 && (
+                <div className="detail-thumbnail-row" aria-label="Listing photos">
+                  {listingImages.map((image, index) => (
+                    <button
+                      type="button"
+                      key={`${image}-${index}`}
+                      className={`detail-thumbnail ${index === selectedImageIndex ? 'active' : ''}`}
+                      onClick={() => setSelectedImageIndex(index)}
+                      aria-label={`Show photo ${index + 1}`}
+                      aria-current={index === selectedImageIndex ? 'true' : undefined}
+                    >
+                      <img src={image} alt="" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="detail-content">

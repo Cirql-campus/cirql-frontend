@@ -96,13 +96,19 @@ export const subscribeUserToPush = async (): Promise<PushResult> => {
     await api.post('/users/push/subscribe', { subscription });
 
     return { ok: true, status: 'enabled', message: 'Push notifications enabled successfully.' };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error subscribing to push notifications:', error);
+    const errorDetails = error && typeof error === 'object'
+      ? error as { message?: unknown; name?: unknown; response?: { status?: unknown } }
+      : {};
+    const errorMessage = typeof errorDetails.message === 'string' ? errorDetails.message : '';
+    const errorName = typeof errorDetails.name === 'string' ? errorDetails.name : '';
+    const responseStatus = errorDetails.response?.status;
     
     let message = 'Failed to enable push notifications.';
-    if (error?.message?.includes('push service error') || error?.name === 'AbortError') {
+    if (errorMessage.includes('push service error') || errorName === 'AbortError') {
       message = 'Browser blocked notifications (cannot enable push in Incognito or Brave).';
-    } else if (error?.response?.status === 404) {
+    } else if (responseStatus === 404) {
       message = 'Push notifications are not supported on the server yet.';
     }
 
