@@ -59,6 +59,23 @@ export const NotificationsPage = () => {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    import('../utils/socket').then(({ getSocket }) => {
+      const socket = getSocket();
+      if (!socket) return;
+
+      const handleNewNotification = ({ notification }: { notification: NotificationItem }) => {
+        setNotifications(prev => [notification, ...prev]);
+        setUnreadCount(prev => prev + 1);
+      };
+
+      socket.on('new_notification', handleNewNotification);
+      return () => {
+        socket.off('new_notification', handleNewNotification);
+      };
+    }).catch(() => {});
+  }, []);
+
   const markAll = async () => {
     await api.put('/notifications/read-all', {});
     await load();
@@ -66,6 +83,13 @@ export const NotificationsPage = () => {
 
   const openNotification = async (notification: NotificationItem) => {
     const target = notification.link ? normalizeAppLink(notification.link) : '';
+    
+    // Optimistically mark as read and decrement unread count
+    if (!notification.read) {
+      setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    }
+
     try {
       if (!notification.read) await api.put(`/notifications/${notification._id}/read`, {});
     } catch (err) {

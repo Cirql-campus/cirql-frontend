@@ -23,6 +23,22 @@ const addRefreshSubscriber = (callback: (error: unknown) => void) => {
 
 export const getApiOrigin = () => API_ORIGIN.replace(/\/$/, "");
 
+const isPublicPath = (pathname: string): boolean => {
+  const publicPaths = [
+    "/",
+    "/marketplace",
+    "/why-cirql",
+    "/how-it-works",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/browse",
+  ];
+  if (publicPaths.includes(pathname)) return true;
+  if (pathname.startsWith("/item/")) return true;
+  return false;
+};
+
 export const getErrorMessage = (
   err: unknown,
   fallback = "Something went wrong",
@@ -188,7 +204,10 @@ export const fetchAPI = async <T>(
           isRefreshing = false;
           onRefreshed(err);
           // Force logout redirect on full session expiry, prevent loop
-          if (window.location.pathname !== "/login") {
+          if (
+            window.location.pathname !== "/login" &&
+            !isPublicPath(window.location.pathname)
+          ) {
             window.location.href = "/login";
           }
           throw new Error("Session expired");

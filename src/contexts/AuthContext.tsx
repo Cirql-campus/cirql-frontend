@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     socket.off('new_message');
     socket.off('notification');
+    socket.off('new_notification');
 
     socket.on('new_message', () => {
       setUnreadMessages(prev => prev + 1);
@@ -69,6 +70,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     socket.on('notification', () => {
       setUnreadAlerts(prev => prev + 1);
+    });
+
+    socket.on('new_notification', ({ notification }: { notification: any }) => {
+      if (notification?.type !== 'message') {
+        setUnreadAlerts(prev => prev + 1);
+      }
     });
   };
 

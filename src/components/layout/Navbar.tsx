@@ -40,7 +40,7 @@ export const Navbar = () => {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const searchRef = useRef<HTMLFormElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const [toast, setToast] = useState<{ title: string; id?: string } | null>(null);
+  const [toast, setToast] = useState<{ title: string; link?: string; actionText?: string } | null>(null);
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -75,13 +75,30 @@ export const Navbar = () => {
       if (!socket) return;
       
       const handleNewListing = (data: { title: string, id?: string }) => {
-        setToast({ title: data.title, id: data.id });
+        setToast({
+          title: `New listing posted: ${data.title}`,
+          link: data.id ? `/item/${data.id}` : '/marketplace',
+          actionText: 'Click to view'
+        });
         setTimeout(() => setToast(null), 4000);
+      };
+
+      const handleNewNotification = ({ notification }: { notification: any }) => {
+        if (notification?.text) {
+          setToast({
+            title: notification.text,
+            link: notification.link || '/notifications',
+            actionText: 'Click to view'
+          });
+          setTimeout(() => setToast(null), 4000);
+        }
       };
       
       socket.on('new_listing', handleNewListing);
+      socket.on('new_notification', handleNewNotification);
       return () => {
         socket.off('new_listing', handleNewListing);
+        socket.off('new_notification', handleNewNotification);
       };
     }).catch(() => {});
   }, [user]);
@@ -238,12 +255,11 @@ export const Navbar = () => {
         <div
           className="live-toast"
           onClick={() => {
-            if (toast.id) navigate(`/item/${toast.id}`);
-            else navigate('/marketplace');
+            navigate(toast.link || '/marketplace');
             setToast(null);
           }}
         >
-          New listing posted: {toast.title} <span>{toast.id ? 'Click to view' : 'Open marketplace to view'}</span>
+          {toast.title} <span>{toast.actionText || 'Click to view'}</span>
         </div>
       )}
     </>
