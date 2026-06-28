@@ -14,8 +14,20 @@ export const Logo: React.FC<{ size?: number, color?: string, lightMode?: boolean
       style={{
         '--logo-size': `${size}px`,
         '--logo-accent': color,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
       } as React.CSSProperties}
     >
+      <img
+        src="/logo.png"
+        alt="CirQl Logo"
+        style={{
+          height: 'var(--logo-size, 32px)',
+          width: 'var(--logo-size, 32px)',
+          objectFit: 'contain',
+        }}
+      />
       <span className="brand-logo-mark">
         <span>Cir</span><span className="brand-logo-q">Q</span><span>l</span>
       </span>
