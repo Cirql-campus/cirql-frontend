@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Flag, Send, ShoppingBag, Wifi, WifiOff } from 'lucide-react';
 import { TextDialog } from '../components/ui/AppDialog';
 import { useAuth } from '../contexts/AuthContext';
+import { usePWA } from '../contexts/PWAContext';
 import { api, getErrorMessage } from '../utils/api';
 import { getSocket } from '../utils/socket';
 import './Chat.css';
@@ -122,6 +123,8 @@ export const ChatPage = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { user, fetchUnreadCounts } = useAuth();
+  const { showPushNudge } = usePWA();
+  const hasNudgedRef = useRef(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState('');
   const [connected, setConnected] = useState(false);
@@ -278,6 +281,8 @@ export const ChatPage = () => {
       status: 'sending',
     };
 
+    const isFirstMessage = messages.length === 0 && !hasNudgedRef.current;
+
     setText('');
     setSending(true);
     setError('');
@@ -296,6 +301,11 @@ export const ChatPage = () => {
         });
         return replaced ? next : reconcileMessage(prev, confirmed);
       });
+
+      if (isFirstMessage) {
+        hasNudgedRef.current = true;
+        showPushNudge();
+      }
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Failed to send message'));
       setMessages(prev => prev.map(message =>
@@ -318,6 +328,11 @@ export const ChatPage = () => {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleQuickReply = (chipText: string) => {
+    setText(chipText);
+    textareaRef.current?.focus();
   };
 
   const openReportMessage = (message: ChatMessage) => {
@@ -345,6 +360,30 @@ export const ChatPage = () => {
     if (!timestamp) return 'now';
     return new Date(timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
   };
+
+  const userHasSentMessage = messages.some(m => m.senderId === user?._id && !m.clientId?.startsWith('local-'));
+  const showQuickReplies = !userHasSentMessage && text === '' && !sending;
+
+  const quickReplies = useMemo(() => {
+    const price = conversation?.listing?.price;
+    const hasPrice = typeof price === 'number';
+    const formattedPrice = hasPrice ? formatPrice(price) : '';
+    const cleanPrice = formattedPrice.startsWith('₹') ? formattedPrice : `₹${formattedPrice}`;
+
+    return [
+      { id: 'available',  label: 'Is this still available?',       text: 'Hi! Is this still available?' },
+      {
+        id: 'negotiate',
+        label: hasPrice ? '💬 Can you do a lower price?' : 'Can you do a lower price?',
+        text: hasPrice
+          ? `Hi! Would you consider a price lower than ${cleanPrice} for this?`
+          : 'Hi! Would you consider a lower price for this?'
+      },
+      { id: 'condition',  label: "What's the exact condition?",    text: 'Hi! Can you share more details about the condition?' },
+      { id: 'pickup',     label: ' Where can we meet?',             text: 'Hi! Where would you like to meet for pickup?' },
+      { id: 'photos',     label: 'Can you share more photos?',     text: 'Hi! Could you share a few more photos of the item?' },
+    ];
+  }, [conversation?.listing?.price]);
 
   return (
     <div className="chat-page">
@@ -448,6 +487,21 @@ export const ChatPage = () => {
         })}
         <div ref={bottomRef} />
       </div>
+
+      {showQuickReplies && (
+        <div className="quick-replies">
+          {quickReplies.map(chip => (
+            <button
+              key={chip.id}
+              type="button"
+              className="quick-reply-chip"
+              onClick={() => handleQuickReply(chip.text)}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && messages.length > 0 && (
         <div style={{ padding: '8px 16px', color: '#f87171', fontSize: 13 }}>{error}</div>

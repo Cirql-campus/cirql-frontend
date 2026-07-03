@@ -380,3 +380,36 @@
     height: 44px;
   }
 }
+
+.quick-replies {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+}
+
+.quick-replies::-webkit-scrollbar {
+  display: none;
+}
+
+.quick-reply-chip {
+  flex-shrink: 0;
+  background: var(--surface, #f4f4f5);
+  border: 1.5px solid var(--border, #e4e4e7);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  color: var(--text, #18181b);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.quick-reply-chip:hover,
+.quick-reply-chip:active {
+  background: var(--primary-light, #e6fff1);
+  border-color: var(--primary, #00e554);
+  color: var(--primary-dark, #00a83a);
+}

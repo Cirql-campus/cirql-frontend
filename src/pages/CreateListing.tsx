@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
+import { usePWA } from '../contexts/PWAContext';
 import { api, getErrorMessage } from '../utils/api';
 import { compressImageFiles } from '../utils/imageCompression';
 import './CreateListing.css';
@@ -23,6 +24,7 @@ const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'im
 export const CreateListing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showInstallNudge } = usePWA();
   const [type, setType] = useState<'sell' | 'rent' | 'free' | 'service'>('sell');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('academia');
@@ -120,6 +122,8 @@ export const CreateListing = () => {
       const res = await api.post<CreatedListingResponse, FormData>('/listings', formData, true);
       const listingId = res.listing?._id || res.listing?.id;
       setSuccessMessage('Listing posted successfully.');
+      showInstallNudge();
+      sessionStorage.setItem('show_pwa_nudge', 'listing');
       navigate(listingId ? `/item/${listingId}` : '/dashboard');
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Failed to create listing'));

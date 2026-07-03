@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { AuthProvider } from './contexts/AuthContext';
+import { PWAProvider } from './contexts/PWAContext';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { GlobalLoadingShell } from './components/ui/GlobalLoadingShell';
 
@@ -38,36 +39,38 @@ function App() {
   return (
     <AuthProvider>
         <BrowserRouter>
-          <ScrollToTop />
-          <React.Suspense fallback={<GlobalLoadingShell />}>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="browse" element={<Navigate to="/marketplace" replace />} />
-                <Route path="dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-                <Route path="marketplace" element={<Dashboard />} />
-                <Route path="why-cirql" element={<WhyCirql />} />
-                <Route path="how-it-works" element={<HowItWorks />} />
-                <Route path="item/:id" element={<ItemDetail />} />
-                <Route path="create" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
-                <Route path="wanted/new" element={<ProtectedRoute><CreateWantedItem /></ProtectedRoute>} />
-                <Route path="listings/:id/edit" element={<ProtectedRoute><EditListing /></ProtectedRoute>} />
-                <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
-                <Route path="messages/:roomId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-                <Route path="deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
-                <Route path="saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
-                <Route path="notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-                <Route path="admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-                <Route path="*" element={<Navigate to="/marketplace" replace />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </React.Suspense>
+          <PWAProvider>
+            <ScrollToTop />
+            <React.Suspense fallback={<GlobalLoadingShell />}>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route path="browse" element={<Navigate to="/marketplace" replace />} />
+                  <Route path="dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+                  <Route path="marketplace" element={<Dashboard />} />
+                  <Route path="why-cirql" element={<WhyCirql />} />
+                  <Route path="how-it-works" element={<HowItWorks />} />
+                  <Route path="item/:id" element={<ItemDetail />} />
+                  <Route path="create" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
+                  <Route path="wanted/new" element={<ProtectedRoute><CreateWantedItem /></ProtectedRoute>} />
+                  <Route path="listings/:id/edit" element={<ProtectedRoute><EditListing /></ProtectedRoute>} />
+                  <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
+                  <Route path="messages/:roomId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+                  <Route path="deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
+                  <Route path="saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
+                  <Route path="notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+                  <Route path="admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+                  <Route path="*" element={<Navigate to="/marketplace" replace />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </React.Suspense>
+          </PWAProvider>
         </BrowserRouter>
     </AuthProvider>
   );

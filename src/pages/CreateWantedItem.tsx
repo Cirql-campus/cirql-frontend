@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
+import { usePWA } from '../contexts/PWAContext';
 import { api, getErrorMessage } from '../utils/api';
 import './CreateListing.css';
 
@@ -17,6 +18,7 @@ interface WantedResponse {
 export const CreateWantedItem = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showInstallNudge } = usePWA();
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('academia');
   const [minBudget, setMinBudget] = useState('');
@@ -45,6 +47,8 @@ export const CreateWantedItem = () => {
         urgency,
         description,
       });
+      showInstallNudge();
+      sessionStorage.setItem('show_pwa_nudge', 'listing');
       navigate('/marketplace');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to post wanted item'));
