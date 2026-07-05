@@ -411,3 +411,15 @@
   0% { transform: translateY(20px); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
 }
+
+@media (max-width: 480px) {
+  .navbar-inner {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  /* Prevent nav links from wrapping awkwardly */
+  .nav-links {
+    display: none; /* already hidden at 768px presumably, reinforce */
+  }
+}

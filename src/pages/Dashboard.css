@@ -1051,3 +1051,31 @@
   }
 }
 
+@media (max-width: 480px) {
+  /* Section titles */
+  .section-title,
+  .cat-title {
+    font-size: 20px;
+    letter-spacing: -0.3px;
+  }
+
+  /* Category showcase — 2 columns instead of overflow */
+  .category-showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Stat numbers */
+  .stat-num {
+    font-size: 22px;
+  }
+
+  /* Tab bar spacing */
+  .tab-pills {
+    gap: 6px;
+  }
+  .tab-pill {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+

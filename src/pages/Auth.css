@@ -415,3 +415,9 @@
     margin-bottom: 24px;
   }
 }
+
+@media (max-width: 480px) {
+  .auth-form-container {
+    padding: 24px 16px;
+  }
+}

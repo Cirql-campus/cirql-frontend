@@ -23,3 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Dev artifacts
+*.code-workspace
+extracted_*.jsx
+extracted_*.css
+*_reference.txt
+extract.cjs

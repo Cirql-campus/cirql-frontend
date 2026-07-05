@@ -333,3 +333,15 @@
     flex-direction: column;
   }
 }
+
+@media (max-width: 480px) {
+  .profile-user-card {
+    padding: 1.25rem;
+  }
+
+  /* Profile stats row — prevent overflow */
+  .profile-stats {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}

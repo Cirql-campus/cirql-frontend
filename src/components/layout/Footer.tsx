@@ -84,9 +84,9 @@ export const Footer = () => {
           <div className="footer-bottom">
             <div>&copy; {new Date().getFullYear()} Cirql Marketplace. All rights reserved.</div>
             <div className="footer-bottom-links">
-              <a href="#" className="footer-bottom-link">Privacy Policy</a>
-              <a href="#" className="footer-bottom-link">Terms of Service</a>
-              <a href="#" className="footer-bottom-link">Cookie Settings</a>
+              <Link to="/privacy" className="footer-bottom-link">Privacy Policy</Link>
+              <Link to="/terms" className="footer-bottom-link">Terms</Link>
+              <Link to="/cookie-policy" className="footer-bottom-link">Cookie Settings</Link>
             </div>
           </div>
         </div>

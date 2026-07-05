@@ -17,12 +17,12 @@ export const PWAInstallNudge: React.FC<PWAInstallNudgeProps> = ({ onDismiss }) =
     const cooldown = 7 * 24 * 60 * 60 * 1000; // 7 days
 
     if (isDismissed && (Date.now() - parseInt(isDismissed, 10) < cooldown)) {
-      onDismiss();
+      setTimeout(onDismiss, 0);
       return;
     }
 
     if (installState === 'installed') {
-      onDismiss();
+      setTimeout(onDismiss, 0);
       return;
     }
 
@@ -38,7 +38,7 @@ export const PWAInstallNudge: React.FC<PWAInstallNudgeProps> = ({ onDismiss }) =
 
       return () => clearTimeout(autoDismissTimer);
     } else {
-      onDismiss();
+      setTimeout(onDismiss, 0);
     }
   }, [installState, isIOS, onDismiss]);
 

@@ -20,7 +20,7 @@ export const PushNotificationNudge: React.FC<PushNotificationNudgeProps> = ({ on
       const cooldown = 14 * 24 * 60 * 60 * 1000; // 14 days
 
       if (isDismissed && (Date.now() - parseInt(isDismissed, 10) < cooldown)) {
-        onDismiss();
+        setTimeout(onDismiss, 0);
         return;
       }
 
@@ -29,10 +29,10 @@ export const PushNotificationNudge: React.FC<PushNotificationNudgeProps> = ({ on
         if (status === 'not-enabled') {
           setVisible(true);
         } else {
-          onDismiss();
+          setTimeout(onDismiss, 0);
         }
       } catch {
-        onDismiss();
+        setTimeout(onDismiss, 0);
       }
     };
 

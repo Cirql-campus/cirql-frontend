@@ -4,6 +4,7 @@ import { Logo } from '../components/ui/Logo';
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { detectCollege } from '../utils/collegeDetect';
+import { PasswordRequirements, passwordMeetsRequirements } from '../components/ui/PasswordRequirements';
 import './Auth.css';
 
 export const Signup = () => {
@@ -17,6 +18,7 @@ export const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [otp, setOtp] = useState('');
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const detectedCampus = useMemo(() => detectCollege(email)?.college || null, [email]);
 
@@ -30,8 +32,9 @@ export const Signup = () => {
     
     if (password.length < 8) return setError('Password must be at least 8 characters');
     if (!/[A-Z]/.test(password)) return setError('Password must contain at least one uppercase letter');
+    if (!/[a-z]/.test(password)) return setError('Password must contain at least one lowercase letter');
     if (!/[0-9]/.test(password)) return setError('Password must contain at least one number');
-    if (!/[\W_]/.test(password)) return setError('Password must contain at least one special character');
+    if (!/[^a-zA-Z0-9]/.test(password)) return setError('Password must contain at least one special character');
 
     setLoading(true);
     const result = await signup(name, email, password);
@@ -132,18 +135,23 @@ export const Signup = () => {
                     <Lock size={18} className="input-icon" />
                     <input
                       type={showPass ? 'text' : 'password'}
-                      placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special"
+                      placeholder="Create a strong password"
                       required
                       value={password}
                       onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
                     />
                     <button type="button" className="pass-toggle" onClick={() => setShowPass(!showPass)}>
                       {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  {(passwordFocused || password.length > 0) && (
+                    <PasswordRequirements value={password} />
+                  )}
                 </div>
 
-                <button type="submit" className="premium-btn" disabled={loading}>
+                <button type="submit" className="premium-btn" disabled={loading || !passwordMeetsRequirements(password)}>
                   {loading ? 'Creating Account...' : 'Create Free Account'}
                 </button>
               </form>

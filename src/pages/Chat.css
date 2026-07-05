@@ -413,3 +413,27 @@
   border-color: var(--primary, #00e554);
   color: var(--primary-dark, #00a83a);
 }
+
+@media (max-width: 480px) {
+  /* Fix chat input bar disappearing on older Android (dvh not supported) */
+  .chat-page {
+    height: calc(100vh - 112px); /* fallback without dvh */
+    height: calc(100dvh - 112px); /* modern override */
+  }
+
+  /* Message bubbles — slightly wider on small screens */
+  .msg-bubble-wrap {
+    max-width: 88%;
+  }
+
+  /* Chat input — ensure keyboard doesn't cover it */
+  .chat-input-bar {
+    padding: 10px 10px;
+  }
+
+  /* Listing card in chat header — tighten */
+  .chat-listing-card {
+    margin: 6px 10px 0;
+    padding: 10px 12px;
+  }
+}

@@ -3,13 +3,15 @@ import { ArrowLeft, Eye, EyeOff, Lock } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Logo } from '../components/ui/Logo';
 import { api, getErrorMessage } from '../utils/api';
+import { PasswordRequirements, passwordMeetsRequirements } from '../components/ui/PasswordRequirements';
 import './Auth.css';
 
 const validatePassword = (value: string) => {
   if (value.length < 8) return 'Password must be at least 8 characters.';
   if (!/[A-Z]/.test(value)) return 'Password must contain at least one uppercase letter.';
+  if (!/[a-z]/.test(value)) return 'Password must contain at least one lowercase letter.';
   if (!/[0-9]/.test(value)) return 'Password must contain at least one number.';
-  if (!/[\W_]/.test(value)) return 'Password must contain at least one special character.';
+  if (!/[^a-zA-Z0-9]/.test(value)) return 'Password must contain at least one special character.';
   return '';
 };
 
@@ -23,6 +25,7 @@ export const ResetPassword = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const passwordHint = useMemo(() => validatePassword(password), [password]);
 
@@ -90,22 +93,22 @@ export const ResetPassword = () => {
                 <Lock size={18} className="input-icon" />
                 <input
                   type={showPass ? 'text' : 'password'}
-                  placeholder="Strong password"
+                  placeholder="Create a strong password"
                   required
                   value={password}
                   onChange={(event) => {
                     setPassword(event.target.value);
                     setError('');
                   }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
                 />
                 <button type="button" className="pass-toggle" onClick={() => setShowPass(!showPass)}>
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {password && (
-                <div className="campus-detect-text" style={{ color: passwordHint ? 'var(--danger)' : 'var(--accent)' }}>
-                  {passwordHint || 'Password looks good.'}
-                </div>
+              {(passwordFocused || password.length > 0) && (
+                <PasswordRequirements value={password} confirmValue={confirmPassword} />
               )}
             </div>
 
@@ -126,7 +129,7 @@ export const ResetPassword = () => {
               </div>
             </div>
 
-            <button type="submit" className="premium-btn" disabled={loading}>
+            <button type="submit" className="premium-btn" disabled={loading || !passwordMeetsRequirements(password) || password !== confirmPassword}>
               {loading ? 'Resetting...' : 'Reset Password'}
             </button>
           </form>

@@ -806,6 +806,7 @@
 @media (max-width: 768px) {
   .landing-title {
     font-size: 38px;
+    letter-spacing: -1px; /* was -2px */
   }
   .landing-stats {
     flex-wrap: wrap;
@@ -825,5 +826,80 @@
   }
   .sidebar-overlay {
     display: none;
+  }
+}
+
+/* ===== SMALL PHONES (≤480px) ===== */
+@media (max-width: 480px) {
+  /* Landing hero title — was 62px, then 38px at 768px, still too large at 375px */
+  .landing-title {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
+
+  /* Hero h1 — was 44px */
+  .hero h1 {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+  }
+
+  /* Landing description — give it breathing room */
+  .landing-desc {
+    font-size: 15px;
+  }
+
+  /* CTA buttons — stack vertically, full width */
+  .landing-ctas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .landing-btn-primary,
+  .landing-btn-secondary {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Stats row — smaller numbers */
+  .lstat-num {
+    font-size: 22px;
+  }
+  .landing-stats {
+    gap: 12px;
+  }
+
+  /* Search box — make button text not overflow */
+  .landing-search-box button {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .hero-search button {
+    padding: 0 14px;
+    font-size: 13px;
+  }
+
+  /* Landing page padding */
+  .landing-page {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 56px;
+  }
+
+  /* Promo side cards — single column */
+  .promo-side {
+    flex-direction: column;
+  }
+
+  /* Trust bar items — smaller */
+  .trust-item {
+    font-size: 12px;
+  }
+
+  /* Listings grid — force 2 columns minimum on small phones */
+  .listings-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 }

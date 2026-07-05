@@ -447,3 +447,18 @@
     padding: 18px;
   }
 }
+
+@media (max-width: 480px) {
+  .detail-grid {
+    padding: 12px;
+  }
+
+  .detail-price {
+    font-size: 26px;
+  }
+
+  /* Report action buttons — 2 columns instead of 3 */
+  .report-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

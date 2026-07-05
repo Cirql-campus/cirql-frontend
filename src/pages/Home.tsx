@@ -55,7 +55,7 @@ const CONDITIONS = ['Brand New', 'Like New', 'Good', 'Fair'];
 export const Home = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, loading, user } = useAuth();
   
   const urlSearch = searchParams.get('search') || '';
   const urlCategory = searchParams.get('category') || 'all';
@@ -362,7 +362,11 @@ export const Home = () => {
               </div>
             </div>
 
-            {!isLoggedIn ? (
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--gray-500)' }}>
+                Loading...
+              </div>
+            ) : !isLoggedIn ? (
               <div className="campus-lock-panel">
                 <div className="campus-lock-icon">🎓</div>
                 <h2>Log in to see your campus marketplace</h2>

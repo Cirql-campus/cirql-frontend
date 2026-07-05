@@ -34,12 +34,18 @@ export const NotificationBanner = () => {
     await triggerInstall();
   };
 
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
   const handleEnablePush = async () => {
+    setIsSubscribing(true);
     try {
       await subscribeUserToPush();
       await checkPushStatus();
+      setShowType(null);
     } catch (e) {
       console.error('Failed to enable push notifications from banner:', e);
+    } finally {
+      setIsSubscribing(false);
     }
   };
 
@@ -69,8 +75,8 @@ export const NotificationBanner = () => {
           ) : (
             <>
               <span className="banner-text">🔔 Enable notifications — know the moment your item sells</span>
-              <button className="banner-action-btn" onClick={handleEnablePush}>
-                Enable
+              <button className="banner-action-btn" onClick={handleEnablePush} disabled={isSubscribing}>
+                {isSubscribing ? 'Enabling...' : 'Enable'}
               </button>
             </>
           )}

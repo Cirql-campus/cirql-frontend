@@ -178,3 +178,25 @@
   border-color: var(--black);
   color: var(--black);
 }
+
+@media (max-width: 480px) {
+  .card-price {
+    font-size: 16px;
+  }
+  .card-body {
+    padding: 10px 12px;
+  }
+  .card-footer {
+    padding: 0 12px 10px;
+  }
+  /* Stack card footer buttons vertically on very small cards */
+  .card-footer {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .add-cart-btn,
+  .contact-btn {
+    height: 32px;
+    font-size: 11px;
+  }
+}

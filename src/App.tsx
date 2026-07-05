@@ -26,6 +26,9 @@ const AdminPage = React.lazy(() => import('./pages/AdminPage').then(m => ({ defa
 const EditListing = React.lazy(() => import('./pages/EditListing').then(m => ({ default: m.EditListing })));
 const WhyCirql = React.lazy(() => import('./pages/WhyCirql').then(m => ({ default: m.WhyCirql })));
 const HowItWorks = React.lazy(() => import('./pages/HowItWorks').then(m => ({ default: m.HowItWorks })));
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const Terms = React.lazy(() => import('./pages/Terms'));
+const CookiePolicy = React.lazy(() => import('./pages/CookiePolicy'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -37,42 +40,45 @@ function ScrollToTop() {
 
 function App() {
   return (
-    <AuthProvider>
-        <BrowserRouter>
-          <PWAProvider>
-            <ScrollToTop />
-            <React.Suspense fallback={<GlobalLoadingShell />}>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Home />} />
-                  <Route path="browse" element={<Navigate to="/marketplace" replace />} />
-                  <Route path="dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-                  <Route path="marketplace" element={<Dashboard />} />
-                  <Route path="why-cirql" element={<WhyCirql />} />
-                  <Route path="how-it-works" element={<HowItWorks />} />
-                  <Route path="item/:id" element={<ItemDetail />} />
-                  <Route path="create" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
-                  <Route path="wanted/new" element={<ProtectedRoute><CreateWantedItem /></ProtectedRoute>} />
-                  <Route path="listings/:id/edit" element={<ProtectedRoute><EditListing /></ProtectedRoute>} />
-                  <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                  <Route path="messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
-                  <Route path="messages/:roomId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-                  <Route path="deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
-                  <Route path="saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
-                  <Route path="notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-                  <Route path="admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-                  <Route path="*" element={<Navigate to="/marketplace" replace />} />
-                </Route>
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </React.Suspense>
-          </PWAProvider>
-        </BrowserRouter>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <PWAProvider>
+          <ScrollToTop />
+          <React.Suspense fallback={<GlobalLoadingShell />}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="browse" element={<Navigate to="/marketplace" replace />} />
+                <Route path="dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+                <Route path="marketplace" element={<Dashboard />} />
+                <Route path="why-cirql" element={<WhyCirql />} />
+                <Route path="how-it-works" element={<HowItWorks />} />
+                <Route path="privacy" element={<PrivacyPolicy />} />
+                <Route path="terms" element={<Terms />} />
+                <Route path="cookie-policy" element={<CookiePolicy />} />
+                <Route path="item/:id" element={<ItemDetail />} />
+                <Route path="create" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
+                <Route path="wanted/new" element={<ProtectedRoute><CreateWantedItem /></ProtectedRoute>} />
+                <Route path="listings/:id/edit" element={<ProtectedRoute><EditListing /></ProtectedRoute>} />
+                <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
+                <Route path="messages/:roomId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+                <Route path="deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
+                <Route path="saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
+                <Route path="notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+                <Route path="admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+                <Route path="*" element={<Navigate to="/marketplace" replace />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </React.Suspense>
+        </PWAProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

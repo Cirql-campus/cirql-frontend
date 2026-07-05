@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { getPushNotificationStatus } from '../utils/pushNotifications';
@@ -61,9 +61,9 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const dismissNudge = () => {
+  const dismissNudge = React.useCallback(() => {
     setActiveNudge(null);
-  };
+  }, []);
 
   return (
     <PWAContext.Provider value={{

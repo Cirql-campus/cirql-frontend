@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { api, getErrorMessage } from '../utils/api';
-import { GlobalLoadingShell } from '../components/ui/GlobalLoadingShell';
 import { initSocket, disconnectSocket } from '../utils/socket';
 
 export interface User {
@@ -185,7 +184,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user, loading, login, signup, verifyOTP, logout, refreshUser, isLoggedIn: !!user,
       unreadMessages, setUnreadMessages, unreadAlerts, setUnreadAlerts, fetchUnreadCounts
     }}>
-      {loading ? <GlobalLoadingShell /> : children}
+      {children}
     </AuthContext.Provider>
   );
 };

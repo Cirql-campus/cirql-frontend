@@ -58,6 +58,21 @@ body {
   word-wrap: break-word;
 }
 
+/* Prevent long words/URLs from breaking layouts on narrow screens */
+h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+  word-break: break-word; /* fallback for older browsers */
+}
+
+p, span, li, td, th, label {
+  overflow-wrap: break-word;
+}
+
+/* Prevent button text from wrapping inside flex containers */
+button {
+  white-space: nowrap;
+}
+
 button {
   font-family: inherit;
   cursor: pointer;
@@ -95,4 +110,19 @@ img {
   max-width: 1320px;
   margin: 0 auto;
   padding: 0 20px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 14px;
+  }
+}
+
+/* Smooth horizontal scrolling on iOS */
+[class*="trust-bar"],
+[class*="quick-replies"],
+[class*="tab-pills"],
+[class*="category-chips"] {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
