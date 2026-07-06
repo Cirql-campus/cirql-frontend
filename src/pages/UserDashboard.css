@@ -112,15 +112,32 @@
   font-size: 13px;
 }
 
-.dash-panel-head button,
+.dash-panel-head button {
+  border: 1px solid var(--gray-200);
+  background: #fff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.dash-panel-head button:hover {
+  border-color: var(--black);
+  color: var(--black);
+}
+
 .dash-row {
   border: 1px solid var(--gray-200);
   background: #fff;
   border-radius: 8px;
-  padding: 8px 10px;
-  font-weight: 800;
-  color: var(--gray-700);
+  padding: 10px 14px;
+  font-weight: 700;
+  color: var(--gray-800);
   cursor: pointer;
+  transition: all 0.15s ease-in-out;
 }
 
 .dash-listing-grid {

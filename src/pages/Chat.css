@@ -202,6 +202,12 @@
   font-weight: 800;
   font-size: 12px;
   cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.chat-load-older:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #f8fafc;
 }
 
 .chat-load-older:disabled {

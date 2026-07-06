@@ -77,6 +77,20 @@
   border: 1px solid var(--gray-200);
   border-radius: 8px;
   padding: 16px;
+  transition: all 0.15s ease-in-out;
+}
+
+button.workspace-card {
+  width: 100%;
+  cursor: pointer;
+}
+
+button.workspace-card:hover,
+a.workspace-card:hover {
+  border-color: var(--gray-300);
+  background: var(--gray-50);
+  transform: translateY(-0.5px);
+  box-shadow: var(--shadow);
 }
 
 .workspace-card-main {
@@ -171,4 +185,35 @@
     width: 72px;
     height: 72px;
   }
+}
+
+/* Load More pagination button */
+.apply-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 200px;
+  height: 40px;
+  margin: 24px auto 12px;
+  background: var(--black);
+  color: #fff;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease-in-out;
+}
+
+.apply-btn:hover:not(:disabled) {
+  background: #2b2b2b;
+  transform: translateY(-0.5px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.apply-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
