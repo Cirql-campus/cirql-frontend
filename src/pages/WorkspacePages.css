@@ -83,6 +83,7 @@
 button.workspace-card {
   width: 100%;
   cursor: pointer;
+  white-space: normal;
 }
 
 button.workspace-card:hover,

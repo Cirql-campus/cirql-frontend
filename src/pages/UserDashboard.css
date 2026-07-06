@@ -138,6 +138,7 @@
   color: var(--gray-800);
   cursor: pointer;
   transition: all 0.15s ease-in-out;
+  white-space: normal;
 }
 
 .dash-listing-grid {
