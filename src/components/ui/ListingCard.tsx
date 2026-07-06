@@ -11,6 +11,7 @@ export interface ListingCardProps {
   college: string;
   status?: string;
   onSave?: (id: string) => void;
+  hideFooter?: boolean;
 }
 
 export const ListingCard: React.FC<ListingCardProps> = ({
@@ -21,7 +22,8 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   image,
   college,
   status,
-  onSave
+  onSave,
+  hideFooter = false
 }) => {
   const navigate = useNavigate();
 
@@ -41,10 +43,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             <div className="card-cond new">{status || 'Available'}</div>
          </div>
       </div>
-      <div className="card-footer">
-        <button className="add-cart-btn" onClick={(e) => { e.stopPropagation(); navigate(`/item/${id}`); }}>Details</button>
-        <button className="contact-btn" onClick={(e) => { e.stopPropagation(); navigate(`/item/${id}`); }}>Request Deal</button>
-      </div>
+      {!hideFooter && (
+        <div className="card-footer">
+          <button className="add-cart-btn" onClick={(e) => { e.stopPropagation(); navigate(`/item/${id}`); }}>Details</button>
+          <button className="contact-btn" onClick={(e) => { e.stopPropagation(); navigate(`/item/${id}`); }}>Request Deal</button>
+        </div>
+      )}
     </div>
   );
 };

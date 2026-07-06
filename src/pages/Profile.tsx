@@ -499,6 +499,7 @@ export const Profile = () => {
                     image={item.images?.[0] || ''}
                     college={item.college || user?.college || 'Campus'}
                     status={item.status}
+                    hideFooter={true}
                   />
                   <div className="listing-actions">
                     <Button variant="secondary" size="sm" fullWidth onClick={() => navigate(`/item/${item._id}`)}>
