@@ -2,19 +2,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Bell,
-  CheckCircle2,
   Handshake,
   MessageCircle,
   Package,
   PlusCircle,
   Search,
   ShieldCheck,
-  Star,
   Trash2,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
-import { normalizeAppLink } from '../utils/navigation';
 import { Button } from '../components/ui/Button';
 import { ConfirmDialog } from '../components/ui/AppDialog';
 import './UserDashboard.css';
@@ -51,15 +48,6 @@ interface Conversation {
   unreadCount?: number;
 }
 
-interface NotificationItem {
-  _id: string;
-  type: string;
-  text: string;
-  read: boolean;
-  link?: string;
-  createdAt: string;
-}
-
 interface WantedItem {
   _id: string;
   title: string;
@@ -82,7 +70,6 @@ export const UserDashboard = () => {
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [wantedItems, setWantedItems] = useState<WantedItem[]>([]);
   const [deletingListingId, setDeletingListingId] = useState<string | null>(null);
   const [pendingDeleteListingId, setPendingDeleteListingId] = useState<string | null>(null);
@@ -97,18 +84,16 @@ export const UserDashboard = () => {
       try {
         const campusParams = new URLSearchParams({ limit: '8' });
         if (user?.college) campusParams.set('college', user.college);
-        const [myListingRes, dealRes, conversationRes, notificationRes, wantedRes] = await Promise.all([
+        const [myListingRes, dealRes, conversationRes, wantedRes] = await Promise.all([
           api.get<{ listings: Listing[] }>('/listings/mine/me?page=1&limit=8'),
           api.get<{ deals: Deal[] }>('/deals?page=1&limit=8'),
           api.get<{ conversations: Conversation[] }>('/chat/conversations?page=1&limit=8'),
-          api.get<{ notifications: NotificationItem[]; unreadCount: number }>('/notifications?limit=5'),
           api.get<{ wanted: WantedItem[] }>('/wanted/mine?limit=4'),
         ]);
 
         setMyListings(myListingRes.listings || []);
         setDeals(dealRes.deals || []);
         setConversations(conversationRes.conversations || []);
-        setNotifications(notificationRes.notifications || []);
         setWantedItems(wantedRes.wanted || []);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load your dashboard'));
@@ -153,18 +138,6 @@ export const UserDashboard = () => {
     () => deals.filter(deal => ['requested', 'accepted'].includes(deal.status)),
     [deals]
   );
-
-  const completedDeals = useMemo(
-    () => deals.filter(deal => deal.status === 'completed'),
-    [deals]
-  );
-
-  const trustScore = Math.min(100, Math.round(
-    (user?.isVerified ? 35 : 0) +
-    Math.min(25, (user?.reviewCount || 0) * 5) +
-    Math.min(20, Math.max(0, user?.rating || 0) * 4) +
-    Math.min(20, completedDeals.length * 5)
-  ));
 
   const stats = [
     { label: 'My listings', value: myListings.length, icon: Package },
@@ -244,24 +217,6 @@ export const UserDashboard = () => {
           <section className="dash-panel">
             <div className="dash-panel-head">
               <div>
-                <h2>Trust profile</h2>
-                <p>Your marketplace confidence signal.</p>
-              </div>
-            </div>
-            <div className="trust-score">
-              <strong>{trustScore}</strong>
-              <span>/100</span>
-            </div>
-            <div className="trust-badges">
-              {user?.isVerified && <span><ShieldCheck size={13} /> Verified email</span>}
-              {(user?.rating || 0) >= 4 && <span><Star size={13} /> Well rated</span>}
-              {completedDeals.length > 0 && <span><CheckCircle2 size={13} /> Completed deals</span>}
-            </div>
-          </section>
-
-          <section className="dash-panel">
-            <div className="dash-panel-head">
-              <div>
                 <h2>Active deals</h2>
                 <p>Requests and campus meetups.</p>
               </div>
@@ -294,25 +249,6 @@ export const UserDashboard = () => {
                 </button>
               ))}
               {conversations.length === 0 && <div className="dash-empty small">No messages yet.</div>}
-            </div>
-          </section>
-
-          <section className="dash-panel">
-            <div className="dash-panel-head">
-              <div>
-                <h2>Notifications</h2>
-                <p>Reports, deals, approvals.</p>
-              </div>
-              <button onClick={() => navigate('/notifications')}>View</button>
-            </div>
-            <div className="dash-stack">
-              {notifications.slice(0, 3).map(notification => (
-                <button key={notification._id} onClick={() => navigate(normalizeAppLink(notification.link))} className="dash-row">
-                  <span>{notification.text}</span>
-                  <strong>{notification.read ? 'read' : 'new'}</strong>
-                </button>
-              ))}
-              {notifications.length === 0 && <div className="dash-empty small">No alerts yet.</div>}
             </div>
           </section>
 
@@ -372,7 +308,7 @@ export const UserDashboard = () => {
             </div>
           </section>
 
-          <section className="dash-panel safety-panel">
+          <section className="dash-panel dash-panel-wide safety-panel">
             <div className="dash-panel-head">
               <div>
                 <h2>Campus safety</h2>
