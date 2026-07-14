@@ -1,5 +1,16 @@
 import { captureFrontendException } from "./monitoring";
 
+let _getAccessToken: (() => string | null) | null = null;
+let _setAccessToken: ((token: string | null) => void) | null = null;
+
+export const registerTokenGetter = (
+  getter: () => string | null,
+  setter: (token: string | null) => void
+) => {
+  _getAccessToken = getter;
+  _setAccessToken = setter;
+};
+
 const API_ORIGIN =
   import.meta.env.VITE_API_ORIGIN || "https://cirql-backend.onrender.com/";
 const BASE_URL = `${API_ORIGIN.replace(/\/$/, "")}/api/v1`;
@@ -126,7 +137,7 @@ export const fetchAPI = async <T>(
   }
 
   // Fallback to Bearer token in case cross-site cookies are blocked by the browser
-  const token = localStorage.getItem("cirql_token");
+  const token = _getAccessToken ? _getAccessToken() : null;
   if (token && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -192,8 +203,8 @@ export const fetchAPI = async <T>(
             throw new Error(
               getFriendlyErrorMessage(refreshRes.status, refreshData),
             );
-          if (typeof refreshData.accessToken === "string") {
-            localStorage.setItem("cirql_token", refreshData.accessToken);
+          if (typeof refreshData.accessToken === "string" && _setAccessToken) {
+            _setAccessToken(refreshData.accessToken);
           }
 
           isRefreshing = false;

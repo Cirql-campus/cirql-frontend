@@ -22,6 +22,19 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeNudge, setActiveNudge] = useState<'install' | 'push' | null>(null);
   const location = useLocation();
 
+  const showInstallNudge = useCallback(() => {
+    if (installState === 'installed') return;
+    setActiveNudge('install');
+  }, [installState]);
+
+  const showPushNudge = useCallback(() => {
+    // Priority: do NOT show push nudge if install nudge is active (install nudge covers both)
+    if (activeNudge === 'install') return;
+    if (pushStatus === 'not-enabled') {
+      setActiveNudge('push');
+    }
+  }, [activeNudge, pushStatus]);
+
   const checkPushStatus = async () => {
     try {
       const status = await getPushNotificationStatus();
@@ -33,7 +46,9 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Perform checks on startup
   useEffect(() => {
-    checkPushStatus();
+    setTimeout(() => {
+      checkPushStatus();
+    }, 0);
   }, []);
 
   // Listen to route changes to show nudges after redirects
@@ -46,22 +61,9 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [location.pathname]);
+  }, [location.pathname, showInstallNudge]);
 
-  const showInstallNudge = () => {
-    if (installState === 'installed') return;
-    setActiveNudge('install');
-  };
-
-  const showPushNudge = () => {
-    // Priority: do NOT show push nudge if install nudge is active (install nudge covers both)
-    if (activeNudge === 'install') return;
-    if (pushStatus === 'not-enabled') {
-      setActiveNudge('push');
-    }
-  };
-
-  const dismissNudge = React.useCallback(() => {
+  const dismissNudge = useCallback(() => {
     setActiveNudge(null);
   }, []);
 

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Logo } from '../components/ui/Logo';
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { usePWA } from '../contexts/PWAContext';
 import { detectCollege } from '../utils/collegeDetect';
 import { PasswordRequirements, passwordMeetsRequirements } from '../components/ui/PasswordRequirements';
 import './Auth.css';
@@ -10,6 +11,7 @@ import './Auth.css';
 export const Signup = () => {
   const navigate = useNavigate();
   const { signup, verifyOTP, isLoggedIn } = useAuth();
+  const { showInstallNudge } = usePWA();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,6 +55,7 @@ export const Signup = () => {
     const result = await verifyOTP(email, otp);
     setLoading(false);
     if (result.ok) {
+      showInstallNudge();
       navigate('/marketplace');
     } else {
       setError(result.error || 'Invalid OTP. Please try again.');

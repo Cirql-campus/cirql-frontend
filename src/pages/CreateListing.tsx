@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
 import { api, getErrorMessage } from '../utils/api';
 import { compressImageFiles } from '../utils/imageCompression';
+import { PWAGate } from '../components/ui/PWAGate';
 import './CreateListing.css';
 
 interface CreatedListingResponse {
@@ -133,158 +134,160 @@ export const CreateListing = () => {
   };
 
   return (
-    <div className="create-listing-page container">
-      <div className="form-container">
-        <div className="post-nav">
-          <button type="button" className="post-nav-back" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={16} />
-            Back to Dashboard
-          </button>
-          <div className="post-nav-actions">
-            <button type="button" onClick={() => navigate('/marketplace')}>
-              <Store size={16} />
-              Marketplace
+    <PWAGate>
+      <div className="create-listing-page container">
+        <div className="form-container">
+          <div className="post-nav">
+            <button type="button" className="post-nav-back" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft size={16} />
+              Back to Dashboard
             </button>
-            <button type="button" onClick={() => navigate('/profile')}>
-              <LayoutDashboard size={16} />
-              My Listings
-            </button>
-          </div>
-        </div>
-
-        <div className="form-header">
-          <h1 className="form-title">Post Item</h1>
-          <p className="text-muted">Add enough detail so another student can trust the listing.</p>
-          <div className="post-campus-note">
-            <CheckCircle2 size={16} />
-            Posting to {user?.college || 'your college'} marketplace
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="listing-form">
-          {error && <div className="auth-error">{error}</div>}
-          {successMessage && <div className="post-success">{successMessage}</div>}
-          <div className="form-section">
-            <h2 className="section-subtitle">Item Details</h2>
-            <Input label="Ad title*" placeholder="e.g. Casio Scientific Calculator fx-991EX" required value={title} onChange={(e) => setTitle(e.target.value)} />
-
-            <div className="type-toggle">
-              <label className="input-label">Type*</label>
-              <div className="toggle-buttons">
-                {(['sell', 'rent', 'free', 'service'] as const).map(value => (
-                  <button key={value} type="button" className={`toggle-btn ${type === value ? `active ${value}` : ''}`} onClick={() => setType(value)}>
-                    {value === 'sell' ? 'Sell' : value === 'rent' ? 'Rent' : value === 'free' ? 'Free' : 'Service'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Select label="Category*" value={category} onChange={(e) => setCategory(e.target.value)} options={[
-              { value: 'academia', label: 'Academia' },
-              { value: 'tech', label: 'Tech' },
-              { value: 'rides', label: 'Rides' },
-              { value: 'living', label: 'Living' },
-              { value: 'attire', label: 'Attire' },
-              { value: 'gifts', label: 'Gifts' },
-              { value: 'misc', label: 'Misc' },
-              { value: 'services', label: 'Services & Gigs' }
-            ]} required />
-            <Select label="Condition*" value={condition} onChange={(e) => setCondition(e.target.value)} options={[
-              { value: 'Brand New', label: 'Brand New' },
-              { value: 'Like New', label: 'Like New' },
-              { value: 'Good', label: 'Good' },
-              { value: 'Fair', label: 'Fair' },
-            ]} required />
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-              <Input label="Brand" placeholder="Casio, HP, Hero..." value={brand} onChange={(e) => setBrand(e.target.value)} />
-              <Input label="Model" placeholder="fx-991EX, iPad 9..." value={model} onChange={(e) => setModel(e.target.value)} />
-              <Input label="Quantity" type="number" min="1" max="99" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-            </div>
-            <Input label="Tags" placeholder="calculator, first-year, hostel" value={tags} onChange={(e) => setTags(e.target.value)} />
-
-            <div className="input-wrapper">
-              <label className="input-label">Description*</label>
-              <textarea className="input-field textarea-field" placeholder="Describe condition, age, reason for selling, what is included..." rows={4} value={description} onChange={(e) => setDescription(e.target.value)} required />
+            <div className="post-nav-actions">
+              <button type="button" onClick={() => navigate('/marketplace')}>
+                <Store size={16} />
+                Marketplace
+              </button>
+              <button type="button" onClick={() => navigate('/profile')}>
+                <LayoutDashboard size={16} />
+                My Listings
+              </button>
             </div>
           </div>
 
-          <div className="form-section">
-            <h2 className="section-subtitle">Price</h2>
-            <div className="price-input-wrapper">
-              <span className="currency-prefix">₹</span>
-              <input type="number" className="price-input" placeholder="0" required min="0" max="500000" value={type === 'free' ? '0' : price} onChange={(e) => setPrice(e.target.value)} disabled={type === 'free'} />
-              {type === 'rent' && <span className="rent-suffix">/ {rentDuration}</span>}
+          <div className="form-header">
+            <h1 className="form-title">Post Item</h1>
+            <p className="text-muted">Add enough detail so another student can trust the listing.</p>
+            <div className="post-campus-note">
+              <CheckCircle2 size={16} />
+              Posting to {user?.college || 'your college'} marketplace
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 12 }}>
-              <Input label="Original Price" type="number" min="0" max="500000" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} />
-              {type === 'rent' && (
-                <Select label="Rent Duration" value={rentDuration} onChange={(e) => setRentDuration(e.target.value)} options={[
-                  { value: 'hourly', label: 'Hourly' },
-                  { value: 'daily', label: 'Daily' },
-                  { value: 'weekly', label: 'Weekly' },
-                  { value: 'monthly', label: 'Monthly' },
-                  { value: 'semester', label: 'Semester' },
-                ]} />
-              )}
-            </div>
-            <label className="cond-item" style={{ marginTop: 10 }}>
-              <input type="checkbox" checked={isNegotiable} onChange={(e) => setIsNegotiable(e.target.checked)} />
-              Price is negotiable
-            </label>
           </div>
 
-          <div className="form-section">
-            <h2 className="section-subtitle">Upload Photos</h2>
-            <div className="photo-upload-container">
-              <label className="photo-upload-btn">
-                <ImagePlus size={32} className="text-muted" />
-                <span>{processingImages ? 'Processing...' : images.length ? `${images.length} photo selected` : 'Add Photo'}</span>
-                <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => handleImageChange(e.target.files)} />
-              </label>
-              {images.length > 0 && (
-                <div className="photo-preview-grid">
-                  {images.map((file, index) => (
-                    <div className="photo-preview" key={`${file.name}-${file.lastModified}-${index}`}>
-                      <img src={URL.createObjectURL(file)} alt={`Selected ${index + 1}`} />
-                      <button type="button" onClick={() => removeImage(index)} aria-label="Remove photo">
-                        <X size={14} />
-                      </button>
-                      {index === 0 && <span>Cover</span>}
-                    </div>
+          <form onSubmit={handleSubmit} className="listing-form">
+            {error && <div className="auth-error">{error}</div>}
+            {successMessage && <div className="post-success">{successMessage}</div>}
+            <div className="form-section">
+              <h2 className="section-subtitle">Item Details</h2>
+              <Input label="Ad title*" placeholder="e.g. Casio Scientific Calculator fx-991EX" required value={title} onChange={(e) => setTitle(e.target.value)} />
+
+              <div className="type-toggle">
+                <label className="input-label">Type*</label>
+                <div className="toggle-buttons">
+                  {(['sell', 'rent', 'free', 'service'] as const).map(value => (
+                    <button key={value} type="button" className={`toggle-btn ${type === value ? `active ${value}` : ''}`} onClick={() => setType(value)}>
+                      {value === 'sell' ? 'Sell' : value === 'rent' ? 'Rent' : value === 'free' ? 'Free' : 'Service'}
+                    </button>
                   ))}
                 </div>
-              )}
-            </div>
-            <p className="photo-help">One real photo is enough. You can add up to 3 photos if you want more detail. First photo becomes the cover. Max 2 MB each.</p>
-            {imageNote && <p className="photo-help success">{imageNote}</p>}
-          </div>
-
-          <div className="form-section">
-            <h2 className="section-subtitle">Meetup Details</h2>
-            <div className="contact-details">
-              <div className="contact-item">
-                <MapPin size={20} className="text-muted" />
-                <Input placeholder="Campus area" value={location} onChange={(e) => setLocation(e.target.value)} />
               </div>
-              <Input label="Exact pickup point" placeholder="Library gate, hostel common area..." value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} />
-            </div>
-          </div>
 
-          <div style={{ marginTop: 24, marginBottom: -10 }}>
-            {error && <div className="auth-error">{error}</div>}
-          </div>
-          <div className="post-footer-actions">
-            <Button type="button" variant="outline" size="lg" onClick={() => navigate('/dashboard')} disabled={submitting}>
-              Back to Dashboard
-            </Button>
-            <Button type="submit" size="lg" className="submit-btn" disabled={submitting || processingImages}>
-            {submitting ? 'Posting...' : 'Post Item Now'}
-            </Button>
-          </div>
-        </form>
+              <Select label="Category*" value={category} onChange={(e) => setCategory(e.target.value)} options={[
+                { value: 'academia', label: 'Academia' },
+                { value: 'tech', label: 'Tech' },
+                { value: 'rides', label: 'Rides' },
+                { value: 'living', label: 'Living' },
+                { value: 'attire', label: 'Attire' },
+                { value: 'gifts', label: 'Gifts' },
+                { value: 'misc', label: 'Misc' },
+                { value: 'services', label: 'Services & Gigs' }
+              ]} required />
+              <Select label="Condition*" value={condition} onChange={(e) => setCondition(e.target.value)} options={[
+                { value: 'Brand New', label: 'Brand New' },
+                { value: 'Like New', label: 'Like New' },
+                { value: 'Good', label: 'Good' },
+                { value: 'Fair', label: 'Fair' },
+              ]} required />
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                <Input label="Brand" placeholder="Casio, HP, Hero..." value={brand} onChange={(e) => setBrand(e.target.value)} />
+                <Input label="Model" placeholder="fx-991EX, iPad 9..." value={model} onChange={(e) => setModel(e.target.value)} />
+                <Input label="Quantity" type="number" min="1" max="99" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+              </div>
+              <Input label="Tags" placeholder="calculator, first-year, hostel" value={tags} onChange={(e) => setTags(e.target.value)} />
+
+              <div className="input-wrapper">
+                <label className="input-label">Description*</label>
+                <textarea className="input-field textarea-field" placeholder="Describe condition, age, reason for selling, what is included..." rows={4} value={description} onChange={(e) => setDescription(e.target.value)} required />
+              </div>
+            </div>
+
+            <div className="form-section">
+              <h2 className="section-subtitle">Price</h2>
+              <div className="price-input-wrapper">
+                <span className="currency-prefix">₹</span>
+                <input type="number" className="price-input" placeholder="0" required min="0" max="500000" value={type === 'free' ? '0' : price} onChange={(e) => setPrice(e.target.value)} disabled={type === 'free'} />
+                {type === 'rent' && <span className="rent-suffix">/ {rentDuration}</span>}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 12 }}>
+                <Input label="Original Price" type="number" min="0" max="500000" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} />
+                {type === 'rent' && (
+                  <Select label="Rent Duration" value={rentDuration} onChange={(e) => setRentDuration(e.target.value)} options={[
+                    { value: 'hourly', label: 'Hourly' },
+                    { value: 'daily', label: 'Daily' },
+                    { value: 'weekly', label: 'Weekly' },
+                    { value: 'monthly', label: 'Monthly' },
+                    { value: 'semester', label: 'Semester' },
+                  ]} />
+                )}
+              </div>
+              <label className="cond-item" style={{ marginTop: 10 }}>
+                <input type="checkbox" checked={isNegotiable} onChange={(e) => setIsNegotiable(e.target.checked)} />
+                Price is negotiable
+              </label>
+            </div>
+
+            <div className="form-section">
+              <h2 className="section-subtitle">Upload Photos</h2>
+              <div className="photo-upload-container">
+                <label className="photo-upload-btn">
+                  <ImagePlus size={32} className="text-muted" />
+                  <span>{processingImages ? 'Processing...' : images.length ? `${images.length} photo selected` : 'Add Photo'}</span>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => handleImageChange(e.target.files)} />
+                </label>
+                {images.length > 0 && (
+                  <div className="photo-preview-grid">
+                    {images.map((file, index) => (
+                      <div className="photo-preview" key={`${file.name}-${file.lastModified}-${index}`}>
+                        <img src={URL.createObjectURL(file)} alt={`Selected ${index + 1}`} />
+                        <button type="button" onClick={() => removeImage(index)} aria-label="Remove photo">
+                          <X size={14} />
+                        </button>
+                        {index === 0 && <span>Cover</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="photo-help">One real photo is enough. You can add up to 3 photos if you want more detail. First photo becomes the cover. Max 2 MB each.</p>
+              {imageNote && <p className="photo-help success">{imageNote}</p>}
+            </div>
+
+            <div className="form-section">
+              <h2 className="section-subtitle">Meetup Details</h2>
+              <div className="contact-details">
+                <div className="contact-item">
+                  <MapPin size={20} className="text-muted" />
+                  <Input placeholder="Campus area" value={location} onChange={(e) => setLocation(e.target.value)} />
+                </div>
+                <Input label="Exact pickup point" placeholder="Library gate, hostel common area..." value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 24, marginBottom: -10 }}>
+              {error && <div className="auth-error">{error}</div>}
+            </div>
+            <div className="post-footer-actions">
+              <Button type="button" variant="outline" size="lg" onClick={() => navigate('/dashboard')} disabled={submitting}>
+                Back to Dashboard
+              </Button>
+              <Button type="submit" size="lg" className="submit-btn" disabled={submitting || processingImages}>
+              {submitting ? 'Posting...' : 'Post Item Now'}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </PWAGate>
   );
 };
 

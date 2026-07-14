@@ -1,0 +1,106 @@
+.pwa-gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.pwa-gate-card {
+  background: var(--surface, #fff);
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.pwa-gate-steps {
+  font-size: 12px;
+  color: var(--text-muted, #888);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.pwa-gate-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.pwa-gate-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text, #18181b);
+  line-height: 1.3;
+}
+
+.pwa-gate-desc {
+  font-size: 15px;
+  color: var(--text-muted, #666);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.pwa-gate-btn-primary {
+  width: 100%;
+  background: var(--primary, #00e554);
+  color: #000;
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.pwa-gate-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pwa-gate-ios-steps {
+  background: var(--surface-alt, #f4f4f5);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text, #18181b);
+}
+
+.pwa-gate-ios-steps ol {
+  margin: 8px 0 0 16px;
+  padding: 0;
+}
+
+.pwa-gate-error {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--danger, #ef4444);
+  line-height: 1.5;
+}
+
+.pwa-gate-blocked-hint {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-muted, #888);
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .pwa-gate-card {
+    padding: 24px 18px;
+  }
+  .pwa-gate-title {
+    font-size: 18px;
+  }
+}

@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { api, getErrorMessage } from '../utils/api';
+import { api, getErrorMessage, registerTokenGetter } from '../utils/api';
 import { initSocket, disconnectSocket } from '../utils/socket';
 
 export interface User {
@@ -46,6 +46,7 @@ interface AuthContextType {
   unreadAlerts: number;
   setUnreadAlerts: React.Dispatch<React.SetStateAction<number>>;
   fetchUnreadCounts: () => Promise<void>;
+  getAccessToken: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,9 +56,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadAlerts, setUnreadAlerts] = useState(0);
+  const accessTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    registerTokenGetter(
+      () => accessTokenRef.current,
+      (token) => { accessTokenRef.current = token; }
+    );
+  }, []);
 
   const setupGlobalSockets = (token?: string) => {
-    const socket = initSocket(token || localStorage.getItem('cirql_token') || undefined);
+    const socket = initSocket(token || accessTokenRef.current || undefined);
     
     socket.off('new_message');
     socket.off('notification');
@@ -132,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const res = await api.post<{ success: boolean; user: User; accessToken?: string }>('/auth/login', { email, password });
       if (res.accessToken) {
-        localStorage.setItem('cirql_token', res.accessToken);
+        accessTokenRef.current = res.accessToken;
         setupGlobalSockets(res.accessToken);
       }
       setUser(res.user);
@@ -157,7 +166,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const res = await api.post<{ success: boolean; user: User; accessToken?: string }>('/auth/verify-otp', { email, otp });
       if (res.accessToken) {
-        localStorage.setItem('cirql_token', res.accessToken);
+        accessTokenRef.current = res.accessToken;
         setupGlobalSockets(res.accessToken);
       }
       setUser(res.user);
@@ -172,7 +181,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await api.post('/auth/logout', {});
     } catch { /* ignore offline */ }
-    localStorage.removeItem('cirql_token');
+    accessTokenRef.current = null;
     disconnectSocket();
     setUser(null);
     setUnreadMessages(0);
@@ -182,7 +191,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{ 
       user, loading, login, signup, verifyOTP, logout, refreshUser, isLoggedIn: !!user,
-      unreadMessages, setUnreadMessages, unreadAlerts, setUnreadAlerts, fetchUnreadCounts
+      unreadMessages, setUnreadMessages, unreadAlerts, setUnreadAlerts, fetchUnreadCounts,
+      getAccessToken: () => accessTokenRef.current
     }}>
       {children}
     </AuthContext.Provider>

@@ -4,6 +4,7 @@ import { ArrowLeft, Flag, Send, ShoppingBag, Wifi, WifiOff } from 'lucide-react'
 import { TextDialog } from '../components/ui/AppDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
+import { PWAGate } from '../components/ui/PWAGate';
 import { api, getErrorMessage } from '../utils/api';
 import { getSocket } from '../utils/socket';
 import './Chat.css';
@@ -488,40 +489,42 @@ export const ChatPage = () => {
         <div ref={bottomRef} />
       </div>
 
-      {showQuickReplies && (
-        <div className="quick-replies">
-          {quickReplies.map(chip => (
-            <button
-              key={chip.id}
-              type="button"
-              className="quick-reply-chip"
-              onClick={() => handleQuickReply(chip.text)}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-      )}
+      <PWAGate>
+        {showQuickReplies && (
+          <div className="quick-replies">
+            {quickReplies.map(chip => (
+              <button
+                key={chip.id}
+                type="button"
+                className="quick-reply-chip"
+                onClick={() => handleQuickReply(chip.text)}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        )}
 
-      {error && messages.length > 0 && (
-        <div style={{ padding: '8px 16px', color: '#f87171', fontSize: 13 }}>{error}</div>
-      )}
+        {error && messages.length > 0 && (
+          <div style={{ padding: '8px 16px', color: '#f87171', fontSize: 13 }}>{error}</div>
+        )}
 
-      <form className="chat-input-bar" onSubmit={sendMessage}>
-        <textarea
-          ref={textareaRef}
-          className="chat-input"
-          placeholder="Type a message..."
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={handleComposerKeyDown}
-          rows={1}
-          autoFocus
-        />
-        <button type="submit" className="chat-send" disabled={!text.trim() || sending}>
-          <Send size={18} />
-        </button>
-      </form>
+        <form className="chat-input-bar" onSubmit={sendMessage}>
+          <textarea
+            ref={textareaRef}
+            className="chat-input"
+            placeholder="Type a message..."
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onKeyDown={handleComposerKeyDown}
+            rows={1}
+            autoFocus
+          />
+          <button type="submit" className="chat-send" disabled={!text.trim() || sending}>
+            <Send size={18} />
+          </button>
+        </form>
+      </PWAGate>
 
       <TextDialog
         open={Boolean(reportingMessage)}
