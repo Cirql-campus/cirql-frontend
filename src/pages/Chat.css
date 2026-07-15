@@ -305,6 +305,7 @@
   bottom: 0;
   z-index: 20;
   padding-bottom: max(14px, env(safe-area-inset-bottom));
+  max-height: 40vh; /* never let the input take more than 40% of viewport */
 }
 
 .chat-input {
@@ -351,7 +352,12 @@
 
 @media (max-width: 768px) {
   .chat-page {
-    height: calc(100dvh - 112px);
+    height: calc(100dvh - 64px - 64px); /* mobile: subtract top navbar + bottom tab bar */
+    height: calc(100dvh - 128px);       /* same thing, cleaner */
+  }
+
+  .chat-messages {
+    padding-bottom: 8px;
   }
 
   .chat-header {
@@ -423,8 +429,8 @@
 @media (max-width: 480px) {
   /* Fix chat input bar disappearing on older Android (dvh not supported) */
   .chat-page {
-    height: calc(100vh - 112px); /* fallback without dvh */
-    height: calc(100dvh - 112px); /* modern override */
+    height: calc(100vh - 128px); /* fallback without dvh */
+    height: calc(100dvh - 128px); /* modern override */
   }
 
   /* Message bubbles — slightly wider on small screens */

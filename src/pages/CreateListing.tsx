@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, ImagePlus, LayoutDashboard, MapPin, Store, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -21,6 +21,15 @@ interface CreatedListingResponse {
 const MAX_IMAGES = 3;
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  tech: ['laptop', 'phone', 'iphone', 'samsung', 'tablet', 'ipad', 'headphone', 'earphone', 'charger', 'keyboard', 'mouse', 'monitor', 'cable', 'usb', 'hard disk', 'ssd', 'ram', 'gpu', 'pc', 'computer'],
+  academia: ['book', 'notes', 'calculator', 'casio', 'syllabus', 'textbook', 'notebook', 'pen', 'pencil', 'folder', 'binder', 'lab', 'manual', 'guide', 'reference'],
+  living: ['mattress', 'pillow', 'blanket', 'fan', 'heater', 'lamp', 'chair', 'table', 'shelf', 'rack', 'bucket', 'kettle', 'cooler', 'fridge', 'mirror'],
+  attire: ['shirt', 'pant', 'shoes', 'jacket', 'hoodie', 'jeans', 'dress', 'kurta', 'uniform', 'formal', 'sneaker', 'sandal', 'bag', 'backpack'],
+  rides: ['cycle', 'bicycle', 'bike', 'scooty', 'scooter', 'helmet', 'lock', 'tyre'],
+  gifts: ['gift', 'card', 'chocolate', 'hamper', 'flower', 'toy', 'game', 'puzzle'],
+};
 
 export const CreateListing = () => {
   const navigate = useNavigate();
@@ -47,6 +56,29 @@ export const CreateListing = () => {
   const [imageNote, setImageNote] = useState('');
   const [processingImages, setProcessingImages] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
+  const [categoryAutoDetected, setCategoryAutoDetected] = useState(false);
+
+  const autoDetectCategory = (titleValue: string) => {
+    if (category !== 'academia') return; // don't override if user already changed it
+    const lower = titleValue.toLowerCase();
+    for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+      if (keywords.some(kw => lower.includes(kw))) {
+        setCategory(cat);
+        setCategoryAutoDetected(true);
+        break;
+      }
+    }
+  };
+
+  const completionScore = useMemo(() => {
+    let score = 0;
+    if (title.trim().length > 3) score += 25;      // title
+    if (images.length > 0) score += 25;             // photo
+    if (description.trim().length > 20) score += 25; // description
+    if (type !== 'free' ? price : true) score += 25; // price
+    return score;
+  }, [title, images.length, description, type, price]);
 
   const handleImageChange = async (fileList: FileList | null) => {
     const selected = Array.from(fileList || []);
@@ -163,12 +195,73 @@ export const CreateListing = () => {
             </div>
           </div>
 
+          <div className="post-progress-bar">
+            <div className="post-progress-fill" style={{ width: `${completionScore}%` }} />
+            {completionScore < 100 && (
+              <span className="post-progress-label">
+                {completionScore === 0 ? 'Fill in the details below to post' :
+                 completionScore < 50 ? 'Keep going...' :
+                 completionScore < 75 ? 'Almost there' : 'Looking good — add a photo to finish!'}
+              </span>
+            )}
+          </div>
+
           <form onSubmit={handleSubmit} className="listing-form">
             {error && <div className="auth-error">{error}</div>}
             {successMessage && <div className="post-success">{successMessage}</div>}
+
+            {/* Section 1: Upload Photos (moved up) */}
+            <div className="form-section">
+              <h2 className="section-subtitle">Upload Photos</h2>
+              <div className="photo-upload-container">
+                <label className="photo-upload-btn">
+                  <ImagePlus size={32} className="text-muted" />
+                  <span>{processingImages ? 'Processing...' : images.length ? `${images.length} photo selected` : 'Add Photo'}</span>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => handleImageChange(e.target.files)} />
+                </label>
+
+                {/Mobi|Android/i.test(navigator.userAgent) && images.length < MAX_IMAGES && (
+                  <label className="photo-camera-btn">
+                    📷 Take Photo
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      capture="environment"
+                      hidden
+                      onChange={(e) => handleImageChange(e.target.files)}
+                    />
+                  </label>
+                )}
+
+                {images.length > 0 && (
+                  <div className="photo-preview-grid">
+                    {images.map((file, index) => (
+                      <div className="photo-preview" key={`${file.name}-${file.lastModified}-${index}`}>
+                        <img src={URL.createObjectURL(file)} alt={`Selected ${index + 1}`} />
+                        <button type="button" onClick={() => removeImage(index)} aria-label="Remove photo">
+                          <X size={14} />
+                        </button>
+                        {index === 0 && <span>Cover</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="photo-help">One real photo is enough. You can add up to 3 photos if you want more detail. First photo becomes the cover. Max 2 MB each.</p>
+              {imageNote && <p className="photo-help success">{imageNote}</p>}
+            </div>
+
+            {/* Section 2: Item Details */}
             <div className="form-section">
               <h2 className="section-subtitle">Item Details</h2>
-              <Input label="Ad title*" placeholder="e.g. Casio Scientific Calculator fx-991EX" required value={title} onChange={(e) => setTitle(e.target.value)} />
+              <Input
+                label="Ad title*"
+                placeholder="e.g. Casio Scientific Calculator fx-991EX"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onBlur={(e) => autoDetectCategory(e.target.value)}
+              />
 
               <div className="type-toggle">
                 <label className="input-label">Type*</label>
@@ -181,36 +274,46 @@ export const CreateListing = () => {
                 </div>
               </div>
 
-              <Select label="Category*" value={category} onChange={(e) => setCategory(e.target.value)} options={[
-                { value: 'academia', label: 'Academia' },
-                { value: 'tech', label: 'Tech' },
-                { value: 'rides', label: 'Rides' },
-                { value: 'living', label: 'Living' },
-                { value: 'attire', label: 'Attire' },
-                { value: 'gifts', label: 'Gifts' },
-                { value: 'misc', label: 'Misc' },
-                { value: 'services', label: 'Services & Gigs' }
-              ]} required />
-              <Select label="Condition*" value={condition} onChange={(e) => setCondition(e.target.value)} options={[
-                { value: 'Brand New', label: 'Brand New' },
-                { value: 'Like New', label: 'Like New' },
-                { value: 'Good', label: 'Good' },
-                { value: 'Fair', label: 'Fair' },
-              ]} required />
+              <Select
+                label="Category*"
+                value={category}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setCategoryAutoDetected(false);
+                }}
+                options={[
+                  { value: 'academia', label: 'Academia' },
+                  { value: 'tech', label: 'Tech' },
+                  { value: 'rides', label: 'Rides' },
+                  { value: 'living', label: 'Living' },
+                  { value: 'attire', label: 'Attire' },
+                  { value: 'gifts', label: 'Gifts' },
+                  { value: 'misc', label: 'Misc' },
+                  { value: 'services', label: 'Services & Gigs' }
+                ]}
+                required
+              />
+              {categoryAutoDetected && (
+                <p style={{ fontSize: 12, color: 'var(--primary)', marginTop: 4 }}>
+                  ✓ Category auto-detected from title
+                </p>
+              )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-                <Input label="Brand" placeholder="Casio, HP, Hero..." value={brand} onChange={(e) => setBrand(e.target.value)} />
-                <Input label="Model" placeholder="fx-991EX, iPad 9..." value={model} onChange={(e) => setModel(e.target.value)} />
-                <Input label="Quantity" type="number" min="1" max="99" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-              </div>
-              <Input label="Tags" placeholder="calculator, first-year, hostel" value={tags} onChange={(e) => setTags(e.target.value)} />
-
-              <div className="input-wrapper">
-                <label className="input-label">Description*</label>
-                <textarea className="input-field textarea-field" placeholder="Describe condition, age, reason for selling, what is included..." rows={4} value={description} onChange={(e) => setDescription(e.target.value)} required />
-              </div>
+              <Select
+                label="Condition*"
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+                options={[
+                  { value: 'Brand New', label: 'Brand New' },
+                  { value: 'Like New', label: 'Like New' },
+                  { value: 'Good', label: 'Good' },
+                  { value: 'Fair', label: 'Fair' },
+                ]}
+                required
+              />
             </div>
 
+            {/* Section 3: Price */}
             <div className="form-section">
               <h2 className="section-subtitle">Price</h2>
               <div className="price-input-wrapper">
@@ -236,32 +339,51 @@ export const CreateListing = () => {
               </label>
             </div>
 
+            {/* Section 4: More Details (collapsible Brand/Model/Qty/Tags + visible Description) */}
             <div className="form-section">
-              <h2 className="section-subtitle">Upload Photos</h2>
-              <div className="photo-upload-container">
-                <label className="photo-upload-btn">
-                  <ImagePlus size={32} className="text-muted" />
-                  <span>{processingImages ? 'Processing...' : images.length ? `${images.length} photo selected` : 'Add Photo'}</span>
-                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => handleImageChange(e.target.files)} />
-                </label>
-                {images.length > 0 && (
-                  <div className="photo-preview-grid">
-                    {images.map((file, index) => (
-                      <div className="photo-preview" key={`${file.name}-${file.lastModified}-${index}`}>
-                        <img src={URL.createObjectURL(file)} alt={`Selected ${index + 1}`} />
-                        <button type="button" onClick={() => removeImage(index)} aria-label="Remove photo">
-                          <X size={14} />
-                        </button>
-                        {index === 0 && <span>Cover</span>}
-                      </div>
-                    ))}
+              <h2 className="section-subtitle">More Details</h2>
+              <button
+                type="button"
+                className="more-details-toggle"
+                onClick={() => setShowMoreDetails(prev => !prev)}
+              >
+                {showMoreDetails ? '▲ Hide optional details' : '▼ Add brand, model, tags (optional)'}
+              </button>
+
+              {showMoreDetails && (
+                <div className="more-details-panel">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                    <Input label="Brand" placeholder="Casio, HP, Hero..." value={brand} onChange={(e) => setBrand(e.target.value)} />
+                    <Input label="Model" placeholder="fx-991EX, iPad 9..." value={model} onChange={(e) => setModel(e.target.value)} />
+                    <Input label="Quantity" type="number" min="1" max="99" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
                   </div>
-                )}
+                  <Input label="Tags" placeholder="calculator, first-year, hostel" value={tags} onChange={(e) => setTags(e.target.value)} />
+                </div>
+              )}
+
+              <div className="input-wrapper" style={{ marginTop: 16 }}>
+                <label className="input-label">Description*</label>
+                <textarea
+                  className="input-field textarea-field"
+                  placeholder="Describe condition, age, reason for selling, what is included..."
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  maxLength={500}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {description.length < 30 ? 'Add more detail for faster responses' : description.length < 80 ? 'Good — add a bit more if you can' : '✓ Great description'}
+                  </span>
+                  <span style={{ fontSize: 12, color: description.length > 500 ? '#ef4444' : 'var(--text-muted)' }}>
+                    {description.length}/500
+                  </span>
+                </div>
               </div>
-              <p className="photo-help">One real photo is enough. You can add up to 3 photos if you want more detail. First photo becomes the cover. Max 2 MB each.</p>
-              {imageNote && <p className="photo-help success">{imageNote}</p>}
             </div>
 
+            {/* Section 5: Meetup Details */}
             <div className="form-section">
               <h2 className="section-subtitle">Meetup Details</h2>
               <div className="contact-details">
