@@ -314,3 +314,27 @@
     grid-column: span 2;
   }
 }
+
+.expiry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+.expiry-badge.urgent { background: #fef2f2; color: #ef4444; }
+.expiry-badge.warning { background: #fffbeb; color: #d97706; }
+
+.renew-inline-btn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}

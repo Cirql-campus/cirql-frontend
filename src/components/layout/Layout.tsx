@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { Plus } from 'lucide-react';
+import { OfflineBanner } from '../ui/OfflineBanner';
 
 export const Layout = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export const Layout = () => {
       >
         <Plus size={18} strokeWidth={3} /> Post Item
       </button>}
+      <OfflineBanner />
     </div>
   );
 };

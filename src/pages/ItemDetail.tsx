@@ -72,6 +72,30 @@ export const ItemDetail = () => {
   const [reportTarget, setReportTarget] = useState<ReportTarget>(null);
   const [reportDetails, setReportDetails] = useState('');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [copyToast, setCopyToast] = useState(false);
+
+  const handleShare = async () => {
+    if (!listing) return;
+    const url = window.location.href;
+    const title = listing.title;
+    const text = `Check out "${title}" for ₹${listing.price} on CirQl`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+      } catch { /* user cancelled */ }
+    } else {
+      // Fallback: copy link
+      try {
+        await navigator.clipboard.writeText(url);
+        // Show a brief "Link copied!" toast
+        setCopyToast(true);
+        setTimeout(() => setCopyToast(false), 2500);
+      } catch {
+        prompt('Copy this link:', url);
+      }
+    }
+  };
 
   useEffect(() => {
     const loadListing = async () => {
@@ -304,6 +328,19 @@ export const ItemDetail = () => {
                 <button onClick={handleSave} disabled={busy === 'save'} className="detail-action light">
                   {busy === 'save' ? 'Saving...' : 'Save Listing'}
                 </button>
+                <button className="share-btn" onClick={handleShare} aria-label="Share listing">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                    <polyline points="16,6 12,2 8,6"/>
+                    <line x1="12" y1="2" x2="12" y2="15"/>
+                  </svg>
+                  Share
+                </button>
+
+                {copyToast && (
+                  <div className="copy-toast">✓ Link copied to clipboard</div>
+                )}
+
                 {!isOwnListing && (
                   <div className="report-actions">
                     <button onClick={() => openReport('listing')}><Flag size={14} /> Listing</button>

@@ -462,3 +462,42 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--surface-alt, #f4f4f5);
+  border: 1.5px solid var(--border, #e4e4e7);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text, #18181b);
+  transition: border-color 0.15s;
+  min-height: 46px; /* align height with other action buttons */
+}
+.share-btn:hover { border-color: var(--primary, #00e554); }
+
+.copy-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #18181b;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 20px;
+  z-index: 500;
+  white-space: nowrap;
+  animation: fadeInUp 0.2s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

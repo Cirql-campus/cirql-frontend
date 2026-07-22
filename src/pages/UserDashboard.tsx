@@ -25,6 +25,7 @@ interface Listing {
   college?: string;
   status?: string;
   condition?: string;
+  expiresAt?: string;
 }
 
 interface Deal {
@@ -62,6 +63,15 @@ const getGreeting = () => {
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
   return 'Good evening';
+};
+
+const getExpiryLabel = (expiresAt?: string) => {
+  if (!expiresAt) return null;
+  const days = Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return { label: 'Expired', urgent: true };
+  if (days <= 3) return { label: `Expires in ${days} day${days === 1 ? '' : 's'}`, urgent: true };
+  if (days <= 7) return { label: `Expires in ${days} days`, urgent: false };
+  return null;
 };
 
 export const UserDashboard = () => {
@@ -157,6 +167,16 @@ export const UserDashboard = () => {
       setError(getErrorMessage(err, 'Failed to delete listing'));
     } finally {
       setDeletingListingId(null);
+    }
+  };
+
+  const handleRenew = async (id: string) => {
+    setError('');
+    try {
+      const res = await api.post<{ listing: Listing }>(`/listings/${id}/renew`, {});
+      setMyListings(prev => prev.map(listing => listing._id === id ? res.listing : listing));
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to renew listing'));
     }
   };
 
@@ -263,10 +283,29 @@ export const UserDashboard = () => {
             <div className="dash-stack">
               {myListings.slice(0, 4).map(listing => (
                 <div key={listing._id} className="dash-row-action">
-                  <button onClick={() => navigate(`/item/${listing._id}`)} className="dash-row">
-                    <span>{listing.title}</span>
+                  <div onClick={() => navigate(`/item/${listing._id}`)} className="dash-row">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+                      <span>{listing.title}</span>
+                      {(() => {
+                        const expiry = getExpiryLabel(listing.expiresAt);
+                        return expiry ? (
+                          <div className={`expiry-badge ${expiry.urgent ? 'urgent' : 'warning'}`} style={{ alignSelf: 'flex-start' }} onClick={(e) => e.stopPropagation()}>
+                            ⏰ {expiry.label}
+                            {expiry.urgent && (
+                              <button
+                                className="renew-inline-btn"
+                                onClick={(e) => { e.stopPropagation(); handleRenew(listing._id); }}
+                                style={{ marginLeft: '6px' }}
+                              >
+                                Renew
+                              </button>
+                            )}
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
                     <strong>{listing.status || 'available'}</strong>
-                  </button>
+                  </div>
                   <button
                     className="dash-delete-btn"
                     onClick={() => setPendingDeleteListingId(listing._id)}
