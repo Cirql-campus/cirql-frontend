@@ -383,12 +383,9 @@ export const AdminPage = () => {
   return (
     <div className="workspace-page container">
       {/* Scope Banner for College Admin */}
-      {isCollegeAdmin && user?.adminCollege && (
+      {isCollegeAdmin && (
         <div className="admin-scope-banner">
-          <School size={18} />
-          <span>
-            You are managing <strong>{user.adminCollege}</strong> — moderation controls, statistics, and listings are filtered to this college scope.
-          </span>
+          🏫 You are managing <strong>{user?.adminCollege}</strong> — you can only see and act on listings and users from this college.
         </div>
       )}
 
@@ -694,16 +691,20 @@ export const AdminPage = () => {
                       {c.hasAdmin && c.adminEmail ? (
                         <span style={{ color: '#2e7d32', fontWeight: 600 }}>{c.adminEmail}</span>
                       ) : (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => {
-                            setAssigningCollege(c.college);
-                            setAssignEmail('');
-                          }}
-                        >
-                          Assign Admin
-                        </Button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="muted">None</span>
+                          <span>—</span>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => {
+                              setAssigningCollege(c.college);
+                              setAssignEmail('');
+                            }}
+                          >
+                            Assign
+                          </Button>
+                        </div>
                       )}
                     </td>
                   </tr>
