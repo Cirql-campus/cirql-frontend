@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { GlobalLoadingShell } from '../ui/GlobalLoadingShell';
 
 export const ProtectedRoute = ({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) => {
-  const { isLoggedIn, loading, user } = useAuth();
+  const { isLoggedIn, loading, isAnyAdmin } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -15,7 +15,7 @@ export const ProtectedRoute = ({ children, adminOnly = false }: { children: Reac
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  if (adminOnly && user?.role !== 'admin') {
+  if (adminOnly && !isAnyAdmin) {
     return <Navigate to="/" replace />;
   }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Bed,
   Bell,
@@ -33,7 +33,9 @@ const NAV_CATEGORIES = [
 
 export const Navbar = () => {
   const navigate = useNavigate();
-  const { user, logout, unreadMessages, unreadAlerts } = useAuth();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+  const { user, logout, unreadMessages, unreadAlerts, isAnyAdmin } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCategory, setSearchCategory] = useState('all');
@@ -135,46 +137,48 @@ export const Navbar = () => {
             <Logo size={26} />
           </Link>
 
-          <form className="search-wrap" onSubmit={handleSearch} ref={searchRef}>
-            <select
-              className="search-cat"
-              value={searchCategory}
-              onChange={(event) => setSearchCategory(event.target.value)}
-              aria-label="Search category"
-            >
-              <option value="all">All Categories</option>
-              <option value="Academia">Books & Notes</option>
-              <option value="Tech">Electronics</option>
-              <option value="Rides">Vehicles</option>
-              <option value="Living">Room & Living</option>
-              <option value="Attire">Clothing</option>
-              <option value="Gifts">Gifts</option>
-            </select>
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search for anything on campus."
-              value={searchQuery}
-              onChange={(event) => {
-                setSearchQuery(event.target.value);
-                setShowSearchSuggestions(event.target.value.trim().length > 0);
-              }}
-              onFocus={() => setShowSearchSuggestions(searchQuery.trim().length > 0)}
-            />
-            <button className="search-btn" type="submit">
-              <Search size={16} /> Search
-            </button>
-            {showSearchSuggestions && searchQuery.trim().length > 0 && (
-              <div className="search-suggestions">
-                <button type="button" className="suggestion-item" onClick={() => goToMarketplace('all', searchQuery)}>
-                  Search "{searchQuery}" in all campus items
-                </button>
-                <button type="button" className="suggestion-item" onClick={() => goToMarketplace(searchCategory, searchQuery)}>
-                  Search inside selected category
-                </button>
-              </div>
-            )}
-          </form>
+          {!isHomePage && (
+            <form className="search-wrap" onSubmit={handleSearch} ref={searchRef}>
+              <select
+                className="search-cat"
+                value={searchCategory}
+                onChange={(event) => setSearchCategory(event.target.value)}
+                aria-label="Search category"
+              >
+                <option value="all">All Categories</option>
+                <option value="Academia">Books & Notes</option>
+                <option value="Tech">Electronics</option>
+                <option value="Rides">Vehicles</option>
+                <option value="Living">Room & Living</option>
+                <option value="Attire">Clothing</option>
+                <option value="Gifts">Gifts</option>
+              </select>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search for anything on campus."
+                value={searchQuery}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setShowSearchSuggestions(event.target.value.trim().length > 0);
+                }}
+                onFocus={() => setShowSearchSuggestions(searchQuery.trim().length > 0)}
+              />
+              <button className="search-btn" type="submit">
+                <Search size={16} /> Search
+              </button>
+              {showSearchSuggestions && searchQuery.trim().length > 0 && (
+                <div className="search-suggestions">
+                  <button type="button" className="suggestion-item" onClick={() => goToMarketplace('all', searchQuery)}>
+                    Search "{searchQuery}" in all campus items
+                  </button>
+                  <button type="button" className="suggestion-item" onClick={() => goToMarketplace(searchCategory, searchQuery)}>
+                    Search inside selected category
+                  </button>
+                </div>
+              )}
+            </form>
+          )}
 
           <div className="nav-actions">
             {user ? (
@@ -213,7 +217,7 @@ export const Navbar = () => {
                       <button className="drop-item" onClick={() => { navigate('/profile?tab=listings'); setShowProfile(false); }}>
                         <Package size={16} /> My Listings
                       </button>
-                      {user.role === 'admin' && (
+                      {isAnyAdmin && (
                         <button className="drop-item" onClick={() => { navigate('/admin'); setShowProfile(false); }}>
                           <ShieldCheck size={16} /> Admin
                         </button>

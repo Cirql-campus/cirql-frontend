@@ -206,9 +206,9 @@ export const Home = () => {
             </div>
 
             <div className="landing-stats">
-              <div className="lstat"><span className="lstat-num">2,400+</span><span className="lstat-lbl">Active Listings</span></div>
+              <div className="lstat"><span className="lstat-num">40+</span><span className="lstat-lbl">Active Listings</span></div>
               <div className="lstat-div"></div>
-              <div className="lstat"><span className="lstat-num">18</span><span className="lstat-lbl">Colleges</span></div>
+              <div className="lstat"><span className="lstat-num">4</span><span className="lstat-lbl">Colleges</span></div>
               <div className="lstat-div"></div>
               <div className="lstat"><span className="lstat-num">₹0</span><span className="lstat-lbl">Commission</span></div>
             </div>

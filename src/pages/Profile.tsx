@@ -44,7 +44,7 @@ type ProfileSection = 'listings' | 'edit' | 'settings';
 export const Profile = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout, refreshUser, isAnyAdmin } = useAuth();
   const [listings, setListings] = useState<ApiListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -261,7 +261,7 @@ export const Profile = () => {
             )}
             <h2 className="profile-name">{user?.name || 'Your Profile'}</h2>
             <p className="profile-college">{user?.college || 'Campus member'}</p>
-            {user?.role === 'admin' && (
+            {isAnyAdmin && (
               <div className="settings-card" style={{ marginTop: 16, textAlign: 'left' }}>
                 <div className="settings-card-icon">
                   <ShieldCheck size={20} />
@@ -299,7 +299,7 @@ export const Profile = () => {
             >
               <Package size={18} /> My Listings
             </button>
-            {user?.role === 'admin' && (
+            {isAnyAdmin && (
               <button
                 className="menu-item"
                 onClick={() => {

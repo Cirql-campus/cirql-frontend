@@ -15,7 +15,8 @@ export interface User {
   listingCount?: number;
   soldCount?: number;
   isVerified: boolean;
-  role?: 'user' | 'admin';
+  role?: 'user' | 'admin' | 'college_admin' | 'super_admin';
+  adminCollege?: string | null;
   pushSubscriptionCount?: number;
   notificationPreferences?: {
     pushEnabled: boolean;
@@ -47,6 +48,9 @@ interface AuthContextType {
   setUnreadAlerts: React.Dispatch<React.SetStateAction<number>>;
   fetchUnreadCounts: () => Promise<void>;
   getAccessToken: () => string | null;
+  isSuperAdmin: boolean;
+  isCollegeAdmin: boolean;
+  isAnyAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -188,11 +192,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUnreadAlerts(0);
   };
 
+  const isSuperAdmin = user?.role === 'super_admin';
+  const isCollegeAdmin = user?.role === 'college_admin';
+  const isAnyAdmin = isSuperAdmin || isCollegeAdmin || user?.role === 'admin';
+
   return (
     <AuthContext.Provider value={{ 
       user, loading, login, signup, verifyOTP, logout, refreshUser, isLoggedIn: !!user,
       unreadMessages, setUnreadMessages, unreadAlerts, setUnreadAlerts, fetchUnreadCounts,
-      getAccessToken: () => accessTokenRef.current
+      getAccessToken: () => accessTokenRef.current,
+      isSuperAdmin, isCollegeAdmin, isAnyAdmin
     }}>
       {children}
     </AuthContext.Provider>
