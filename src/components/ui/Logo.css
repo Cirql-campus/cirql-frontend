@@ -5,6 +5,8 @@
   display: inline-flex;
   align-items: center;
   cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .brand-logo-mark {
@@ -14,6 +16,7 @@
   color: #fff;
   letter-spacing: 0;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .brand-logo-q {

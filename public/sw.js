@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cirql-shell-v1';
+const CACHE_NAME = 'cirql-shell-v2';
 const SHELL_ASSETS = ['/', '/index.html', '/favicon.png', '/icon-192.png'];
 
 self.addEventListener('install', event => {
@@ -18,14 +18,62 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Only cache GET requests for same-origin non-API assets
   const url = new URL(event.request.url);
-  if (event.request.method !== 'GET') return;
-  if (url.pathname.startsWith('/api/')) return; // never cache API calls
 
-  event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
-  );
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+
+  // Never intercept API calls — always go to network
+  if (url.pathname.startsWith('/api/')) return;
+
+  // Never intercept cross-origin requests
+  if (url.origin !== self.location.origin) return;
+
+  // HTML documents — NETWORK FIRST
+  // Always fetch fresh index.html from Vercel so new JS bundle
+  // filenames are always correct after a deploy.
+  // Falls back to cache only when completely offline.
+  const isHTMLRequest =
+    event.request.mode === 'navigate' ||
+    event.request.headers.get('accept')?.includes('text/html');
+
+  if (isHTMLRequest) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Static assets (JS, CSS, images) — CACHE FIRST
+  // Safe because Vite gives them hashed filenames — content never changes.
+  const isStaticAsset =
+    url.pathname.startsWith('/assets/') ||
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|svg|ico|woff|woff2|ttf)$/);
+
+  if (isStaticAsset) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+  // Everything else — network only, no caching
 });
 
 self.addEventListener('push', function(event) {
