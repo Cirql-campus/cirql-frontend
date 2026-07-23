@@ -423,3 +423,31 @@
     display: none; /* already hidden at 768px presumably, reinforce */
   }
 }
+
+/* === 390px–430px phones (Pixel 4, Galaxy S9+, iPhone 12) === */
+@media (max-width: 430px) {
+  .nav-btn-outline {
+    padding: 0 10px;
+    font-size: 11px;
+    height: 36px;
+    letter-spacing: -0.2px;
+  }
+  .nav-btn-green {
+    padding: 0 10px;
+    font-size: 11px;
+    height: 36px;
+    letter-spacing: -0.2px;
+  }
+  .navbar-inner {
+    gap: 6px;
+  }
+  .nav-actions {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  /* Ensure logo doesn't take too much space */
+  .logo-wrap {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+}

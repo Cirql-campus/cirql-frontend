@@ -903,3 +903,76 @@
     gap: 10px;
   }
 }
+
+/* === 390px–430px phones and general mobile fixes for about/why section === */
+@media (max-width: 768px) {
+  /* About/Why section - collapse 3-col grid to 1-col on all mobile */
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .about-section {
+    padding: 28px 20px;
+    margin: 24px 16px;
+    border-radius: 16px;
+  }
+  .about-title {
+    font-size: 22px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  .about-text {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 430px) {
+  /* Hero landing inner - ensure no 2-col layout leaks through */
+  .landing-inner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* About section heading - prevent word break */
+  .about-title {
+    font-size: 20px;
+    line-height: 1.3;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  /* If there's a logo/brand card floating next to the Why text,
+     make it display below the text, not beside it */
+  .about-section {
+    padding: 24px 16px;
+    margin: 20px 12px;
+  }
+
+  /* About cards - ensure text doesn't overflow */
+  .about-card {
+    padding: 18px 16px;
+  }
+  .about-card-title {
+    font-size: 14px;
+    word-break: break-word;
+  }
+  .about-card-desc {
+    font-size: 12px;
+  }
+
+  /* Landing title at this range */
+  .landing-title {
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Landing page top padding for these screens */
+  .landing-page {
+    padding-top: 48px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}

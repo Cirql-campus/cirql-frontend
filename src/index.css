@@ -64,6 +64,14 @@ h1, h2, h3, h4, h5, h6 {
   word-break: break-word; /* fallback for older browsers */
 }
 
+@media (max-width: 768px) {
+  h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+  }
+}
+
 p, span, li, td, th, label {
   overflow-wrap: break-word;
 }
