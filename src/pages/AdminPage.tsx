@@ -103,6 +103,10 @@ export const AdminPage = () => {
   const [assigningCollege, setAssigningCollege] = useState<string | null>(null);
   const [assignEmail, setAssignEmail] = useState('');
 
+  const [showAddCollegeForm, setShowAddCollegeForm] = useState(false);
+  const [newCollegeName, setNewCollegeName] = useState('');
+  const [newCollegeDomain, setNewCollegeDomain] = useState('');
+
   // Audit Logs States
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [auditTotal, setAuditTotal] = useState(0);
@@ -283,6 +287,29 @@ export const AdminPage = () => {
       await loadCollegesData();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to dismiss college admin'));
+    } finally {
+      setBusy('');
+    }
+  };
+
+  const handleAddCollege = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCollegeName.trim() || !newCollegeDomain.trim()) return;
+    setBusy('add_college');
+    setError('');
+    setSuccessMsg('');
+    try {
+      await api.post('/admin/colleges', {
+        name: newCollegeName.trim(),
+        domain: newCollegeDomain.trim()
+      });
+      setSuccessMsg(`Successfully added college: ${newCollegeName}`);
+      setNewCollegeName('');
+      setNewCollegeDomain('');
+      setShowAddCollegeForm(false);
+      await loadCollegesData();
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to add college'));
     } finally {
       setBusy('');
     }
@@ -660,12 +687,55 @@ export const AdminPage = () => {
       {/* COLLEGES TAB (Super Admin Only) */}
       {!loading && activeTab === 'colleges' && isSuperAdmin && (
         <>
-          <div className="workspace-header">
+          <div className="workspace-header" style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
             <div>
               <h1>College Stats & Overview</h1>
               <p>Overview of active colleges, total users, and listings count.</p>
             </div>
+            {!showAddCollegeForm && (
+              <Button size="sm" onClick={() => setShowAddCollegeForm(true)}>
+                + Add College
+              </Button>
+            )}
           </div>
+
+          {/* Add New College Form */}
+          {showAddCollegeForm && (
+            <div className="workspace-card" style={{ marginBottom: 28, maxWidth: 500 }}>
+              <h2>Add New College</h2>
+              <p className="muted" style={{ marginBottom: 12 }}>
+                Enter the name and allowed email domain of the new campus.
+              </p>
+              <form onSubmit={handleAddCollege} className="admin-form-inline" style={{ flexDirection: 'column', gap: '12px', alignItems: 'stretch' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600 }}>College Name</label>
+                  <input 
+                    type="text" 
+                    value={newCollegeName} 
+                    onChange={e => setNewCollegeName(e.target.value)} 
+                    placeholder="e.g. GLA University"
+                    required
+                    style={{ padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 8 }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600 }}>Email Domain</label>
+                  <input 
+                    type="text" 
+                    value={newCollegeDomain} 
+                    onChange={e => setNewCollegeDomain(e.target.value)} 
+                    placeholder="e.g. gla.ac.in"
+                    required
+                    style={{ padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 8 }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <Button type="submit" disabled={busy === 'add_college'}>Add College</Button>
+                  <Button type="button" variant="outline" onClick={() => { setShowAddCollegeForm(false); setNewCollegeName(''); setNewCollegeDomain(''); }}>Cancel</Button>
+                </div>
+              </form>
+            </div>
+          )}
 
           <div className="admin-table-container">
             <table className="admin-table">
