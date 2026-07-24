@@ -48,16 +48,14 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             <div className="card-loc">📍 {college}</div>
             <div className="card-cond new">{status || 'Available'}</div>
          </div>
-         {sellerRating !== undefined && sellerRating > 0 && (
+         {sellerReviewCount !== undefined && sellerReviewCount > 0 && sellerRating !== undefined && sellerRating > 0 && (
            <div className="card-seller-trust">
              <span className="card-seller-stars">
                {'★'.repeat(Math.round(sellerRating))}{'☆'.repeat(5 - Math.round(sellerRating))}
              </span>
              <span className="card-seller-info">
                {sellerRating.toFixed(1)}
-               {sellerReviewCount !== undefined && sellerReviewCount > 0
-                 ? ` · ${sellerReviewCount} review${sellerReviewCount === 1 ? '' : 's'}`
-                 : ''}
+               {` · ${sellerReviewCount} review${sellerReviewCount === 1 ? '' : 's'}`}
              </span>
            </div>
          )}

@@ -303,11 +303,11 @@ export const ItemDetail = () => {
                   <div className="detail-muted">
                     {sellerLocation} / {formatViews(listing.views)}
                   </div>
-                  <div className="detail-muted">
-                    {hasSellerReviews
-                      ? `Trust ${sellerTrustScore ?? 'unrated'}/100 / ${sellerRating.toFixed(1)} stars / ${sellerReviewCount} reviews`
-                      : `${listing.seller.isVerified ? 'Verified college seller' : 'Seller profile'} / Trust profile building / No reviews yet`}
-                  </div>
+                  {hasSellerReviews && (
+                    <div className="detail-muted">
+                      Trust {sellerTrustScore ?? 'unrated'}/100 / {sellerRating.toFixed(1)} stars / {sellerReviewCount} reviews
+                    </div>
+                  )}
                 </div>
               </div>
 
