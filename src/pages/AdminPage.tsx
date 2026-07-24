@@ -106,6 +106,7 @@ export const AdminPage = () => {
   const [showAddCollegeForm, setShowAddCollegeForm] = useState(false);
   const [newCollegeName, setNewCollegeName] = useState('');
   const [newCollegeDomain, setNewCollegeDomain] = useState('');
+  const [showAssignAdminForm, setShowAssignAdminForm] = useState(false);
 
   // Audit Logs States
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
@@ -268,6 +269,7 @@ export const AdminPage = () => {
       setSuccessMsg(`Successfully assigned ${assignEmail} as admin of ${assigningCollege}`);
       setAssignEmail('');
       setAssigningCollege(null);
+      setShowAssignAdminForm(false);
       await loadCollegesData();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to promote college admin'));
@@ -310,6 +312,21 @@ export const AdminPage = () => {
       await loadCollegesData();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to add college'));
+    } finally {
+      setBusy('');
+    }
+  };
+
+  const handleRemoveCollege = async (collegeId: string) => {
+    setBusy('remove_college');
+    setError('');
+    setSuccessMsg('');
+    try {
+      await api.delete(`/admin/colleges/${collegeId}`);
+      setSuccessMsg('Successfully removed college');
+      await loadCollegesData();
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to remove college'));
     } finally {
       setBusy('');
     }
@@ -752,7 +769,26 @@ export const AdminPage = () => {
               <tbody>
                 {superColleges.map((c, i) => (
                   <tr key={i}>
-                    <td><strong>{c.college || 'Unknown Campus'}</strong></td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <strong>{c.college || 'Unknown Campus'}</strong>
+                        {c.id && (
+                          <button
+                            title="Remove college"
+                            onClick={() => confirmAction({
+                              title: 'Remove College?',
+                              description: `Are you sure you want to remove ${c.college}? This will remove it from the whitelisted college list.`,
+                              confirmLabel: 'Remove',
+                              danger: true,
+                              run: () => handleRemoveCollege(c.id)
+                            })}
+                            style={{ background: 'none', border: 'none', color: '#d32f2f', cursor: 'pointer', padding: 4, display: 'inline-flex', alignItems: 'center' }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
                     <td>{c.totalUsers}</td>
                     <td>{c.totalListings}</td>
                     <td>{c.activeListings}</td>
@@ -806,12 +842,58 @@ export const AdminPage = () => {
           )}
 
           {/* College Admins List */}
-          <div className="workspace-header" style={{ marginTop: 32 }}>
+          <div className="workspace-header" style={{ marginTop: 32, display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
             <div>
               <h1>Assigned College Admins</h1>
               <p>Listing of users managing individual campus scopes.</p>
             </div>
+            {!showAssignAdminForm && (
+              <Button size="sm" onClick={() => { setShowAssignAdminForm(true); setAssigningCollege(null); setAssignEmail(''); }}>
+                + Assign Admin
+              </Button>
+            )}
           </div>
+
+          {/* General Admin Assignment Form */}
+          {showAssignAdminForm && (
+            <div className="workspace-card" style={{ marginBottom: 28, maxWidth: 500 }}>
+              <h2>Assign College Admin</h2>
+              <p className="muted" style={{ marginBottom: 12 }}>
+                Enter the email address of the user and select their college scope.
+              </p>
+              <form onSubmit={handleAssignAdmin} className="admin-form-inline" style={{ flexDirection: 'column', gap: '12px', alignItems: 'stretch' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600 }}>User Email</label>
+                  <input 
+                    type="email" 
+                    value={assignEmail} 
+                    onChange={e => setAssignEmail(e.target.value)} 
+                    placeholder="user@domain.com"
+                    required
+                    style={{ padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 8 }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600 }}>Select College Scope</label>
+                  <select
+                    value={assigningCollege || ''}
+                    onChange={e => setAssigningCollege(e.target.value)}
+                    required
+                    style={{ padding: '8px 12px', border: '1px solid var(--gray-200)', borderRadius: 8, background: '#fff' }}
+                  >
+                    <option value="" disabled>-- Select a College --</option>
+                    {superColleges.map((c, i) => (
+                      <option key={i} value={c.college}>{c.college}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <Button type="submit" disabled={busy === 'assign'}>Assign Admin</Button>
+                  <Button type="button" variant="outline" onClick={() => { setShowAssignAdminForm(false); setAssignEmail(''); setAssigningCollege(null); }}>Cancel</Button>
+                </div>
+              </form>
+            </div>
+          )}
           <div className="admin-table-container">
             <table className="admin-table">
               <thead>
