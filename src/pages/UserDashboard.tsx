@@ -6,7 +6,7 @@ import {
   Handshake,
   MessageCircle,
   Package,
-  PlusCircle,
+  Plus,
   Search,
   ShieldCheck,
   Trash2,
@@ -223,7 +223,7 @@ export const UserDashboard = () => {
           <p>{user?.college || 'Your campus'} marketplace is ready for you.</p>
         </div>
         <div className="dash-hero-actions">
-          <Button onClick={() => navigate('/create')}><PlusCircle size={16} /> Post item</Button>
+          <Button onClick={() => navigate('/create')}><Plus size={16} strokeWidth={3} /> Post Item</Button>
           <Button variant="outline" onClick={() => navigate('/marketplace')}><Search size={16} /> Marketplace</Button>
         </div>
       </section>
