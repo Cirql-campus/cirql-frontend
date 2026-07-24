@@ -17,6 +17,7 @@ export const Signup = () => {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [otp, setOtp] = useState('');
@@ -39,7 +40,7 @@ export const Signup = () => {
     if (!/[^a-zA-Z0-9]/.test(password)) return setError('Password must contain at least one special character');
 
     setLoading(true);
-    const result = await signup(name, email, password);
+    const result = await signup(name, email, password, agreedToTerms);
     setLoading(false);
     if (result.ok) {
       setShowOTP(true);
@@ -154,7 +155,19 @@ export const Signup = () => {
                   )}
                 </div>
 
-                <button type="submit" className="premium-btn" disabled={loading || !passwordMeetsRequirements(password)}>
+                <label className="terms-consent">
+                  <input
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  />
+                  I agree to the{' '}
+                  <Link to="/terms" target="_blank" rel="noopener noreferrer">Terms & Conditions</Link>
+                  {' '}and{' '}
+                  <Link to="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>
+                </label>
+
+                <button type="submit" className="premium-btn" disabled={loading || !passwordMeetsRequirements(password) || !agreedToTerms}>
                   {loading ? 'Creating Account...' : 'Create Free Account'}
                 </button>
               </form>

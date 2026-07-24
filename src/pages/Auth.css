@@ -423,3 +423,31 @@
     padding: 24px 16px;
   }
 }
+
+.terms-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  margin-top: 16px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.terms-consent input[type="checkbox"] {
+  margin-top: 3.5px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.terms-consent a {
+  color: var(--accent-dark, #15803d);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.terms-consent a:hover {
+  color: var(--accent, #22c55e);
+}

@@ -37,7 +37,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  signup: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  signup: (name: string, email: string, password: string, agreedToTerms?: boolean) => Promise<{ ok: boolean; error?: string }>;
   verifyOTP: (email: string, otp: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<User | null>;
@@ -156,9 +156,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signup = async (name: string, email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
+  const signup = async (name: string, email: string, password: string, agreedToTerms?: boolean): Promise<{ ok: boolean; error?: string }> => {
     try {
-      await api.post('/auth/register', { name, email, password });
+      await api.post('/auth/register', { name, email, password, agreedToTerms });
       // Don't set user yet, wait for OTP
       return { ok: true };
     } catch (err: unknown) {
