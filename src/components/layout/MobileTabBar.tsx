@@ -43,7 +43,7 @@ export const MobileTabBar = () => {
         <div className="sell-icon-wrap">
           <Plus size={22} strokeWidth={3} />
         </div>
-        <span>Sell</span>
+        <span>Post Item</span>
       </NavLink>
 
       <NavLink
