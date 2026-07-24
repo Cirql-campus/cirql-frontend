@@ -28,7 +28,8 @@
   color: #64748b;
   display: flex;
   align-items: center;
-  padding: 6px;
+  padding: 12px;
+  margin: -6px;
   border-radius: 8px;
   transition: background 0.15s;
 }
@@ -284,12 +285,14 @@
 }
 
 .msg-report-btn {
-  margin-left: 8px;
+  margin-left: 0;
   border: 0;
   background: transparent;
   color: inherit;
   cursor: pointer;
   vertical-align: middle;
+  padding: 16px;
+  margin: -16px -12px -16px -8px;
 }
 
 /* Input bar */
@@ -320,7 +323,7 @@
   color: #1e293b;
   background: #f8fafc;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, height 0.15s ease-out;
   resize: none;
   overflow-y: auto;
 }
@@ -449,3 +452,114 @@
     padding: 10px 12px;
   }
 }
+
+.unseen-pill {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--black);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 30;
+  cursor: pointer;
+  animation: pillSlideUp 0.25s ease-out;
+}
+.unseen-badge {
+  background: var(--accent);
+  color: #000;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes pillSlideUp {
+  0% { transform: translate(-50%, 12px); opacity: 0; }
+  100% { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Grouping and typing indicator styles */
+.msg-avatar-spacer {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.msg-row.grouped {
+  margin-top: -6px;
+}
+
+.msg-row.grouped .msg-bubble {
+  border-top-left-radius: 18px;
+}
+
+.msg-row.grouped.other .msg-bubble {
+  border-top-left-radius: 4px;
+}
+
+.msg-row.grouped.own .msg-bubble {
+  border-top-right-radius: 4px;
+}
+
+.typing-row {
+  margin-top: 4px;
+}
+
+.typing-bubble {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  min-height: 38px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: #64748b;
+  border-radius: 50%;
+  animation: typingBounce 1.4s infinite both;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.msg-status-check {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.msg-status-check.sent {
+  color: #94a3b8;
+}
+
+.msg-status-check.read {
+  color: #22c55e;
+}
+

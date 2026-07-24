@@ -88,7 +88,12 @@ export const Browse = () => {
           {ALL_LISTINGS.length > 0 ? (
             <div className="listings-grid-view">
               {ALL_LISTINGS.map(item => (
-                <ListingCard key={item.id} {...item} />
+                <ListingCard 
+                  key={item.id} 
+                  {...item} 
+                  sellerRating={(item as any).seller?.rating}
+                  sellerReviewCount={(item as any).seller?.reviewCount}
+                />
               ))}
             </div>
           ) : (

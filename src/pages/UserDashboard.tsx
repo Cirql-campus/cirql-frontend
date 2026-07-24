@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SkeletonGrid } from '../components/ui/SkeletonCard';
 import {
   Bell,
   Handshake,
@@ -9,6 +10,8 @@ import {
   Search,
   ShieldCheck,
   Trash2,
+  Eye,
+  Heart,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
@@ -26,6 +29,8 @@ interface Listing {
   status?: string;
   condition?: string;
   expiresAt?: string;
+  views?: number;
+  savedBy?: string[];
 }
 
 interface Deal {
@@ -149,11 +154,16 @@ export const UserDashboard = () => {
     [deals]
   );
 
+  const totalViews = myListings.reduce((sum, l) => sum + (l.views || 0), 0);
+  const totalSaved = myListings.reduce((sum, l) => sum + (l.savedBy?.length || 0), 0);
+
   const stats = [
-    { label: 'My listings', value: myListings.length, icon: Package },
-    { label: 'Active deals', value: activeDeals.length, icon: Handshake },
-    { label: 'Unread messages', value: unreadMessages, icon: MessageCircle },
-    { label: 'Alerts', value: unreadAlerts, icon: Bell },
+    { label: 'My listings',     value: myListings.length,  icon: Package },
+    { label: 'Active deals',    value: activeDeals.length, icon: Handshake },
+    { label: 'Total views',     value: totalViews,         icon: Eye },
+    { label: 'People watching', value: totalSaved,         icon: Heart },
+    { label: 'Unread messages', value: unreadMessages,     icon: MessageCircle },
+    { label: 'Alerts',          value: unreadAlerts,       icon: Bell },
   ];
 
   const deleteMyListing = async (id: string) => {
@@ -231,7 +241,7 @@ export const UserDashboard = () => {
       </section>
 
       {loading ? (
-        <div className="dash-empty">Loading your campus dashboard...</div>
+        <SkeletonGrid count={6} />
       ) : (
         <div className="dash-grid">
           <section className="dash-panel">
@@ -286,6 +296,11 @@ export const UserDashboard = () => {
                   <div onClick={() => navigate(`/item/${listing._id}`)} className="dash-row">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                       <span>{listing.title}</span>
+                      {(listing.views || 0) > 0 && (
+                        <span className="listing-views-inline">
+                          👁 {listing.views} view{listing.views === 1 ? '' : 's'}
+                        </span>
+                      )}
                       {(() => {
                         const expiry = getExpiryLabel(listing.expiresAt);
                         return expiry ? (

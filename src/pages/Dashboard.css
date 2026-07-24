@@ -975,6 +975,7 @@
     left: -100%;
     width: 280px;
     height: 100vh;
+    height: 100dvh;
     background: #f8fafc;
     z-index: 1000;
     overflow-y: auto;
@@ -1077,5 +1078,12 @@
     padding: 6px 12px;
     font-size: 13px;
   }
+}
+
+.listing-views-inline {
+  font-size: 11px;
+  color: var(--text-muted, #888);
+  font-weight: 500;
+  white-space: nowrap;
 }
 

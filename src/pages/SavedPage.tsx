@@ -3,6 +3,7 @@ import { ShoppingCart, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api, getErrorMessage } from '../utils/api';
 import { ListingCard } from '../components/ui/ListingCard';
+import { SkeletonGrid } from '../components/ui/SkeletonCard';
 import { EmptyState } from '../components/ui/EmptyState';
 import { useAuth } from '../contexts/AuthContext';
 import './Dashboard.css';
@@ -29,6 +30,9 @@ interface SavedListingCard {
   image: string;
   college: string;
   status: string;
+  sellerRating?: number;
+  sellerReviewCount?: number;
+  sellerName?: string;
 }
 
 export const SavedPage = () => {
@@ -42,7 +46,7 @@ export const SavedPage = () => {
     setLoading(true);
     try {
       const res = await api.get<{ listings: ApiListing[] }>('/listings/saved/me?limit=50');
-      const mapped: SavedListingCard[] = res.listings.map(l => ({
+      const mapped: SavedListingCard[] = res.listings.map((l: any) => ({
         id: l._id,
         title: l.title,
         price: l.price,
@@ -52,6 +56,9 @@ export const SavedPage = () => {
         image: l.images?.[0] || '',
         college: l.college || 'Campus',
         status: l.status || 'available',
+        sellerRating: l.seller?.rating,
+        sellerReviewCount: l.seller?.reviewCount,
+        sellerName: l.seller?.name,
       }));
       setListings(mapped);
     } catch (err) {
@@ -87,7 +94,7 @@ export const SavedPage = () => {
       {error && <div className="auth-error" style={{ marginBottom: '16px' }}>{error}</div>}
       
       {loading ? (
-        <div style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '60px' }}>Loading your cart...</div>
+        <SkeletonGrid count={6} />
       ) : listings.length === 0 ? (
         <EmptyState
           icon={Search}

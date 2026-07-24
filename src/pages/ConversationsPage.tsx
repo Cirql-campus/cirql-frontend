@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { MessageCircle, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import { SkeletonConversation } from '../components/ui/SkeletonCard';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
 import './WorkspacePages.css';
@@ -29,17 +31,27 @@ export const ConversationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const loadConversations = async () => {
+    try {
+      const res = await api.get<{ conversations: Conversation[]; pagination?: Pagination }>('/chat/conversations?page=1&limit=20');
+      setConversations(res.conversations);
+      setPagination(res.pagination || { hasMore: false, page: 1 });
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to load conversations'));
+    }
+  };
+
+  const handleRefresh = async () => {
+    await loadConversations();
+  };
+
+  const { pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
+
   useEffect(() => {
     const load = async () => {
-      try {
-        const res = await api.get<{ conversations: Conversation[]; pagination?: Pagination }>('/chat/conversations?page=1&limit=20');
-        setConversations(res.conversations);
-        setPagination(res.pagination || { hasMore: false, page: 1 });
-      } catch (err) {
-        setError(getErrorMessage(err, 'Failed to load conversations'));
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      await loadConversations();
+      setLoading(false);
     };
     load();
   }, []);
@@ -91,6 +103,17 @@ export const ConversationsPage = () => {
 
   return (
     <div className="workspace-page container">
+      {(pullDistance > 0 || isRefreshing) && (
+        <div 
+          className="pull-to-refresh-indicator" 
+          style={{ 
+            transform: `translateY(${Math.min(pullDistance, 80)}px) translateX(-50%)`,
+            opacity: Math.min(pullDistance / 60, 1)
+          }}
+        >
+          {isRefreshing ? <span className="refresh-spinner" /> : '↓ Pull to refresh'}
+        </div>
+      )}
       <div className="workspace-header">
         <div>
           <h1>Messages</h1>
@@ -99,7 +122,9 @@ export const ConversationsPage = () => {
       </div>
       {error && <div className="auth-error">{error}</div>}
       {loading ? (
-        <div className="empty-state">Loading conversations...</div>
+        <div className="workspace-list">
+          {Array.from({ length: 5 }, (_, i) => <SkeletonConversation key={i} />)}
+        </div>
       ) : conversations.length === 0 ? (
         <div className="empty-state">No conversations yet. Start by messaging a seller.</div>
       ) : (

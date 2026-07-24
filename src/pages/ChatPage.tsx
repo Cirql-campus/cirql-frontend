@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Flag, Send, ShoppingBag, Wifi, WifiOff } from 'lucide-react';
 import { TextDialog } from '../components/ui/AppDialog';
@@ -21,6 +21,7 @@ interface ApiMessage {
   sender: string | Sender;
   text: string;
   createdAt?: string;
+  read?: boolean;
 }
 
 interface ChatMessage {
@@ -31,6 +32,7 @@ interface ChatMessage {
   text: string;
   createdAt?: string;
   status?: 'sending' | 'sent' | 'failed';
+  read?: boolean;
 }
 
 interface SocketMessagePayload {
@@ -68,6 +70,7 @@ const normalizeMessage = (message: ApiMessage): ChatMessage => ({
   text: message.text,
   createdAt: message.createdAt,
   status: 'sent',
+  read: message.read,
 });
 
 const reconcileMessage = (current: ChatMessage[], next: ChatMessage) => {
@@ -143,6 +146,12 @@ export const ChatPage = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const shouldStickToBottomRef = useRef(true);
   const fetchUnreadCountsRef = useRef(fetchUnreadCounts);
+  const [unseenIncomingCount, setUnseenIncomingCount] = useState(0);
+  const isPrependingRef = useRef(false);
+  const prevScrollHeightRef = useRef(0);
+  const [partnerTyping, setPartnerTyping] = useState(false);
+  const typingTimeoutRef = useRef<any>(null);
+  const lastEmitTypingTimeRef = useRef(0);
 
   useEffect(() => {
     fetchUnreadCountsRef.current = fetchUnreadCounts;
@@ -179,6 +188,9 @@ export const ChatPage = () => {
     try {
       const nextPage = pagination.page + 1;
       const res = await api.get<{ messages: ApiMessage[]; pagination?: Pagination }>(`/chat/conversations/${roomId}/messages?page=${nextPage}&limit=40`);
+      const container = messagesRef.current;
+      prevScrollHeightRef.current = container?.scrollHeight ?? 0;
+      isPrependingRef.current = true;
       setMessages(prev => prependUnique(prev, res.messages.map(normalizeMessage)));
       setPagination(res.pagination || { hasMore: false, page: nextPage });
     } catch (err: unknown) {
@@ -208,8 +220,20 @@ export const ChatPage = () => {
       // Let's just append it, appendUnique handles duplicates by _id.
       setMessages(prev => reconcileMessage(prev, normalizeMessage(msg)));
       
+      setPartnerTyping(false);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
       // Since we are actively viewing it, tell backend to mark as read, or just refresh counts
       setTimeout(() => fetchUnreadCountsRef.current(), 1000); 
+    };
+
+    const handlePartnerTyping = (data: { conversationId: string; userName: string }) => {
+      if (data.conversationId !== roomId) return;
+      setPartnerTyping(true);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        setPartnerTyping(false);
+      }, 3000);
     };
 
     if (socket.connected) {
@@ -219,34 +243,88 @@ export const ChatPage = () => {
     }
     
     socket.on('new_message', handleIncomingMessage);
+    socket.on('typing_indicator', handlePartnerTyping);
 
     return () => {
       socket.off('connect', joinRoom);
       socket.off('new_message', handleIncomingMessage);
+      socket.off('typing_indicator', handlePartnerTyping);
       // We don't disconnect the global socket
     };
   }, [roomId, user]);
 
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (partnerTyping && shouldStickToBottomRef.current) {
+      scrollToBottom('smooth');
+    }
+  }, [partnerTyping]);
+
+  const handleTyping = () => {
+    if (!roomId) return;
+    const now = Date.now();
+    if (now - lastEmitTypingTimeRef.current > 1500) {
+      lastEmitTypingTimeRef.current = now;
+      const socket = getSocket();
+      if (socket && socket.connected) {
+        socket.emit('typing', { conversationId: roomId });
+      }
+    }
+  };
+
   const prevLastMessageRef = useRef<string | null>(null);
 
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
-    bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
+    });
   };
 
   const updateStickiness = () => {
     const container = messagesRef.current;
     if (!container) return;
     const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-    shouldStickToBottomRef.current = distanceFromBottom < 120;
+    const isNearBottom = distanceFromBottom < 120;
+    shouldStickToBottomRef.current = isNearBottom;
+    if (isNearBottom) {
+      setUnseenIncomingCount(0);
+    }
   };
+
+  useLayoutEffect(() => {
+    if (isPrependingRef.current && messagesRef.current) {
+      isPrependingRef.current = false;
+      const container = messagesRef.current;
+      const newScrollHeight = container.scrollHeight;
+      container.scrollTop += (newScrollHeight - prevScrollHeightRef.current);
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
       const lastMsgId = lastMsg._id || lastMsg.clientId || lastMsg.text;
       if (prevLastMessageRef.current !== lastMsgId) {
-        if (!prevLastMessageRef.current || lastMsg.senderId === user?._id || shouldStickToBottomRef.current) {
-          scrollToBottom(prevLastMessageRef.current ? 'smooth' : 'auto');
+        if (!prevLastMessageRef.current) {
+          scrollToBottom('auto');
+        } else {
+          const isOwn = lastMsg.senderId === user?._id;
+          if (isOwn) {
+            scrollToBottom('smooth');
+          } else {
+            if (shouldStickToBottomRef.current) {
+              scrollToBottom('smooth');
+            } else {
+              setUnseenIncomingCount(prev => prev + 1);
+            }
+          }
         }
         prevLastMessageRef.current = lastMsgId;
       }
@@ -259,6 +337,18 @@ export const ChatPage = () => {
     textarea.style.height = 'auto';
     textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
   }, [text]);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const handleResize = () => {
+      if (shouldStickToBottomRef.current) {
+        scrollToBottom('auto');
+      }
+    };
+    viewport.addEventListener('resize', handleResize);
+    return () => viewport.removeEventListener('resize', handleResize);
+  }, []);
 
   const partnerName = useMemo(() => {
     const partner = conversation?.participants.find(participant => participant._id !== user?._id);
@@ -457,6 +547,9 @@ export const ChatPage = () => {
           const isOwn = message.senderId === user?._id;
           const previous = messages[index - 1];
           const showDateSeparator = !previous || getMessageDayKey(previous.createdAt) !== getMessageDayKey(message.createdAt);
+          const isGroupedWithPrevious = !showDateSeparator && previous &&
+            previous.senderId === message.senderId &&
+            (new Date(message.createdAt || '').getTime() - new Date(previous.createdAt || '').getTime()) < 60000;
           return (
             <React.Fragment key={message._id ?? message.clientId ?? index}>
               {showDateSeparator && (
@@ -464,10 +557,16 @@ export const ChatPage = () => {
                   <span>{formatMessageDay(message.createdAt)}</span>
                 </div>
               )}
-              <div className={`msg-row ${isOwn ? 'own' : 'other'} ${message.status === 'failed' ? 'failed' : ''}`}>
-                {!isOwn && <div className="msg-avatar">{message.senderName[0]?.toUpperCase()}</div>}
+              <div className={`msg-row ${isOwn ? 'own' : 'other'} ${message.status === 'failed' ? 'failed' : ''} ${isGroupedWithPrevious ? 'grouped' : ''}`}>
+                {!isOwn && (
+                  isGroupedWithPrevious ? (
+                    <div className="msg-avatar-spacer" />
+                  ) : (
+                    <div className="msg-avatar">{message.senderName[0]?.toUpperCase()}</div>
+                  )
+                )}
                 <div className="msg-bubble-wrap">
-                  {!isOwn && <div className="msg-sender-name">{message.senderName}</div>}
+                  {!isOwn && !isGroupedWithPrevious && <div className="msg-sender-name">{message.senderName}</div>}
                   <div className="msg-bubble">{message.text}</div>
                   <div className="msg-time">
                     {message.status === 'sending' ? 'Sending...' : message.status === 'failed' ? (
@@ -475,6 +574,13 @@ export const ChatPage = () => {
                         Failed. Tap to edit
                       </button>
                     ) : formatTime(message.createdAt)}
+
+                    {isOwn && message.status === 'sent' && (
+                      <span className={`msg-status-check ${message.read ? 'read' : 'sent'}`}>
+                        {message.read ? '✓✓' : '✓'}
+                      </span>
+                    )}
+
                     {!isOwn && message._id && (
                       <button type="button" onClick={() => openReportMessage(message)} className="msg-report-btn" aria-label="Report message">
                         <Flag size={12} />
@@ -486,10 +592,35 @@ export const ChatPage = () => {
             </React.Fragment>
           );
         })}
+        {partnerTyping && (
+          <div className="msg-row other typing-row">
+            <div className="msg-avatar">{partnerName[0]?.toUpperCase()}</div>
+            <div className="msg-bubble-wrap">
+              <div className="msg-bubble typing-bubble">
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+              </div>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
       <PWAGate>
+        {unseenIncomingCount > 0 && (
+          <button
+            type="button"
+            className="unseen-pill"
+            onClick={() => {
+              scrollToBottom('smooth');
+              setUnseenIncomingCount(0);
+            }}
+          >
+            New message{unseenIncomingCount > 1 ? 's' : ''} ↓
+            {unseenIncomingCount > 1 && <span className="unseen-badge">{unseenIncomingCount}</span>}
+          </button>
+        )}
         {showQuickReplies && (
           <div className="quick-replies">
             {quickReplies.map(chip => (
@@ -515,7 +646,10 @@ export const ChatPage = () => {
             className="chat-input"
             placeholder="Type a message..."
             value={text}
-            onChange={e => setText(e.target.value)}
+            onChange={e => {
+              setText(e.target.value);
+              handleTyping();
+            }}
             onKeyDown={handleComposerKeyDown}
             rows={1}
             autoFocus

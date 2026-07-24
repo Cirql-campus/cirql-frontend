@@ -4,22 +4,25 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { Plus } from 'lucide-react';
 import { OfflineBanner } from '../ui/OfflineBanner';
+import { MobileTabBar } from './MobileTabBar';
 
 export const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isMessagesRoute = location.pathname === '/messages' || location.pathname.startsWith('/messages/');
+  const showMobileTabBar = !location.pathname.startsWith('/messages/');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <main style={{ flexGrow: 1, minHeight: 0 }}>
+      <main className={showMobileTabBar ? 'main-content-with-tabbar' : ''} style={{ flexGrow: 1, minHeight: 0 }}>
         <Outlet />
       </main>
       {!isMessagesRoute && <Footer />}
 
       {/* Floating Action Button for Selling */}
       {!isMessagesRoute && <button
+        className="desktop-sell-fab"
         style={{
           position: 'fixed', bottom: '28px', right: '28px', zIndex: 100, 
           height: '52px', padding: '0 22px', background: 'var(--accent)', 
@@ -33,6 +36,7 @@ export const Layout = () => {
         <Plus size={18} strokeWidth={3} /> Post Item
       </button>}
       <OfflineBanner />
+      {showMobileTabBar && <MobileTabBar />}
     </div>
   );
 };

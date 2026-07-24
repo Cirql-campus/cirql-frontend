@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { ListingCard } from '../components/ui/ListingCard';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Input } from '../components/ui/Input';
+import { SkeletonProfile } from '../components/ui/SkeletonCard';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
 import {
@@ -486,7 +487,7 @@ export const Profile = () => {
               <h2 className="section-title">My Listings</h2>
 
               {loading ? (
-            <div className="empty-state">Loading your listings...</div>
+            <SkeletonProfile />
           ) : listings.length > 0 ? (
             <div className="my-listings-grid">
               {listings.map(item => (

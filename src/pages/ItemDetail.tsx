@@ -4,6 +4,7 @@ import { Flag, Handshake, MessageCircle, Pencil, ShieldCheck, UserX, X } from 'l
 import { TextDialog } from '../components/ui/AppDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
+import { ListingCard } from '../components/ui/ListingCard';
 import '../components/layout/Modals.css';
 import './ItemDetail.css';
 
@@ -39,6 +40,7 @@ interface Listing {
   brand?: string;
   model?: string;
   tags?: string[];
+  savedBy?: string[];
 }
 
 interface Review {
@@ -73,6 +75,7 @@ export const ItemDetail = () => {
   const [reportDetails, setReportDetails] = useState('');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [copyToast, setCopyToast] = useState(false);
+  const [similarListings, setSimilarListings] = useState<any[]>([]);
 
   const handleShare = async () => {
     if (!listing) return;
@@ -120,6 +123,21 @@ export const ItemDetail = () => {
     };
     loadListing();
   }, [id]);
+
+  useEffect(() => {
+    if (!listing?.category || !listing?.college) return;
+    api.get<{ listings: any[] }>(
+      `/listings?category=${encodeURIComponent(listing.category)}&college=${encodeURIComponent(listing.college)}&limit=6`
+    )
+      .then(res => {
+        setSimilarListings(
+          (res.listings || [])
+            .filter((l: any) => l._id !== listing._id)
+            .slice(0, 4)
+        );
+      })
+      .catch(() => {}); // non-critical — silently ignore errors
+  }, [listing?.category, listing?.college, listing?._id]);
 
   const listingImages = useMemo(
     () => listing?.images?.filter(Boolean) ?? [],
@@ -240,7 +258,8 @@ export const ItemDetail = () => {
             <button className="apply-btn compact" onClick={() => navigate('/marketplace')}>Back to Marketplace</button>
           </div>
         ) : (
-          <div className="detail-grid">
+          <>
+            <div className="detail-grid">
             <div>
               <div className="detail-main-image">
                 {mainImage ? <img src={mainImage} alt={listing.title} /> : <span>No photo</span>}
@@ -265,6 +284,11 @@ export const ItemDetail = () => {
 
             <div className="detail-content">
               <div className="detail-price">₹{listing.price}</div>
+              {listing.savedBy && listing.savedBy.length > 0 && (
+                <div className="watchers-badge">
+                  👀 {listing.savedBy.length} {listing.savedBy.length === 1 ? 'person' : 'people'} watching this
+                </div>
+              )}
               <h1 className="detail-title">{listing.title}</h1>
 
               <div className="seller-summary">
@@ -351,8 +375,34 @@ export const ItemDetail = () => {
               </div>
             </div>
           </div>
-        )}
-      </div>
+          {similarListings.length > 0 && (
+            <div className="similar-section">
+              <h2 className="similar-title">
+                More from {listing.college} in {listing.category}
+              </h2>
+              <div className="similar-grid">
+                {similarListings.map(item => (
+                  <ListingCard
+                    key={item._id}
+                    id={item._id}
+                    title={item.title}
+                    price={item.price}
+                    type={item.type}
+                    image={item.images?.[0] || ''}
+                    college={item.college}
+                    status={item.status}
+                    sellerRating={item.seller?.rating}
+                    sellerReviewCount={item.seller?.reviewCount}
+                    onSave={() => {}}
+                    hideFooter={false}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
 
       <TextDialog
         open={Boolean(reportTarget)}

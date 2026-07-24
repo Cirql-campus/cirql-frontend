@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ListingCard } from '../components/ui/ListingCard';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Logo } from '../components/ui/Logo';
 import { Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package, Briefcase } from 'lucide-react';
@@ -20,6 +21,9 @@ interface Listing {
   image: string;
   college: string;
   status?: string;
+  sellerRating?: number;
+  sellerReviewCount?: number;
+  sellerName?: string;
 }
 
 interface ApiListing {
@@ -87,7 +91,7 @@ export const Dashboard = () => {
   const [successNotice, setSuccessNotice] = useState('');
   const [pushStatus, setPushStatus] = useState<PushNotificationStatus>('not-enabled');
 
-  const mapListing = (l: ApiListing): Listing => ({
+  const mapListing = (l: any): Listing => ({
     id: l._id,
     title: l.title,
     price: l.price,
@@ -97,6 +101,9 @@ export const Dashboard = () => {
     image: l.images?.[0] || '',
     college: l.college || 'Campus',
     status: l.status || 'available',
+    sellerRating: l.seller?.rating,
+    sellerReviewCount: l.seller?.reviewCount,
+    sellerName: l.seller?.name,
   });
 
   useEffect(() => {
@@ -105,6 +112,55 @@ export const Dashboard = () => {
     getPushNotificationStatus().then(setPushStatus);
   }, [isLoggedIn]);
 
+  const fetchListings = async () => {
+    if (!isLoggedIn || !user?.college) return;
+    setLoadingListings(true);
+    try {
+      const params = new URLSearchParams({ limit: '24' });
+      params.set('college', user.college);
+      const res = await api.get<{ listings: ApiListing[]; pagination?: CursorPagination }>(`/listings?${params.toString()}`);
+      setDbListings(res.listings.map(mapListing));
+      setListingPagination(res.pagination || { hasMore: false, nextCursor: null });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingListings(false);
+    }
+  };
+
+  const fetchWanted = async () => {
+    if (!isLoggedIn || !user?.college) return;
+    try {
+      const params = new URLSearchParams({ limit: '6', status: 'open' });
+      const res = await api.get<{ wanted: WantedItem[] }>(`/wanted?${params.toString()}`);
+      setWantedItems(res.wanted || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (!isLoggedIn || !user?.college) return;
+    try {
+      const params = new URLSearchParams({ limit: '24' });
+      params.set('college', user.college);
+      const wantedParams = new URLSearchParams({ limit: '6', status: 'open' });
+      
+      const [listingsRes, wantedRes] = await Promise.all([
+        api.get<{ listings: ApiListing[]; pagination?: CursorPagination }>(`/listings?${params.toString()}`),
+        api.get<{ wanted: WantedItem[] }>(`/wanted?${wantedParams.toString()}`)
+      ]);
+      
+      setDbListings(listingsRes.listings.map(mapListing));
+      setListingPagination(listingsRes.pagination || { hasMore: false, nextCursor: null });
+      setWantedItems(wantedRes.wanted || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const { pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
+
   useEffect(() => {
     if (!isLoggedIn || !user?.college) {
       setDbListings([]);
@@ -112,21 +168,6 @@ export const Dashboard = () => {
       setLoadingListings(false);
       return;
     }
-
-    const fetchListings = async () => {
-      setLoadingListings(true);
-      try {
-        const params = new URLSearchParams({ limit: '24' });
-        params.set('college', user.college);
-        const res = await api.get<{ listings: ApiListing[]; pagination?: CursorPagination }>(`/listings?${params.toString()}`);
-        setDbListings(res.listings.map(mapListing));
-        setListingPagination(res.pagination || { hasMore: false, nextCursor: null });
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingListings(false);
-      }
-    };
     fetchListings();
   }, [isLoggedIn, user?.college]);
 
@@ -151,18 +192,7 @@ export const Dashboard = () => {
       setWantedItems([]);
       return;
     }
-
-    const fetchWanted = async () => {
-      try {
-        const params = new URLSearchParams({ limit: '6', status: 'open' });
-        const res = await api.get<{ wanted: WantedItem[] }>(`/wanted?${params.toString()}`);
-        setWantedItems(res.wanted || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    void fetchWanted();
+    fetchWanted();
   }, [isLoggedIn, user?.college]);
 
   const toggleCondition = (c: string) => {
@@ -255,6 +285,17 @@ export const Dashboard = () => {
 
   return (
     <>
+      {(pullDistance > 0 || isRefreshing) && (
+        <div 
+          className="pull-to-refresh-indicator" 
+          style={{ 
+            transform: `translateY(${Math.min(pullDistance, 80)}px) translateX(-50%)`,
+            opacity: Math.min(pullDistance / 60, 1)
+          }}
+        >
+          {isRefreshing ? <span className="refresh-spinner" /> : '↓ Pull to refresh'}
+        </div>
+      )}
       {/* ======= MARKETPLACE ======= */}
       <div id="marketplace">
         <div className={`dashboard-brand-stage ${!isLoggedIn ? 'dashboard-brand-stage-guest' : ''}`}>

@@ -12,6 +12,9 @@ export interface ListingCardProps {
   status?: string;
   onSave?: (id: string) => void;
   hideFooter?: boolean;
+  sellerRating?: number;
+  sellerReviewCount?: number;
+  sellerName?: string;
 }
 
 export const ListingCard: React.FC<ListingCardProps> = ({
@@ -23,7 +26,10 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   college,
   status,
   onSave,
-  hideFooter = false
+  hideFooter = false,
+  sellerRating,
+  sellerReviewCount,
+  sellerName,
 }) => {
   const navigate = useNavigate();
 
@@ -42,6 +48,19 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             <div className="card-loc">📍 {college}</div>
             <div className="card-cond new">{status || 'Available'}</div>
          </div>
+         {sellerRating !== undefined && sellerRating > 0 && (
+           <div className="card-seller-trust">
+             <span className="card-seller-stars">
+               {'★'.repeat(Math.round(sellerRating))}{'☆'.repeat(5 - Math.round(sellerRating))}
+             </span>
+             <span className="card-seller-info">
+               {sellerRating.toFixed(1)}
+               {sellerReviewCount !== undefined && sellerReviewCount > 0
+                 ? ` · ${sellerReviewCount} review${sellerReviewCount === 1 ? '' : 's'}`
+                 : ''}
+             </span>
+           </div>
+         )}
       </div>
       {!hideFooter && (
         <div className="card-footer">

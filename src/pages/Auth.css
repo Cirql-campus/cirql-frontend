@@ -1,6 +1,7 @@
 .auth-page {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   background: var(--white);
   overflow: hidden;
@@ -401,6 +402,7 @@
 
   .auth-page {
     min-height: 100vh;
+    min-height: 100dvh;
     height: auto;
   }
 
