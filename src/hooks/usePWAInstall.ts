@@ -25,9 +25,13 @@ export function usePWAInstall() {
     };
 
     window.addEventListener('beforeinstallprompt', handler);
-    window.addEventListener('appinstalled', () => setInstallState('installed'));
+    const installedHandler = () => setInstallState('installed');
+    window.addEventListener('appinstalled', installedHandler);
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
+    };
   }, []);
 
   const triggerInstall = async (): Promise<'accepted' | 'dismissed' | 'unavailable'> => {

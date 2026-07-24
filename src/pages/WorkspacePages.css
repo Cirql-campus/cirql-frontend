@@ -374,3 +374,110 @@ a.workspace-card:hover {
   position: relative;
 }
 
+/* ===== ADMIN & WORKSPACE MOBILE FIXES ===== */
+
+/* Make admin tabs scrollable horizontally on small screens */
+@media (max-width: 768px) {
+  .admin-tabs {
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1px; /* prevent border-bottom clipping */
+    flex-wrap: nowrap; /* keep tabs in one row, allow scroll */
+    gap: 0;
+  }
+  .admin-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* Workspace header h1 — too large on mobile */
+  .workspace-header h1 {
+    font-size: 22px;
+    letter-spacing: -0.3px;
+  }
+
+  /* Workspace page padding */
+  .workspace-page {
+    padding-top: 20px;
+    padding-bottom: 80px;
+  }
+
+  /* Admin grid — single column on mobile */
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Inline form — stack vertically */
+  .admin-form-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-form-inline input,
+  .admin-form-inline button {
+    width: 100%;
+  }
+
+  /* Bulk bar — wider on mobile */
+  .bulk-bar {
+    bottom: 72px; /* above mobile tab bar */
+    width: calc(100vw - 32px);
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 16px;
+    text-align: center;
+  }
+  .bulk-actions-btns {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .workspace-header h1 {
+    font-size: 20px;
+  }
+  .workspace-card-main {
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+  }
+  .workspace-card-main img {
+    width: 60px;
+    height: 60px;
+  }
+  .workspace-card h2 {
+    font-size: 15px;
+  }
+  .workspace-card {
+    padding: 12px;
+  }
+  /* Admin table — reduce cell padding on very small screens */
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .admin-table th {
+    font-size: 10px;
+  }
+  /* Segmented control — full width */
+  .segmented {
+    width: 100%;
+    display: flex;
+  }
+  .segmented button {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+}
+

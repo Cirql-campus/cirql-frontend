@@ -29,6 +29,7 @@ const HowItWorks = React.lazy(() => import('./pages/HowItWorks').then(m => ({ de
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 const CookiePolicy = React.lazy(() => import('./pages/CookiePolicy'));
+const SafetyCenter = React.lazy(() => import('./pages/SafetyCenter'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -60,6 +61,7 @@ function App() {
                 <Route path="privacy" element={<PrivacyPolicy />} />
                 <Route path="terms" element={<Terms />} />
                 <Route path="cookie-policy" element={<CookiePolicy />} />
+                <Route path="safety" element={<SafetyCenter />} />
                 <Route path="item/:id" element={<ItemDetail />} />
                 <Route path="create" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
                 <Route path="wanted/new" element={<ProtectedRoute><CreateWantedItem /></ProtectedRoute>} />
