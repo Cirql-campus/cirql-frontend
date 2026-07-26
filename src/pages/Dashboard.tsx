@@ -43,13 +43,17 @@ interface WantedItem {
   title: string;
   description?: string;
   category: string;
+  urgency: 'anytime' | 'this_week' | 'urgent';
   minBudget?: number;
   maxBudget?: number;
-  urgency: 'anytime' | 'this_week' | 'urgent';
-  status: 'open' | 'fulfilled' | 'closed';
   responseCount?: number;
-  requester?: { _id: string; name: string; initials?: string; college?: string };
-  college?: string;
+  createdAt: string;
+  requester?: {
+    _id: string;
+    name: string;
+    avatar?: string;
+  };
+  status: 'open' | 'fulfilled' | 'closed';
 }
 
 interface CursorPagination {
@@ -283,6 +287,31 @@ export const Dashboard = () => {
     return 'Budget open';
   };
 
+  const getInitials = (name?: string) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 60) return `${mins}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  };
+
+  const CATEGORY_ICONS: Record<string, string> = {
+    academia: '📚',
+    tech: '💻',
+    rides: '🚲',
+    living: '🏠',
+    attire: '👕',
+    gifts: '🎁',
+    misc: '📦',
+  };
+
   return (
     <>
       {(pullDistance > 0 || isRefreshing) && (
@@ -385,18 +414,68 @@ export const Dashboard = () => {
             <div className="wanted-grid">
               {wantedItems.map(wanted => {
                 const isOwn = wanted.requester?._id === user?._id;
+                const urgencyClass = wanted.urgency === 'urgent' ? 'urgent' : wanted.urgency === 'this_week' ? 'this-week' : 'anytime';
+                const urgencyLabel = wanted.urgency === 'urgent' ? '🔥 Urgent' : wanted.urgency === 'this_week' ? '⏰ This week' : 'Anytime';
+                const budget = formatBudget(wanted);
+
                 return (
-                  <div className="wanted-card" key={wanted._id}>
-                    <div className="wanted-kicker">{wanted.urgency.replace('_', ' ')}</div>
-                    <h3>{wanted.title}</h3>
-                    <p>{wanted.description || 'No extra details added.'}</p>
-                    <div className="wanted-meta">
-                      <span>{formatBudget(wanted)}</span>
-                      <span>{wanted.responseCount || 0} responses</span>
+                  <div className={`wanted-card wanted-card--${urgencyClass}`} key={wanted._id}>
+
+                    {/* Top row: title + urgency badge */}
+                    <div className="wcard-top">
+                      <h3 className="wcard-title">{wanted.title}</h3>
+                      <span className={`wcard-urgency wcard-urgency--${urgencyClass}`}>
+                        {urgencyLabel}
+                      </span>
                     </div>
-                    <button disabled={isOwn} onClick={() => respondToWanted(wanted._id)}>
-                      {isOwn ? 'Your request' : 'I have this'}
+
+                    {/* Description */}
+                    {wanted.description && (
+                      <p className="wcard-desc">{wanted.description}</p>
+                    )}
+
+                    {/* Category + budget chips */}
+                    <div className="wcard-chips">
+                      <span className="wcard-chip wcard-chip--cat">
+                        {CATEGORY_ICONS[wanted.category.toLowerCase()] || CATEGORY_ICONS[wanted.category] || '📦'} {wanted.category}
+                      </span>
+                      {budget && (
+                        <span className="wcard-chip wcard-chip--budget">
+                          {budget}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Footer: requester + time + response count */}
+                    <div className="wcard-footer">
+                      <div className="wcard-requester">
+                        <div className="wcard-avatar">
+                          {getInitials(wanted.requester?.name)}
+                        </div>
+                        <span className="wcard-requester-name">
+                          {wanted.requester?.name?.split(' ')[0] || 'Student'}
+                        </span>
+                        <span className="wcard-dot" />
+                        <span className="wcard-time">
+                          {wanted.createdAt ? timeAgo(wanted.createdAt) : ''}
+                        </span>
+                      </div>
+                      {(wanted.responseCount || 0) > 0 && (
+                        <span className="wcard-responses">
+                          💬 {wanted.responseCount}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Action button */}
+                    <button
+                      className={`wcard-btn ${isOwn ? 'wcard-btn--own' : ''}`}
+                      disabled={isOwn}
+                      onClick={() => respondToWanted(wanted._id)}
+                    >
+                      {isOwn ? 'Your request' : 'I have this →'}
                     </button>
+
                   </div>
                 );
               })}
