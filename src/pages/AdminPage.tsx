@@ -97,6 +97,21 @@ export const AdminPage = () => {
   const [pendingAction, setPendingAction] = useState<PendingAdminAction | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Health dashboard state
+  const [health, setHealth] = useState<{
+    activeSockets: number;
+    dbStatus: 'ok' | 'slow' | 'error';
+    dbResponseMs: number;
+    uptimeSeconds: number;
+    memoryUsedMB: number;
+    memoryTotalMB: number;
+    requestsLastHour: number;
+    errorsLastHour: number;
+  } | null>(null);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [healthError, setHealthError] = useState('');
+  const [healthLastUpdated, setHealthLastUpdated] = useState<Date | null>(null);
+
   // Colleges Tab States
   const [superColleges, setSuperColleges] = useState<any[]>([]);
   const [collegeAdminsList, setCollegeAdminsList] = useState<any[]>([]);
@@ -117,6 +132,10 @@ export const AdminPage = () => {
   // Broadcast States
   const [broadcastText, setBroadcastText] = useState('');
   const [broadcastLink, setBroadcastLink] = useState('');
+  const [broadcastScope, setBroadcastScope] = useState<'college' | 'all'>('college');
+
+  // College filter state
+  const [collegeFilter, setCollegeFilter] = useState<string | null>(null);
 
   // Bulk Selection States
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
@@ -135,6 +154,7 @@ export const AdminPage = () => {
         api.get<{ listings: ModerationListing[] }>('/admin/moderation-listings?status=pending'),
         api.get<{ listings: ModerationListing[] }>('/admin/flagged-listings?limit=10'),
         api.get<{ users: AdminUser[] }>('/admin/users?limit=10'),
+        isSuperAdmin ? api.get<{ colleges: any[] }>('/admin/super-stats').then(r => setSuperColleges(r.colleges)).catch(() => {}) : Promise.resolve(),
       ]);
       setDashboard(dash);
       setListingReports(listings.reports);
@@ -147,6 +167,20 @@ export const AdminPage = () => {
       setError(getErrorMessage(err, 'Failed to load admin dashboard'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadHealth = async () => {
+    setHealthLoading(true);
+    setHealthError('');
+    try {
+      const res = await api.get<typeof health>('/admin/health');
+      setHealth(res);
+      setHealthLastUpdated(new Date());
+    } catch {
+      setHealthError('Health data unavailable');
+    } finally {
+      setHealthLoading(false);
     }
   };
 
@@ -197,6 +231,13 @@ export const AdminPage = () => {
     setError('');
     setSuccessMsg('');
     setSelectedListingIds([]);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'dashboard') return;
+    loadHealth();
+    const interval = setInterval(loadHealth, 30000); // refresh every 30 seconds
+    return () => clearInterval(interval);
   }, [activeTab]);
 
   const patch = async (endpoint: string, body: unknown) => {
@@ -342,7 +383,8 @@ export const AdminPage = () => {
     try {
       await api.post('/admin/notify-college', {
         text: broadcastText.trim(),
-        link: broadcastLink.trim() || undefined
+        link: broadcastLink.trim() || undefined,
+        scope: isSuperAdmin ? broadcastScope : 'college',
       });
       setSuccessMsg('Broadcast notification sent successfully!');
       setBroadcastText('');
@@ -503,15 +545,122 @@ export const AdminPage = () => {
             ))}
           </div>
 
+          {/* College filter tags — Super Admin only */}
+          {isSuperAdmin && superColleges.length > 0 && (
+            <div className="college-filter-bar">
+              <span className="college-filter-label">Filter by college:</span>
+              <div className="college-filter-tags">
+                <button
+                  className={`college-tag ${collegeFilter === null ? 'active' : ''}`}
+                  onClick={() => setCollegeFilter(null)}
+                >
+                  All Colleges
+                </button>
+                {superColleges.map((c, i) => (
+                  <button
+                    key={i}
+                    className={`college-tag ${collegeFilter === c.college ? 'active' : ''}`}
+                    onClick={() => setCollegeFilter(collegeFilter === c.college ? null : c.college)}
+                  >
+                    {c.college}
+                    {c.flaggedListings > 0 && (
+                      <span className="college-tag-badge">{c.flaggedListings}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* === PLATFORM HEALTH PANEL === */}
+          <div className="health-panel">
+            <div className="health-panel-header">
+              <span className="health-panel-title">
+                <span className={`health-dot ${health?.dbStatus === 'ok' ? 'green' : health?.dbStatus === 'slow' ? 'amber' : 'red'}`} />
+                Platform Health
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {healthLastUpdated && (
+                  <span className="health-updated">
+                    Updated {healthLastUpdated.toLocaleTimeString()}
+                  </span>
+                )}
+                <button
+                  className="health-refresh-btn"
+                  onClick={loadHealth}
+                  disabled={healthLoading}
+                  title="Refresh health stats"
+                >
+                  {healthLoading ? '⟳' : '↻'} Refresh
+                </button>
+              </div>
+            </div>
+
+            {healthError && <p style={{ color: '#d32f2f', fontSize: 13, margin: '8px 0' }}>{healthError}</p>}
+
+            {health && (
+              <div className="health-stats-grid">
+                <div className="health-stat">
+                  <div className="health-stat-label">DB Status</div>
+                  <div className={`health-stat-value ${health.dbStatus === 'ok' ? 'text-green' : health.dbStatus === 'slow' ? 'text-amber' : 'text-red'}`}>
+                    {health.dbStatus === 'ok' ? '✓ Healthy' : health.dbStatus === 'slow' ? '⚠ Slow' : '✗ Error'}
+                  </div>
+                  <div className="health-stat-sub">{health.dbResponseMs}ms response</div>
+                </div>
+
+                <div className="health-stat">
+                  <div className="health-stat-label">Active Connections</div>
+                  <div className="health-stat-value">{health.activeSockets}</div>
+                  <div className="health-stat-sub">live socket connections</div>
+                </div>
+
+                <div className="health-stat">
+                  <div className="health-stat-label">Memory</div>
+                  <div className="health-stat-value">{health.memoryUsedMB} MB</div>
+                  <div className="health-stat-sub">of {health.memoryTotalMB} MB used</div>
+                </div>
+
+                <div className="health-stat">
+                  <div className="health-stat-label">Uptime</div>
+                  <div className="health-stat-value">
+                    {Math.floor(health.uptimeSeconds / 3600)}h {Math.floor((health.uptimeSeconds % 3600) / 60)}m
+                  </div>
+                  <div className="health-stat-sub">server uptime</div>
+                </div>
+
+                <div className="health-stat">
+                  <div className="health-stat-label">Requests (1h)</div>
+                  <div className="health-stat-value">{health.requestsLastHour}</div>
+                  <div className="health-stat-sub">last 60 minutes</div>
+                </div>
+
+                <div className="health-stat">
+                  <div className="health-stat-label">Errors (1h)</div>
+                  <div className={`health-stat-value ${health.errorsLastHour > 10 ? 'text-red' : health.errorsLastHour > 0 ? 'text-amber' : 'text-green'}`}>
+                    {health.errorsLastHour}
+                  </div>
+                  <div className="health-stat-sub">errors logged</div>
+                </div>
+              </div>
+            )}
+
+            {!health && !healthLoading && !healthError && (
+              <p className="muted" style={{ fontSize: 13 }}>Loading health data...</p>
+            )}
+          </div>
+          {/* === END HEALTH PANEL === */}
+
           {/* Pending Listings Section */}
           <div className="workspace-header" style={{ marginTop: 32 }}>
-            <h1>Pending Listings ({moderationListings.length})</h1>
+            <h1>Pending Listings ({moderationListings.filter(listing => !collegeFilter || listing.college === collegeFilter).length})</h1>
           </div>
           <div className="workspace-list">
-            {moderationListings.length === 0 ? (
+            {moderationListings.filter(listing => !collegeFilter || listing.college === collegeFilter).length === 0 ? (
               <div className="empty-state">No pending listings.</div>
             ) : (
-              moderationListings.map(listing => (
+              moderationListings
+                .filter(listing => !collegeFilter || listing.college === collegeFilter)
+                .map(listing => (
                 <article className="workspace-card relative-card" key={listing._id}>
                   <div className="listing-checkbox-wrapper">
                     <input 
@@ -549,13 +698,15 @@ export const AdminPage = () => {
 
           {/* Flagged Listings Section */}
           <div className="workspace-header" style={{ marginTop: 32 }}>
-            <h1>Flagged Listings ({flaggedListings.length})</h1>
+            <h1>Flagged Listings ({flaggedListings.filter(listing => !collegeFilter || listing.college === collegeFilter).length})</h1>
           </div>
           <div className="workspace-list">
-            {flaggedListings.length === 0 ? (
+            {flaggedListings.filter(listing => !collegeFilter || listing.college === collegeFilter).length === 0 ? (
               <div className="empty-state">No flagged listings.</div>
             ) : (
-              flaggedListings.map(listing => (
+              flaggedListings
+                .filter(listing => !collegeFilter || listing.college === collegeFilter)
+                .map(listing => (
                 <article className="workspace-card relative-card" key={listing._id}>
                   <div className="listing-checkbox-wrapper">
                     <input 
@@ -635,9 +786,9 @@ export const AdminPage = () => {
           </div>
           <div className="admin-grid">
             <section>
-              <div className="card-kicker"><Flag size={14} /> Listing reports ({listingReports.length})</div>
+              <div className="card-kicker"><Flag size={14} /> Listing reports ({listingReports.filter(r => !collegeFilter || r.listing?.college === collegeFilter).length})</div>
               <div className="workspace-list" style={{ marginTop: 12 }}>
-                {listingReports.length === 0 ? <div className="empty-state">No listing reports.</div> : listingReports.map(report => reportCard(report, 'listing'))}
+                {listingReports.filter(r => !collegeFilter || r.listing?.college === collegeFilter).length === 0 ? <div className="empty-state">No listing reports.</div> : listingReports.filter(r => !collegeFilter || r.listing?.college === collegeFilter).map(report => reportCard(report, 'listing'))}
               </div>
             </section>
             <section>
@@ -647,9 +798,9 @@ export const AdminPage = () => {
               </div>
             </section>
             <section>
-              <div className="card-kicker"><Users size={14} /> User reports ({userReports.length})</div>
+              <div className="card-kicker"><Users size={14} /> User reports ({userReports.filter(r => !collegeFilter || r.reportedUser?.college === collegeFilter).length})</div>
               <div className="workspace-list" style={{ marginTop: 12 }}>
-                {userReports.length === 0 ? <div className="empty-state">No user reports.</div> : userReports.map(report => reportCard(report, 'user'))}
+                {userReports.filter(r => !collegeFilter || r.reportedUser?.college === collegeFilter).length === 0 ? <div className="empty-state">No user reports.</div> : userReports.filter(r => !collegeFilter || r.reportedUser?.college === collegeFilter).map(report => reportCard(report, 'user'))}
               </div>
             </section>
           </div>
@@ -1031,6 +1182,32 @@ export const AdminPage = () => {
           </p>
 
           <form onSubmit={handleSendBroadcast}>
+            {isSuperAdmin && (
+              <div className="admin-form-group">
+                <label>Broadcast Scope</label>
+                <div className="broadcast-scope-pills">
+                  <button
+                    type="button"
+                    className={`scope-pill ${broadcastScope === 'college' ? 'active' : ''}`}
+                    onClick={() => setBroadcastScope('college')}
+                  >
+                    🏫 My College Only
+                  </button>
+                  <button
+                    type="button"
+                    className={`scope-pill ${broadcastScope === 'all' ? 'active' : ''}`}
+                    onClick={() => setBroadcastScope('all')}
+                  >
+                    🌐 All Colleges (Global)
+                  </button>
+                </div>
+                {broadcastScope === 'all' && (
+                  <p style={{ fontSize: 12, color: '#d97706', marginTop: 6 }}>
+                    ⚠ This will notify every user on CirQl across all colleges.
+                  </p>
+                )}
+              </div>
+            )}
             <div className="admin-form-group">
               <label>Message Content (Max 200 characters)</label>
               <textarea 

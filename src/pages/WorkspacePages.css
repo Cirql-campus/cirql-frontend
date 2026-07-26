@@ -481,3 +481,216 @@ a.workspace-card:hover {
   }
 }
 
+/* ===== HEALTH PANEL ===== */
+.health-panel {
+  background: var(--surface-2, #fff);
+  border: 1px solid var(--border, #e4e4e7);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 20px 0 24px;
+}
+
+.health-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.health-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #18181b);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.health-dot.green  { background: #22c55e; box-shadow: 0 0 0 2px #dcfce7; }
+.health-dot.amber  { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; }
+.health-dot.red    { background: #ef4444; box-shadow: 0 0 0 2px #fee2e2; }
+
+.health-updated {
+  font-size: 11px;
+  color: var(--text-muted, #a1a1aa);
+}
+
+.health-refresh-btn {
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--surface-1, #f4f4f5);
+  border: 1px solid var(--border, #e4e4e7);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--text-primary, #18181b);
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.health-refresh-btn:hover:not(:disabled) { background: var(--border, #e4e4e7); }
+.health-refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.health-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.health-stat {
+  background: var(--surface-1, #f9f9f9);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.health-stat-label {
+  font-size: 11px;
+  color: var(--text-muted, #a1a1aa);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.health-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary, #18181b);
+  line-height: 1.2;
+}
+
+.health-stat-sub {
+  font-size: 11px;
+  color: var(--text-muted, #a1a1aa);
+}
+
+.text-green { color: #16a34a; }
+.text-amber { color: #d97706; }
+.text-red   { color: #dc2626; }
+
+@media (max-width: 480px) {
+  .health-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .health-stat-value { font-size: 18px; }
+}
+
+/* ===== BROADCAST SCOPE PILLS ===== */
+.broadcast-scope-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.scope-pill {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border, #e4e4e7);
+  background: var(--surface-1, #f4f4f5);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-primary, #18181b);
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.scope-pill.active {
+  border-color: var(--primary, #00e554);
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+/* ===== COLLEGE FILTER TAGS ===== */
+.college-filter-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 16px 0 8px;
+  flex-wrap: wrap;
+}
+
+.college-filter-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted, #a1a1aa);
+  white-space: nowrap;
+  padding-top: 5px;
+  flex-shrink: 0;
+}
+
+.college-filter-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.college-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border, #e4e4e7);
+  background: var(--surface-1, #f4f4f5);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-primary, #18181b);
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.college-tag:hover {
+  border-color: var(--border-strong, #d4d4d8);
+}
+
+.college-tag.active {
+  border-color: var(--primary, #00e554);
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.college-tag-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .college-filter-bar {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .college-filter-tags {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    max-width: 100%;
+  }
+  .college-filter-tags::-webkit-scrollbar { display: none; }
+}
+
