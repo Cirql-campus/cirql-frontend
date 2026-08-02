@@ -15,7 +15,27 @@ export interface ListingCardProps {
   sellerRating?: number;
   sellerReviewCount?: number;
   sellerName?: string;
+  rentDuration?: string;
 }
+
+const getBadgeInfo = (type: string) => {
+  const norm = type.toLowerCase();
+  if (norm === 'sell') return { emoji: '🏷️', label: 'Buy' };
+  if (norm === 'rent') return { emoji: '⏰', label: 'Rent' };
+  if (norm === 'free') return { emoji: '🎁', label: 'Free' };
+  return { emoji: '💼', label: 'Service' };
+};
+
+const getRentPeriod = (rentDuration?: string) => {
+  if (!rentDuration) return '/mo';
+  const d = rentDuration.toLowerCase();
+  if (d === 'hourly') return '/hr';
+  if (d === 'daily') return '/day';
+  if (d === 'weekly') return '/wk';
+  if (d === 'monthly') return '/mo';
+  if (d === 'semester') return '/sem';
+  return `/${d}`;
+};
 
 export const ListingCard: React.FC<ListingCardProps> = ({
   id,
@@ -30,19 +50,28 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   sellerRating,
   sellerReviewCount,
   sellerName,
+  rentDuration,
 }) => {
   const navigate = useNavigate();
+  const badgeInfo = getBadgeInfo(type);
 
   return (
-    <div className="prod-card" onClick={() => navigate(`/item/${id}`)}>
+    <div className={`prod-card prod-card--${type.toLowerCase()}`} onClick={() => navigate(`/item/${id}`)}>
       <div className="card-img" style={{ backgroundImage: image && image.length > 3 ? `url(${image})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }}>
         {(!image || image.length < 4) && <div style={{ fontSize: '60px' }}>📦</div>}
         <div className="card-img-bg"></div>
-        <div className={`badge badge-${type.toLowerCase() === 'sell' ? 'new' : 'rent'}`}>{type}</div>
+        <div className={`badge badge-${type.toLowerCase()}`}>
+          {badgeInfo.emoji} {badgeInfo.label}
+        </div>
         <button className="wishlist-btn" onClick={(e) => { e.stopPropagation(); onSave?.(id); }}>♡</button>
       </div>
       <div className="card-body">
-         <div className="card-price">₹{price}</div>
+         <div className="card-price">
+           ₹{price}
+           {type.toLowerCase() === 'rent' && (
+             <span className="card-price-period"> {getRentPeriod(rentDuration)}</span>
+           )}
+         </div>
          <div className="card-name">{title}</div>
          <div className="card-meta">
             <div className="card-loc">📍 {college}</div>

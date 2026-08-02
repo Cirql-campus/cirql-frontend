@@ -26,6 +26,7 @@ interface ApiListing {
   isActive?: boolean;
   status?: string;
   moderationStatus?: string;
+  rentDuration?: string;
 }
 
 const mapType = (type: ApiListing['type']) =>
@@ -501,6 +502,7 @@ export const Profile = () => {
                     college={item.college || user?.college || 'Campus'}
                     status={item.status}
                     hideFooter={true}
+                    rentDuration={item.rentDuration}
                   />
                   <div className="listing-actions">
                     <Button variant="secondary" size="sm" fullWidth onClick={() => navigate(`/item/${item._id}`)}>

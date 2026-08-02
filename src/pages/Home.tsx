@@ -19,6 +19,7 @@ interface Listing {
   image: string;
   college: string;
   status?: string;
+  rentDuration?: string;
 }
 
 interface ApiListing {
@@ -31,6 +32,7 @@ interface ApiListing {
   images?: string[];
   college?: string;
   status?: string;
+  rentDuration?: string;
 }
 
 interface CursorPagination {
@@ -96,6 +98,7 @@ export const Home = () => {
     image: l.images?.[0] || '',
     college: l.college || user?.college || 'Campus',
     status: l.status || 'available',
+    rentDuration: l.rentDuration,
   }), [user?.college]);
 
   useEffect(() => {

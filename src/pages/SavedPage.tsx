@@ -33,6 +33,7 @@ interface SavedListingCard {
   sellerRating?: number;
   sellerReviewCount?: number;
   sellerName?: string;
+  rentDuration?: string;
 }
 
 export const SavedPage = () => {
@@ -59,6 +60,7 @@ export const SavedPage = () => {
         sellerRating: l.seller?.rating,
         sellerReviewCount: l.seller?.reviewCount,
         sellerName: l.seller?.name,
+        rentDuration: l.rentDuration,
       }));
       setListings(mapped);
     } catch (err) {

@@ -24,6 +24,7 @@ interface Listing {
   sellerRating?: number;
   sellerReviewCount?: number;
   sellerName?: string;
+  rentDuration?: string;
 }
 
 interface ApiListing {
@@ -36,6 +37,7 @@ interface ApiListing {
   images?: string[];
   college?: string;
   status?: string;
+  rentDuration?: string;
 }
 
 interface WantedItem {
@@ -108,6 +110,7 @@ export const Dashboard = () => {
     sellerRating: l.seller?.rating,
     sellerReviewCount: l.seller?.reviewCount,
     sellerName: l.seller?.name,
+    rentDuration: l.rentDuration,
   });
 
   useEffect(() => {
