@@ -148,7 +148,7 @@ export const AdminPage = () => {
     setError('');
     setLoading(true);
     try {
-      const [dash, listings, messages, userReportRes, moderation, flagged, userRes] = await Promise.all([
+      const [dash, listings, messages, userReportRes, moderation, flagged, userRes, verifsRes] = await Promise.all([
         api.get<AdminDashboard>('/admin/dashboard'),
         api.get<{ reports: Report[] }>('/admin/listing-reports?status=open'),
         api.get<{ reports: Report[] }>('/admin/message-reports?status=open'),
@@ -1318,7 +1318,7 @@ export const AdminPage = () => {
                         run: async () => {
                           setBusy(v._id);
                           try {
-                            await api.post(`/admin/verifications/${v._id}/approve`);
+                            await api.post(`/admin/verifications/${v._id}/approve`, {});
                             setPendingVerifications(prev => prev.filter(x => x._id !== v._id));
                             setPendingVerifCount(c => c - 1);
                             setSuccessMsg(`Successfully verified ${v.name}`);

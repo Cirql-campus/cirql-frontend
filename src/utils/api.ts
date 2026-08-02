@@ -286,8 +286,9 @@ export const api = {
 // Health check to verify backend connectivity
 export const checkBackendHealth = async (): Promise<boolean> => {
   try {
-    console.log(`[API] Checking backend health at: ${BASE_URL}`);
-    const response = await fetch(`${BASE_URL}/health`, {
+    const healthUrl = `${getApiOrigin()}/health`;
+    console.log(`[API] Checking backend health at: ${healthUrl}`);
+    const response = await fetch(healthUrl, {
       method: "GET",
       credentials: "include",
     });

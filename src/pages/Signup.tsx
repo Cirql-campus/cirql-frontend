@@ -4,9 +4,9 @@ import { Logo } from '../components/ui/Logo';
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
-import { detectCollege } from '../utils/collegeDetect';
+import { detectCollege, COLLEGE_MAP } from '../utils/collegeDetect';
 import { PasswordRequirements, passwordMeetsRequirements } from '../components/ui/PasswordRequirements';
-import { api } from '../utils/api';
+import { api, getErrorMessage } from '../utils/api';
 import './Auth.css';
 
 export const Signup = () => {
@@ -86,16 +86,12 @@ export const Signup = () => {
     if (!rollNumber.trim()) return setError('Please enter your roll number');
     setLoading(true);
     try {
-      const res = await api.post('/auth/register/manual', {
+      await api.post('/auth/register/manual', {
         name, email, password, college, rollNumber, agreedToTerms: String(agreedToTerms),
       });
-      if (res.ok !== false) {
-        setShowOTP(true); // reuse existing OTP step
-      } else {
-        setError(res.message || 'Registration failed');
-      }
-    } catch (err: any) {
-      setError(err?.message || 'Registration failed');
+      setShowOTP(true); // reuse existing OTP step
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Registration failed'));
     } finally {
       setLoading(false);
     }
@@ -110,10 +106,10 @@ export const Signup = () => {
     try {
       const formData = new FormData();
       formData.append('idPhoto', idPhoto);
-      await api.postForm('/auth/register/submit-id', formData);
+      await api.post('/auth/register/submit-id', formData, true);
       setStep('pending');
-    } catch (err: any) {
-      setError(err?.message || 'Upload failed. Please try again.');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Upload failed. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -355,7 +351,12 @@ export const Signup = () => {
                 <div className="input-group">
                   <label>College / University Name</label>
                   <input type="text" className="plain-input" placeholder="e.g. AKGEC, GLA University"
-                    required value={college} onChange={(e) => setCollege(e.target.value)} />
+                    required value={college} onChange={(e) => setCollege(e.target.value)} list="colleges-list" />
+                  <datalist id="colleges-list">
+                    {Array.from(new Set(COLLEGE_MAP.map(c => c.name))).map(name => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="input-group">

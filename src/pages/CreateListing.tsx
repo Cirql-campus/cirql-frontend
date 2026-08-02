@@ -50,6 +50,10 @@ export const CreateListing = () => {
   const [quantity, setQuantity] = useState('1');
   const [rentDuration, setRentDuration] = useState('monthly');
   const [isNegotiable, setIsNegotiable] = useState(true);
+  const [availableFrom, setAvailableFrom] = useState('');
+  const [deposit, setDeposit] = useState('');
+  const [availability, setAvailability] = useState('anytime');
+  const [deliveryMode, setDeliveryMode] = useState('in_person');
   const [images, setImages] = useState<File[]>([]);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -58,6 +62,18 @@ export const CreateListing = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [categoryAutoDetected, setCategoryAutoDetected] = useState(false);
+
+  const handleTypeChange = (value: typeof type) => {
+    setType(value);
+    if (value !== 'rent') {
+      setDeposit('');
+      setAvailableFrom('');
+    }
+    if (value !== 'service') {
+      setAvailability('anytime');
+      setDeliveryMode('in_person');
+    }
+  };
 
   const autoDetectCategory = (titleValue: string) => {
     if (category !== 'academia') return; // don't override if user already changed it
@@ -137,19 +153,33 @@ export const CreateListing = () => {
       const formData = new FormData();
       formData.append('title', title);
       formData.append('category', category);
-      formData.append('condition', condition);
+      if (type !== 'service') {
+        formData.append('condition', condition);
+      }
       formData.append('description', description);
       formData.append('price', type === 'free' ? '0' : price);
       formData.append('type', type);
       formData.append('quantity', quantity);
-      formData.append('isNegotiable', String(isNegotiable));
+      formData.append('isNegotiable', String(type === 'free' ? false : isNegotiable));
       if (originalPrice.trim()) formData.append('originalPrice', originalPrice);
-      if (location.trim()) formData.append('location', location.trim());
-      if (pickupLocation.trim()) formData.append('pickupLocation', pickupLocation.trim());
+      if (location.trim() && (type !== 'service' || deliveryMode !== 'remote')) {
+        formData.append('location', location.trim());
+      }
+      if (pickupLocation.trim() && type !== 'service') {
+        formData.append('pickupLocation', pickupLocation.trim());
+      }
       if (brand.trim()) formData.append('brand', brand.trim());
       if (model.trim()) formData.append('model', model.trim());
       if (tags.trim()) formData.append('tags', tags.trim());
-      if (type === 'rent') formData.append('rentDuration', rentDuration);
+      if (type === 'rent') {
+        formData.append('rentDuration', rentDuration);
+        if (deposit.trim()) formData.append('deposit', deposit);
+        if (availableFrom) formData.append('availableFrom', availableFrom);
+      }
+      if (type === 'service') {
+        formData.append('availability', availability);
+        formData.append('deliveryMode', deliveryMode);
+      }
       images.slice(0, MAX_IMAGES).forEach(file => formData.append('images', file));
 
       const res = await api.post<CreatedListingResponse, FormData>('/listings', formData, true);
@@ -267,7 +297,7 @@ export const CreateListing = () => {
                 <label className="input-label">Type*</label>
                 <div className="toggle-buttons">
                   {(['sell', 'rent', 'free', 'service'] as const).map(value => (
-                    <button key={value} type="button" className={`toggle-btn ${type === value ? `active ${value}` : ''}`} onClick={() => setType(value)}>
+                    <button key={value} type="button" className={`toggle-btn ${type === value ? `active ${value}` : ''}`} onClick={() => handleTypeChange(value)}>
                       {value === 'sell' ? 'Sell' : value === 'rent' ? 'Rent' : value === 'free' ? 'Free' : 'Service'}
                     </button>
                   ))}
@@ -299,18 +329,20 @@ export const CreateListing = () => {
                 </p>
               )}
 
-              <Select
-                label="Condition*"
-                value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-                options={[
-                  { value: 'Brand New', label: 'Brand New' },
-                  { value: 'Like New', label: 'Like New' },
-                  { value: 'Good', label: 'Good' },
-                  { value: 'Fair', label: 'Fair' },
-                ]}
-                required
-              />
+              {type !== 'service' && (
+                <Select
+                  label="Condition*"
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value)}
+                  options={[
+                    { value: 'Brand New', label: 'Brand New' },
+                    { value: 'Like New', label: 'Like New' },
+                    { value: 'Good', label: 'Good' },
+                    { value: 'Fair', label: 'Fair' },
+                  ]}
+                  required
+                />
+              )}
             </div>
 
             {/* Section 3: Price */}
@@ -322,7 +354,15 @@ export const CreateListing = () => {
                 {type === 'rent' && <span className="rent-suffix">/ {rentDuration}</span>}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 12 }}>
-                <Input label="Original Price" type="number" min="0" max="500000" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} />
+                <Input
+                  label={type === 'free' ? 'Worth around (optional)' : 'Original Price'}
+                  type="number"
+                  min="0"
+                  max="500000"
+                  placeholder={type === 'free' ? 'e.g. 500 — helps people gauge value' : ''}
+                  value={originalPrice}
+                  onChange={(e) => setOriginalPrice(e.target.value)}
+                />
                 {type === 'rent' && (
                   <Select label="Rent Duration" value={rentDuration} onChange={(e) => setRentDuration(e.target.value)} options={[
                     { value: 'hourly', label: 'Hourly' },
@@ -332,11 +372,33 @@ export const CreateListing = () => {
                     { value: 'semester', label: 'Semester' },
                   ]} />
                 )}
+                {type === 'rent' && (
+                  <Input
+                    label="Deposit (optional)"
+                    type="number"
+                    min="0"
+                    max="500000"
+                    placeholder="e.g. 500"
+                    value={deposit}
+                    onChange={(e) => setDeposit(e.target.value)}
+                  />
+                )}
+                {type === 'rent' && (
+                  <Input
+                    label="Available From"
+                    type="date"
+                    value={availableFrom}
+                    onChange={(e) => setAvailableFrom(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                )}
               </div>
-              <label className="cond-item" style={{ marginTop: 10 }}>
-                <input type="checkbox" checked={isNegotiable} onChange={(e) => setIsNegotiable(e.target.checked)} />
-                Price is negotiable
-              </label>
+              {type !== 'free' && (
+                <label className="cond-item" style={{ marginTop: 10 }}>
+                  <input type="checkbox" checked={isNegotiable} onChange={(e) => setIsNegotiable(e.target.checked)} />
+                  Price is negotiable
+                </label>
+              )}
             </div>
 
             {/* Section 4: More Details (collapsible Brand/Model/Qty/Tags + visible Description) */}
@@ -383,17 +445,50 @@ export const CreateListing = () => {
               </div>
             </div>
 
-            {/* Section 5: Meetup Details */}
-            <div className="form-section">
-              <h2 className="section-subtitle">Meetup Details</h2>
-              <div className="contact-details">
-                <div className="contact-item">
-                  <MapPin size={20} className="text-muted" />
-                  <Input placeholder="Campus area" value={location} onChange={(e) => setLocation(e.target.value)} />
-                </div>
-                <Input label="Exact pickup point" placeholder="Library gate, hostel common area..." value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} />
+            {type === 'service' ? (
+              <div className="form-section">
+                <h2 className="section-subtitle">Service Details</h2>
+                <Select
+                  label="Availability"
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  options={[
+                    { value: 'anytime', label: 'Anytime' },
+                    { value: 'weekdays', label: 'Weekdays' },
+                    { value: 'weekends', label: 'Weekends' },
+                  ]}
+                />
+                <Select
+                  label="How is this delivered?"
+                  value={deliveryMode}
+                  onChange={(e) => setDeliveryMode(e.target.value)}
+                  options={[
+                    { value: 'in_person', label: 'In person' },
+                    { value: 'remote', label: 'Remote' },
+                    { value: 'either', label: 'Either' },
+                  ]}
+                />
+                {deliveryMode !== 'remote' && (
+                  <Input
+                    label="Preferred meeting area (optional)"
+                    placeholder="Campus area"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                  />
+                )}
               </div>
-            </div>
+            ) : (
+              <div className="form-section">
+                <h2 className="section-subtitle">Meetup Details</h2>
+                <div className="contact-details">
+                  <div className="contact-item">
+                    <MapPin size={20} className="text-muted" />
+                    <Input placeholder="Campus area" value={location} onChange={(e) => setLocation(e.target.value)} />
+                  </div>
+                  <Input label="Exact pickup point" placeholder="Library gate, hostel common area..." value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} />
+                </div>
+              </div>
+            )}
 
             <div style={{ marginTop: 24, marginBottom: -10 }}>
               {error && <div className="auth-error">{error}</div>}
