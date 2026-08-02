@@ -12,6 +12,7 @@ import {
   Trash2,
   Eye,
   Heart,
+  Star,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
@@ -91,6 +92,15 @@ export const UserDashboard = () => {
   const [pendingDeleteWantedId, setPendingDeleteWantedId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [pointSummary, setPointSummary] = useState<{
+    totalPoints: number;
+    lifetimePoints: number;
+    tier: string;
+    tierInfo: { name: string; label: string; emoji: string };
+    nextTier: { name: string; label: string; minPoints: number } | null;
+    pointsToNextTier: number;
+    transactions: Array<{ action: string; points: number; note: string; createdAt: string }>;
+  } | null>(null);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -110,6 +120,10 @@ export const UserDashboard = () => {
         setDeals(dealRes.deals || []);
         setConversations(conversationRes.conversations || []);
         setWantedItems(wantedRes.wanted || []);
+
+        api.get<any>('/points/me')
+          .then(res => setPointSummary(res))
+          .catch(() => {}); // non-critical — silently ignore
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load your dashboard'));
       } finally {
@@ -158,12 +172,14 @@ export const UserDashboard = () => {
   const totalSaved = myListings.reduce((sum, l) => sum + (l.savedBy?.length || 0), 0);
 
   const stats = [
-    { label: 'My listings',     value: myListings.length,  icon: Package },
-    { label: 'Active deals',    value: activeDeals.length, icon: Handshake },
-    { label: 'Total views',     value: totalViews,         icon: Eye },
-    { label: 'People watching', value: totalSaved,         icon: Heart },
-    { label: 'Unread messages', value: unreadMessages,     icon: MessageCircle },
-    { label: 'Alerts',          value: unreadAlerts,       icon: Bell },
+    { label: 'My listings',     value: myListings.length,              icon: Package },
+    { label: 'Active deals',    value: activeDeals.length,             icon: Handshake },
+    { label: 'Total views',     value: totalViews,                     icon: Eye },
+    { label: 'People watching', value: totalSaved,                     icon: Heart },
+    { label: 'Unread messages', value: unreadMessages,                 icon: MessageCircle },
+    { label: 'Alerts',          value: unreadAlerts,                   icon: Bell },
+    // Points stat — show 0 while loading
+    { label: 'CirQl Points',    value: pointSummary?.totalPoints ?? 0, icon: Star },
   ];
 
   const deleteMyListing = async (id: string) => {
@@ -239,6 +255,64 @@ export const UserDashboard = () => {
           </div>
         ))}
       </section>
+
+      {pointSummary && (
+        <div className="points-panel">
+          <div className="points-panel-header">
+            <div className="points-panel-title">
+              <span className="points-tier-emoji">
+                {pointSummary.tierInfo?.emoji || ''}
+              </span>
+              <span>{pointSummary.tierInfo?.label || 'New'} Member</span>
+              <span className="points-balance">
+                {pointSummary.totalPoints} pts
+              </span>
+            </div>
+            {pointSummary.nextTier && (
+              <div className="points-progress-wrap">
+                <div className="points-progress-bar">
+                  <div
+                    className="points-progress-fill"
+                    style={{
+                      width: `${Math.min(100, Math.round(
+                        ((pointSummary.lifetimePoints - (pointSummary.tierInfo ? (() => {
+                          const tiers = [0, 50, 200, 500, 1000];
+                          const idx = ['new','regular','trusted','star_seller','campus_legend']
+                            .indexOf(pointSummary.tier);
+                          return tiers[idx] || 0;
+                        })() : 0)) /
+                        (pointSummary.pointsToNextTier + (pointSummary.lifetimePoints - ((() => {
+                          const tiers = [0, 50, 200, 500, 1000];
+                          const idx = ['new','regular','trusted','star_seller','campus_legend']
+                            .indexOf(pointSummary.tier);
+                          return tiers[idx] || 0;
+                        })())))
+                      ) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <span className="points-progress-label">
+                  {pointSummary.pointsToNextTier} pts to {pointSummary.nextTier.label}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {pointSummary.transactions.length > 0 && (
+            <div className="points-transactions">
+              <div className="points-transactions-title">Recent activity</div>
+              {pointSummary.transactions.slice(0, 5).map((t, i) => (
+                <div key={i} className="points-transaction-row">
+                  <span className="points-transaction-note">{t.note || t.action.replace(/_/g, ' ')}</span>
+                  <span className={`points-transaction-amount ${t.points > 0 ? 'earn' : 'spend'}`}>
+                    {t.points > 0 ? `+${t.points}` : t.points} pts
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {loading ? (
         <SkeletonGrid count={6} />

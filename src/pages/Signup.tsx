@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
 import { detectCollege } from '../utils/collegeDetect';
 import { PasswordRequirements, passwordMeetsRequirements } from '../components/ui/PasswordRequirements';
+import { api } from '../utils/api';
 import './Auth.css';
 
 export const Signup = () => {
@@ -22,6 +23,13 @@ export const Signup = () => {
   const [showOTP, setShowOTP] = useState(false);
   const [otp, setOtp] = useState('');
   const [passwordFocused, setPasswordFocused] = useState(false);
+
+  type RegStep = 'choose' | 'college-email' | 'manual-email' | 'otp' | 'submit-id' | 'pending';
+  const [step, setStep] = useState<RegStep>('choose');
+  const [college, setCollege] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
+  const [idPhoto, setIdPhoto] = useState<File | null>(null);
+  const [idPhotoPreview, setIdPhotoPreview] = useState<string | null>(null);
 
   const detectedCampus = useMemo(() => detectCollege(email)?.college || null, [email]);
 
@@ -56,10 +64,58 @@ export const Signup = () => {
     const result = await verifyOTP(email, otp);
     setLoading(false);
     if (result.ok) {
-      showInstallNudge();
-      navigate('/marketplace');
+      if (step === 'manual-email' || college) {
+        // Manual flow — go to ID upload step
+        setShowOTP(false);
+        setStep('submit-id');
+      } else {
+        // College email flow — go straight to marketplace
+        showInstallNudge();
+        navigate('/marketplace');
+      }
     } else {
       setError(result.error || 'Invalid OTP. Please try again.');
+    }
+  };
+
+  // Manual registration submit (Step 3)
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!college.trim()) return setError('Please enter your college name');
+    if (!rollNumber.trim()) return setError('Please enter your roll number');
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/register/manual', {
+        name, email, password, college, rollNumber, agreedToTerms: String(agreedToTerms),
+      });
+      if (res.ok !== false) {
+        setShowOTP(true); // reuse existing OTP step
+      } else {
+        setError(res.message || 'Registration failed');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ID photo upload submit (Step 4)
+  const handleIDSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!idPhoto) return setError('Please select a photo');
+    setError('');
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('idPhoto', idPhoto);
+      await api.postForm('/auth/register/submit-id', formData);
+      setStep('pending');
+    } catch (err: any) {
+      setError(err?.message || 'Upload failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,15 +134,68 @@ export const Signup = () => {
       </div>
 
       <div className="auth-split form-side">
-        <button className="auth-back-btn" onClick={() => navigate('/')}>
-          <ArrowLeft size={18} /> Back to Homepage
+        <button className="auth-back-btn" onClick={() => {
+          if (step === 'choose') navigate('/');
+          else setStep('choose');
+        }}>
+          <ArrowLeft size={18} /> {step === 'choose' ? 'Back to Homepage' : 'Back'}
         </button>
 
         <div className="auth-form-container">
           <div className="auth-logo-center">
             <Logo size={40} lightMode={true} className="auth-brand-logo" />
           </div>
-          {!showOTP ? (
+
+          {/* ===== STEP 1: CHOOSE METHOD ===== */}
+          {step === 'choose' && (
+            <>
+              <h2 className="auth-heading">Join CirQl</h2>
+              <p className="auth-subheading">How would you like to verify your student identity?</p>
+
+              {error && <div className="auth-error">{error}</div>}
+
+              <div className="reg-method-cards">
+                <button
+                  className="reg-method-card"
+                  onClick={() => setStep('college-email')}
+                >
+                  <div className="reg-method-icon">🎓</div>
+                  <div className="reg-method-content">
+                    <div className="reg-method-title">College Email</div>
+                    <div className="reg-method-desc">
+                      I have a college email like<br />
+                      <code>name@college.ac.in</code>
+                    </div>
+                    <div className="reg-method-badge recommended">Instant access</div>
+                  </div>
+                  <span className="reg-method-arrow">→</span>
+                </button>
+
+                <button
+                  className="reg-method-card"
+                  onClick={() => setStep('manual-email')}
+                >
+                  <div className="reg-method-icon">📋</div>
+                  <div className="reg-method-content">
+                    <div className="reg-method-title">Personal Email + ID</div>
+                    <div className="reg-method-desc">
+                      My college doesn't provide<br />
+                      a college email address
+                    </div>
+                    <div className="reg-method-badge">Verified within 24h</div>
+                  </div>
+                  <span className="reg-method-arrow">→</span>
+                </button>
+              </div>
+
+              <div className="auth-footer">
+                Already have an account? <Link to="/login">Log in here</Link>
+              </div>
+            </>
+          )}
+
+          {/* ===== STEP 2A: COLLEGE EMAIL FORM (existing flow, unchanged) ===== */}
+          {(step === 'college-email' && !showOTP) && (
             <>
               <h2 className="auth-heading">Create Account</h2>
               <p className="auth-subheading">Your campus email is your admission pass.</p>
@@ -176,7 +285,10 @@ export const Signup = () => {
                 Already have an account? <Link to="/login">Log in here</Link>
               </div>
             </>
-          ) : (
+          )}
+
+          {/* ===== STEP 2B: OTP (existing, shared between both flows) ===== */}
+          {showOTP && (
             <>
               <h2 className="auth-heading">Verify Email</h2>
               <p className="auth-subheading">We sent a 6-digit OTP to <strong>{email}</strong>.</p>
@@ -213,6 +325,164 @@ export const Signup = () => {
               </div>
             </>
           )}
+
+          {/* ===== STEP 3: MANUAL FLOW — personal details ===== */}
+          {step === 'manual-email' && (
+            <>
+              <h2 className="auth-heading">Create Account</h2>
+              <p className="auth-subheading">Enter your details. We'll verify your identity via your college ID card.</p>
+              {error && <div className="auth-error">{error}</div>}
+
+              <form className="premium-form" onSubmit={handleManualSubmit}>
+                <div className="input-group">
+                  <label>Full Name</label>
+                  <div className="input-with-icon">
+                    <User size={18} className="input-icon" />
+                    <input type="text" placeholder="John Doe" required
+                      value={name} onChange={(e) => setName(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label>Personal Email</label>
+                  <div className="input-with-icon">
+                    <Mail size={18} className="input-icon" />
+                    <input type="email" placeholder="yourname@gmail.com" required
+                      value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label>College / University Name</label>
+                  <input type="text" className="plain-input" placeholder="e.g. AKGEC, GLA University"
+                    required value={college} onChange={(e) => setCollege(e.target.value)} />
+                </div>
+
+                <div className="input-group">
+                <label>University Roll Number</label>
+                <input type="text" className="plain-input" placeholder="e.g. 2100140100001"
+                  required value={rollNumber} onChange={(e) => setRollNumber(e.target.value.toUpperCase())} />
+                <span style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 4, display: 'block' }}>
+                  This ensures one account per student.
+                </span>
+                <span style={{ fontSize: 11, color: '#f59e0b', marginTop: 2, display: 'block', fontWeight: 500 }}>
+                  ⚠️ Note: Your roll number must match the ID number printed on your college ID card.
+                </span>
+              </div>
+
+                <div className="input-group">
+                  <label>Password</label>
+                  <div className="input-with-icon">
+                    <Lock size={18} className="input-icon" />
+                    <input type={showPass ? 'text' : 'password'} placeholder="Create a strong password"
+                      required value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)} />
+                    <button type="button" className="pass-toggle" onClick={() => setShowPass(!showPass)}>
+                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {(passwordFocused || password.length > 0) && (
+                    <PasswordRequirements value={password} />
+                  )}
+                </div>
+
+                <label className="terms-consent">
+                  <input type="checkbox" checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)} />
+                  I agree to the <Link to="/terms" target="_blank">Terms & Conditions</Link> and{' '}
+                  <Link to="/privacy" target="_blank">Privacy Policy</Link>
+                </label>
+
+                <button type="submit" className="premium-btn"
+                  disabled={loading || !passwordMeetsRequirements(password) || !agreedToTerms}>
+                  {loading ? 'Creating Account...' : 'Continue →'}
+                </button>
+              </form>
+            </>
+          )}
+
+          {/* ===== STEP 4: UPLOAD ID PHOTO ===== */}
+          {step === 'submit-id' && (
+            <>
+              <h2 className="auth-heading">Upload Your College ID</h2>
+              <p className="auth-subheading">
+                Upload a clear photo of your college ID card.<br />
+                Your college admin will verify it within 24 hours.
+              </p>
+              {error && <div className="auth-error">{error}</div>}
+
+              <form className="premium-form" onSubmit={handleIDSubmit}>
+                <div className="id-upload-area">
+                  {idPhotoPreview ? (
+                    <div className="id-preview-wrap">
+                      <img src={idPhotoPreview} alt="ID preview" className="id-preview-img" />
+                      <button type="button" className="id-change-btn"
+                        onClick={() => { setIdPhoto(null); setIdPhotoPreview(null); }}>
+                        Change photo
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="id-upload-label">
+                      <input type="file" accept="image/jpeg,image/png,image/webp" hidden
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 5 * 1024 * 1024) {
+                            setError('Photo must be under 5MB');
+                            return;
+                          }
+                          setIdPhoto(file);
+                          setIdPhotoPreview(URL.createObjectURL(file));
+                          setError('');
+                        }} />
+                      <div className="id-upload-icon">📷</div>
+                      <div className="id-upload-text">
+                        <strong>Tap to upload ID photo</strong>
+                        <span>JPG, PNG or WebP · Max 5MB</span>
+                      </div>
+                    </label>
+                  )}
+                </div>
+
+                <div className="id-tips">
+                  <p style={{ fontSize: 12, color: 'var(--gray-500)', margin: '8px 0 4px' }}>
+                    ✓ Make sure your name and roll number are clearly visible
+                  </p>
+                  <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>
+                    ✓ Good lighting, no blur, full card visible
+                  </p>
+                </div>
+
+                <button type="submit" className="premium-btn" disabled={loading || !idPhoto}>
+                  {loading ? 'Uploading...' : 'Submit for Verification →'}
+                </button>
+              </form>
+            </>
+          )}
+
+          {/* ===== STEP 5: PENDING STATE ===== */}
+          {step === 'pending' && (
+            <div className="pending-verification-screen">
+              <div className="pending-icon">⏳</div>
+              <h2 className="auth-heading">Verification Pending</h2>
+              <p className="auth-subheading">
+                Your ID has been submitted to your college admin at<br />
+                <strong>{college}</strong>.
+              </p>
+              <div className="pending-info-box">
+                <p>✓ You'll receive an email at <strong>{email}</strong> once verified</p>
+                <p>✓ Usually verified within 24 hours</p>
+                <p>✓ Questions? Email <a href="mailto:cirqlofficial1@gmail.com">cirqlofficial1@gmail.com</a></p>
+              </div>
+              <button className="premium-btn" style={{ marginTop: 20 }}
+                onClick={() => navigate('/')}>
+                Back to Homepage
+              </button>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

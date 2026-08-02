@@ -1220,3 +1220,114 @@
   white-space: nowrap;
 }
 
+/* ===== POINTS PANEL ===== */
+.points-panel {
+  background: var(--surface-2, #fff);
+  border: 1px solid var(--border, #e4e4e7);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 0 0 24px;
+}
+
+.points-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.points-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #18181b);
+}
+
+.points-tier-emoji { font-size: 18px; }
+
+.points-balance {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary, #00e554);
+  background: #ecfdf5;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.points-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.points-progress-bar {
+  height: 6px;
+  background: var(--border, #e4e4e7);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.points-progress-fill {
+  height: 100%;
+  background: var(--primary, #00e554);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.points-progress-label {
+  font-size: 11px;
+  color: var(--text-muted, #a1a1aa);
+  font-weight: 500;
+}
+
+.points-transactions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, #e4e4e7);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.points-transactions-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #a1a1aa);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.points-transaction-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.points-transaction-note {
+  font-size: 12px;
+  color: var(--text-secondary, #71717a);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+}
+
+.points-transaction-amount {
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.points-transaction-amount.earn { color: #16a34a; }
+.points-transaction-amount.spend { color: #dc2626; }
+
+@media (max-width: 480px) {
+  .points-panel { padding: 14px; }
+  .points-panel-title { font-size: 14px; }
+}
+

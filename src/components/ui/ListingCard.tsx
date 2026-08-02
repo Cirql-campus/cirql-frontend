@@ -16,6 +16,7 @@ export interface ListingCardProps {
   sellerReviewCount?: number;
   sellerName?: string;
   rentDuration?: string;
+  sellerTier?: string;
 }
 
 const getBadgeInfo = (type: string) => {
@@ -51,6 +52,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   sellerReviewCount,
   sellerName,
   rentDuration,
+  sellerTier,
 }) => {
   const navigate = useNavigate();
   const badgeInfo = getBadgeInfo(type);
@@ -86,6 +88,14 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                {sellerRating.toFixed(1)}
                {` · ${sellerReviewCount} review${sellerReviewCount === 1 ? '' : 's'}`}
              </span>
+             {sellerTier && sellerTier !== 'new' && (
+               <span className="card-tier-badge">
+                 {sellerTier === 'regular' ? '🟢' :
+                  sellerTier === 'trusted' ? '🔵' :
+                  sellerTier === 'star_seller' ? '⭐' :
+                  sellerTier === 'campus_legend' ? '🏆' : ''}
+               </span>
+             )}
            </div>
          )}
       </div>

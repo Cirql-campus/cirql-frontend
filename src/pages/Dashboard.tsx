@@ -25,6 +25,7 @@ interface Listing {
   sellerReviewCount?: number;
   sellerName?: string;
   rentDuration?: string;
+  sellerTier?: string;
 }
 
 interface ApiListing {
@@ -111,6 +112,7 @@ export const Dashboard = () => {
     sellerReviewCount: l.seller?.reviewCount,
     sellerName: l.seller?.name,
     rentDuration: l.rentDuration,
+    sellerTier: l.seller?.tier,
   });
 
   useEffect(() => {

@@ -93,6 +93,7 @@ export const Browse = () => {
                   {...item} 
                   sellerRating={(item as any).seller?.rating}
                   sellerReviewCount={(item as any).seller?.reviewCount}
+                  sellerTier={(item as any).seller?.tier}
                 />
               ))}
             </div>

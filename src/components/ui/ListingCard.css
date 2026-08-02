@@ -237,3 +237,8 @@
   color: var(--text-muted, #888);
   font-weight: 500;
 }
+
+.card-tier-badge {
+  font-size: 12px;
+  line-height: 1;
+}

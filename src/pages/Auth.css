@@ -451,3 +451,222 @@
 .terms-consent a:hover {
   color: var(--accent, #22c55e);
 }
+
+/* ===== REGISTRATION METHOD CARDS ===== */
+.reg-method-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.reg-method-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: var(--surface-2, #fff);
+  border: 1.5px solid var(--border, #e4e4e7);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  width: 100%;
+}
+
+.reg-method-card:hover {
+  border-color: var(--primary, #00e554);
+  box-shadow: 0 2px 12px rgba(0, 229, 84, 0.1);
+}
+
+.reg-method-icon { font-size: 28px; flex-shrink: 0; }
+
+.reg-method-content { flex: 1; }
+
+.reg-method-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #18181b);
+  margin-bottom: 4px;
+}
+
+.reg-method-desc {
+  font-size: 12px;
+  color: var(--text-muted, #a1a1aa);
+  line-height: 1.5;
+}
+
+.reg-method-desc code {
+  background: var(--surface-1, #f4f4f5);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-secondary, #71717a);
+}
+
+.reg-method-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--surface-1, #f4f4f5);
+  color: var(--text-muted, #a1a1aa);
+  margin-top: 6px;
+  letter-spacing: 0.2px;
+}
+
+.reg-method-badge.recommended {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.reg-method-arrow {
+  font-size: 18px;
+  color: var(--text-muted, #a1a1aa);
+  flex-shrink: 0;
+}
+
+/* ===== ID UPLOAD ===== */
+.id-upload-area {
+  border: 2px dashed var(--border, #e4e4e7);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  margin: 12px 0;
+}
+
+.id-upload-area:hover { border-color: var(--primary, #00e554); }
+
+.id-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 20px;
+  cursor: pointer;
+}
+
+.id-upload-icon { font-size: 36px; }
+
+.id-upload-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--text-primary, #18181b);
+}
+
+.id-upload-text span { font-size: 12px; color: var(--text-muted, #a1a1aa); }
+
+.id-preview-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.id-preview-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.id-change-btn {
+  font-size: 12px;
+  color: var(--text-muted, #a1a1aa);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.plain-input {
+  width: 100%;
+  border: 1.5px solid var(--border, #e4e4e7);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--surface-2, #fff);
+  color: var(--text-primary, #18181b);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.plain-input:focus { border-color: var(--primary, #00e554); }
+
+/* ===== PENDING SCREEN ===== */
+.pending-verification-screen {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.pending-icon { font-size: 52px; margin-bottom: 16px; }
+
+.pending-info-box {
+  background: var(--surface-1, #f9f9f9);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 20px 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pending-info-box p {
+  font-size: 13px;
+  color: var(--text-secondary, #71717a);
+  line-height: 1.5;
+}
+
+.pending-info-box a { color: var(--primary, #00e554); }
+
+/* ===== CUSTOM ACTION BUTTONS FOR ADMIN VERIFICATIONS ===== */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  border: 1px solid transparent;
+  font-family: inherit;
+}
+
+.approve-btn {
+  background: var(--primary, #00e554);
+  color: #000;
+}
+
+.approve-btn:hover {
+  background: #00cc4b;
+  box-shadow: 0 2px 8px rgba(0, 229, 84, 0.2);
+}
+
+.danger-btn {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+.danger-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+@media (max-width: 480px) {
+  .reg-method-card { padding: 12px; gap: 10px; }
+  .reg-method-icon { font-size: 22px; }
+  .reg-method-title { font-size: 14px; }
+}

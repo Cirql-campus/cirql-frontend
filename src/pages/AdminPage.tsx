@@ -82,7 +82,7 @@ export const AdminPage = () => {
   const navigate = useNavigate();
   const { user, isSuperAdmin, isCollegeAdmin } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'colleges' | 'audit' | 'broadcast'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'colleges' | 'audit' | 'broadcast' | 'verifications'>('dashboard');
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [listingReports, setListingReports] = useState<Report[]>([]);
   const [messageReports, setMessageReports] = useState<Report[]>([]);
@@ -90,6 +90,8 @@ export const AdminPage = () => {
   const [moderationListings, setModerationListings] = useState<ModerationListing[]>([]);
   const [flaggedListings, setFlaggedListings] = useState<ModerationListing[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
+  const [pendingVerifCount, setPendingVerifCount] = useState(0);
   const [userSearch, setUserSearch] = useState('');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -154,6 +156,7 @@ export const AdminPage = () => {
         api.get<{ listings: ModerationListing[] }>('/admin/moderation-listings?status=pending'),
         api.get<{ listings: ModerationListing[] }>('/admin/flagged-listings?limit=10'),
         api.get<{ users: AdminUser[] }>('/admin/users?limit=10'),
+        api.get<{ verifications: any[]; total: number }>('/admin/verifications').catch(() => ({ verifications: [], total: 0 })),
         isSuperAdmin ? api.get<{ colleges: any[] }>('/admin/super-stats').then(r => setSuperColleges(r.colleges)).catch(() => {}) : Promise.resolve(),
       ]);
       setDashboard(dash);
@@ -163,6 +166,7 @@ export const AdminPage = () => {
       setModerationListings(moderation.listings);
       setFlaggedListings(flagged.listings);
       setUsers(userRes.users);
+      setPendingVerifCount(verifsRes.total);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to load admin dashboard'));
     } finally {
@@ -224,6 +228,15 @@ export const AdminPage = () => {
       loadCollegesData();
     } else if (activeTab === 'audit') {
       loadAuditLogs(1);
+    } else if (activeTab === 'verifications') {
+      setLoading(true);
+      api.get<{ verifications: any[]; total: number }>('/admin/verifications')
+        .then(r => {
+          setPendingVerifications(r.verifications);
+          setPendingVerifCount(r.total);
+        })
+        .catch(err => setError(getErrorMessage(err, 'Failed to load verifications')))
+        .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
@@ -526,6 +539,13 @@ export const AdminPage = () => {
         >
           <Megaphone size={14} style={{ marginRight: 6, display: 'inline' }} />
           Broadcast
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'verifications' ? 'active' : ''}`}
+          onClick={() => setActiveTab('verifications')}
+        >
+          <ShieldCheck size={14} style={{ marginRight: 6, display: 'inline' }} />
+          Verifications{pendingVerifCount > 0 ? ` (${pendingVerifCount})` : ''}
         </button>
       </div>
 
@@ -1253,6 +1273,99 @@ export const AdminPage = () => {
               {busy === 'broadcast' ? 'Sending Broadcast...' : 'Broadcast Notification'}
             </Button>
           </form>
+        </div>
+      )}
+
+      {/* VERIFICATIONS TAB */}
+      {!loading && activeTab === 'verifications' && (
+        <div>
+          <div className="workspace-header">
+            <h2>Student Verifications</h2>
+            <p className="muted">Review and approve student ID verification requests</p>
+          </div>
+
+          {pendingVerifications.length === 0 ? (
+            <div className="empty-state">No pending verifications. ✓</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {pendingVerifications.map(v => (
+                <div key={v._id} className="workspace-card">
+                  <div className="workspace-card-main">
+                    <img
+                      src={v.idPhotoUrl}
+                      alt="Student ID"
+                      style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div className="workspace-card-title" style={{ fontWeight: 800, fontSize: 16 }}>{v.name}</div>
+                      <div className="card-kicker">{v.email}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                        Roll No: <strong>{v.rollNumber}</strong> · {v.college}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                        Submitted: {new Date(v.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                    <button
+                      className="action-btn approve-btn"
+                      onClick={() => setPendingAction({
+                        title: `Approve ${v.name}?`,
+                        description: `This will grant ${v.name} (Roll: ${v.rollNumber}) access to ${v.college} on CirQl and send them a welcome email.`,
+                        confirmLabel: 'Approve & Send Welcome Email',
+                        danger: false,
+                        run: async () => {
+                          setBusy(v._id);
+                          try {
+                            await api.post(`/admin/verifications/${v._id}/approve`);
+                            setPendingVerifications(prev => prev.filter(x => x._id !== v._id));
+                            setPendingVerifCount(c => c - 1);
+                            setSuccessMsg(`Successfully verified ${v.name}`);
+                          } catch (err) {
+                            setError(getErrorMessage(err, 'Failed to approve verification'));
+                          } finally {
+                            setBusy('');
+                            setPendingAction(null);
+                          }
+                        },
+                      })}
+                    >
+                      ✓ Approve
+                    </button>
+                    <button
+                      className="action-btn danger-btn"
+                      onClick={() => {
+                        const reason = prompt('Rejection reason (shown to student):') || 'ID could not be verified. Please resubmit with a clearer photo.';
+                        setPendingAction({
+                          title: `Reject ${v.name}?`,
+                          description: `The student will receive an email with the reason: "${reason}"`,
+                          confirmLabel: 'Reject & Notify Student',
+                          danger: true,
+                          run: async () => {
+                            setBusy(v._id);
+                            try {
+                              await api.post(`/admin/verifications/${v._id}/reject`, { reason });
+                              setPendingVerifications(prev => prev.filter(x => x._id !== v._id));
+                              setPendingVerifCount(c => c - 1);
+                              setSuccessMsg(`Rejected verification for ${v.name}`);
+                            } catch (err) {
+                              setError(getErrorMessage(err, 'Failed to reject verification'));
+                            } finally {
+                              setBusy('');
+                              setPendingAction(null);
+                            }
+                          },
+                        });
+                      }}
+                    >
+                      ✗ Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
