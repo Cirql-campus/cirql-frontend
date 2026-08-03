@@ -16,6 +16,7 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard').then(m => ({ defa
 const ItemDetail = React.lazy(() => import('./pages/ItemDetail').then(m => ({ default: m.ItemDetail })));
 const CreateListing = React.lazy(() => import('./pages/CreateListing').then(m => ({ default: m.CreateListing })));
 const CreateWantedItem = React.lazy(() => import('./pages/CreateWantedItem').then(m => ({ default: m.CreateWantedItem })));
+const SpotHub = React.lazy(() => import('./pages/SpotHub').then(m => ({ default: m.SpotHub })));
 const Profile = React.lazy(() => import('./pages/Profile').then(m => ({ default: m.Profile })));
 const ChatPage = React.lazy(() => import('./pages/ChatPage').then(m => ({ default: m.ChatPage })));
 const ConversationsPage = React.lazy(() => import('./pages/ConversationsPage').then(m => ({ default: m.ConversationsPage })));
@@ -66,6 +67,7 @@ function App() {
                 <Route path="create" element={<ProtectedRoute><CreateListing /></ProtectedRoute>} />
                 <Route path="wanted/new" element={<ProtectedRoute><CreateWantedItem /></ProtectedRoute>} />
                 <Route path="listings/:id/edit" element={<ProtectedRoute><EditListing /></ProtectedRoute>} />
+                <Route path="spot-hub" element={<ProtectedRoute><SpotHub /></ProtectedRoute>} />
                 <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
                 <Route path="messages/:roomId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />

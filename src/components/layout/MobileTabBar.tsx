@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Search, MessageCircle, Plus, User } from 'lucide-react';
+import { Search, MessageCircle, Plus, User, Compass } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import './MobileTabBar.css';
 
@@ -44,6 +44,14 @@ export const MobileTabBar = () => {
           <Plus size={22} strokeWidth={3} />
         </div>
         <span>Post Item</span>
+      </NavLink>
+
+      <NavLink
+        to="/spot-hub"
+        className={({ isActive }) => `tab-item ${isActive ? 'active' : ''}`}
+      >
+        <Compass size={20} />
+        <span>Spot Hub</span>
       </NavLink>
 
       <NavLink
