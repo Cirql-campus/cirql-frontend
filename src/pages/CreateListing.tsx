@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, ImagePlus, LayoutDashboard, MapPin, Store, X } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ImagePlus, MapPin, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
@@ -200,24 +200,14 @@ export const CreateListing = () => {
       <div className="create-listing-page container">
         <div className="form-container">
           <div className="post-nav">
-            <button type="button" className="post-nav-back" onClick={() => navigate('/dashboard')}>
+            <button type="button" className="post-nav-back" onClick={() => navigate(-1)}>
               <ArrowLeft size={16} />
-              Back to Dashboard
+              Back
             </button>
-            <div className="post-nav-actions">
-              <button type="button" onClick={() => navigate('/marketplace')}>
-                <Store size={16} />
-                Marketplace
-              </button>
-              <button type="button" onClick={() => navigate('/profile')}>
-                <LayoutDashboard size={16} />
-                My Listings
-              </button>
-            </div>
+            <span className="post-nav-title">Post Item</span>
           </div>
 
           <div className="form-header">
-            <h1 className="form-title">Post Item</h1>
             <p className="text-muted">Add enough detail so another student can trust the listing.</p>
             <div className="post-campus-note">
               <CheckCircle2 size={16} />
@@ -225,13 +215,15 @@ export const CreateListing = () => {
             </div>
           </div>
 
-          <div className="post-progress-bar">
-            <div className="post-progress-fill" style={{ width: `${completionScore}%` }} />
+          <div className="post-progress-wrap">
+            <div className="post-progress-bar">
+              <div className="post-progress-fill" style={{ width: `${completionScore}%` }} />
+            </div>
             {completionScore < 100 && (
               <span className="post-progress-label">
-                {completionScore === 0 ? 'Fill in the details below to post' :
+                {completionScore === 0 ? 'Fill in details below to post' :
                  completionScore < 50 ? 'Keep going...' :
-                 completionScore < 75 ? 'Almost there' : 'Looking good — add a photo to finish!'}
+                 completionScore < 75 ? 'Almost there' : '📷 Add a photo to finish!'}
               </span>
             )}
           </div>
@@ -296,9 +288,20 @@ export const CreateListing = () => {
               <div className="type-toggle">
                 <label className="input-label">Type*</label>
                 <div className="toggle-buttons">
-                  {(['sell', 'rent', 'free', 'service'] as const).map(value => (
-                    <button key={value} type="button" className={`toggle-btn ${type === value ? `active ${value}` : ''}`} onClick={() => handleTypeChange(value)}>
-                      {value === 'sell' ? 'Sell' : value === 'rent' ? 'Rent' : value === 'free' ? 'Free' : 'Service'}
+                  {([
+                    { value: 'sell',    label: 'Sell',    emoji: '💰' },
+                    { value: 'rent',    label: 'Rent',    emoji: '🔄' },
+                    { value: 'free',    label: 'Free',    emoji: '🎁' },
+                    { value: 'service', label: 'Service', emoji: '🛠️' },
+                  ] as const).map(({ value, label, emoji }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`toggle-btn ${type === value ? `active ${value}` : ''}`}
+                      onClick={() => handleTypeChange(value)}
+                    >
+                      <span className="toggle-emoji">{emoji}</span>
+                      <span className="toggle-label">{label}</span>
                     </button>
                   ))}
                 </div>
@@ -343,6 +346,27 @@ export const CreateListing = () => {
                   required
                 />
               )}
+
+              <div className="input-wrapper" style={{ marginTop: 16 }}>
+                <label className="input-label">Description*</label>
+                <textarea
+                  className="input-field textarea-field"
+                  placeholder="Describe condition, age, reason for selling, what is included..."
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  maxLength={500}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {description.length < 30 ? 'Add more detail for faster responses' : description.length < 80 ? 'Good — add a bit more if you can' : '✓ Great description'}
+                  </span>
+                  <span style={{ fontSize: 12, color: description.length > 500 ? '#ef4444' : 'var(--text-muted)' }}>
+                    {description.length}/500
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Section 3: Price */}
@@ -401,9 +425,9 @@ export const CreateListing = () => {
               )}
             </div>
 
-            {/* Section 4: More Details (collapsible Brand/Model/Qty/Tags + visible Description) */}
+            {/* Section 4: Optional Details (collapsible Brand/Model/Qty/Tags) */}
             <div className="form-section">
-              <h2 className="section-subtitle">More Details</h2>
+              <h2 className="section-subtitle">Optional Details</h2>
               <button
                 type="button"
                 className="more-details-toggle"
@@ -422,27 +446,6 @@ export const CreateListing = () => {
                   <Input label="Tags" placeholder="calculator, first-year, hostel" value={tags} onChange={(e) => setTags(e.target.value)} />
                 </div>
               )}
-
-              <div className="input-wrapper" style={{ marginTop: 16 }}>
-                <label className="input-label">Description*</label>
-                <textarea
-                  className="input-field textarea-field"
-                  placeholder="Describe condition, age, reason for selling, what is included..."
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                  maxLength={500}
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {description.length < 30 ? 'Add more detail for faster responses' : description.length < 80 ? 'Good — add a bit more if you can' : '✓ Great description'}
-                  </span>
-                  <span style={{ fontSize: 12, color: description.length > 500 ? '#ef4444' : 'var(--text-muted)' }}>
-                    {description.length}/500
-                  </span>
-                </div>
-              </div>
             </div>
 
             {type === 'service' ? (

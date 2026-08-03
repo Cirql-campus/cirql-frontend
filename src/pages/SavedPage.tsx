@@ -35,6 +35,13 @@ interface SavedListingCard {
   sellerName?: string;
   rentDuration?: string;
   sellerTier?: string;
+  seller?: {
+    _id: string;
+    name: string;
+    rating?: number;
+    reviewCount?: number;
+    tier?: string;
+  };
 }
 
 export const SavedPage = () => {
@@ -63,6 +70,7 @@ export const SavedPage = () => {
         sellerName: l.seller?.name,
         rentDuration: l.rentDuration,
         sellerTier: l.seller?.tier,
+        seller: l.seller,
       }));
       setListings(mapped);
     } catch (err) {
@@ -111,7 +119,7 @@ export const SavedPage = () => {
         <div className="listings-grid">
           {listings.map(item => (
             <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <ListingCard {...item} onSave={handleSaveToggle} />
+              <ListingCard {...item} sellerTier={(item as any).seller?.tier} onSave={handleSaveToggle} />
               <button 
                 onClick={() => handleSaveToggle(item.id)}
                 style={{ 

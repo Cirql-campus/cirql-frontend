@@ -61,20 +61,42 @@ export const Signup = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const result = await verifyOTP(email, otp);
-    setLoading(false);
-    if (result.ok) {
-      if (step === 'manual-email' || college) {
-        // Manual flow — go to ID upload step
-        setShowOTP(false);
-        setStep('submit-id');
-      } else {
-        // College email flow — go straight to marketplace
-        showInstallNudge();
-        navigate('/marketplace');
+
+    const isManualFlow = step === 'manual-email' || (college && college.trim().length > 0);
+
+    if (isManualFlow) {
+      // Manual flow: call backend directly — do NOT use AuthContext.verifyOTP
+      // because it navigates away from Signup before we can show the ID upload step
+      try {
+        const res = await api.post<{ user: any; accessToken: string }>(
+          '/auth/verify-otp',
+          { email, otp }
+        );
+        setLoading(false);
+        if (res && res.accessToken) {
+          // Store token so the submit-id upload call (which uses protect middleware) works
+          // AuthContext.verifyOTP would do this — we replicate only what's needed here
+          // The full auth state will be set when user logs in after admin approval
+          sessionStorage.setItem('cirql_pending_token', res.accessToken);
+          setShowOTP(false);
+          setStep('submit-id');
+        } else {
+          setError('Verification failed. Please try again.');
+        }
+      } catch (err: unknown) {
+        setLoading(false);
+        setError(getErrorMessage(err, 'Invalid or expired OTP. Please try again.'));
       }
     } else {
-      setError(result.error || 'Invalid OTP. Please try again.');
+      // College email flow: use AuthContext.verifyOTP as before
+      const result = await verifyOTP(email, otp);
+      setLoading(false);
+      if (result.ok) {
+        showInstallNudge();
+        navigate('/marketplace');
+      } else {
+        setError(result.error || 'Invalid OTP. Please try again.');
+      }
     }
   };
 
@@ -106,7 +128,32 @@ export const Signup = () => {
     try {
       const formData = new FormData();
       formData.append('idPhoto', idPhoto);
-      await api.post('/auth/register/submit-id', formData, true);
+
+      // Use the pending token from manual OTP verification
+      // since the user is not fully logged in yet (isVerified = false)
+      const pendingToken = sessionStorage.getItem('cirql_pending_token');
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_ORIGIN?.replace(/\/$/, '') || 'https://cirql-backend.onrender.com'}/api/v1/auth/register/submit-id`,
+        {
+          method: 'POST',
+          headers: pendingToken
+            ? { Authorization: `Bearer ${pendingToken}` }
+            : {},
+          credentials: 'include',
+          body: formData,
+          // Do NOT set Content-Type — browser sets multipart/form-data boundary automatically
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || 'Upload failed');
+      }
+
+      // Clear the pending token — user must wait for admin approval and then log in
+      sessionStorage.removeItem('cirql_pending_token');
       setStep('pending');
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Upload failed. Please try again.'));

@@ -17,42 +17,34 @@
 .post-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
-.post-nav button {
+.post-nav-back {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid var(--border-color);
-  background: #fff;
-  color: var(--text-main);
+  gap: 6px;
+  border: 1px solid var(--black, #050505);
+  background: var(--black, #050505);
+  color: #fff;
   border-radius: var(--radius-md);
-  padding: 10px 14px;
+  padding: 8px 14px;
   font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition);
+  flex-shrink: 0;
 }
+.post-nav-back:hover { opacity: 0.85; }
 
-.post-nav button:hover {
-  border-color: var(--text-main);
-  transform: translateY(-1px);
-}
-
-.post-nav-back {
-  background: var(--black, #050505) !important;
-  color: #fff !important;
-  border-color: var(--black, #050505) !important;
-}
-
-.post-nav-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.post-nav-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  flex: 1;
+  text-align: center;
+  padding-right: 88px;
 }
 
 .form-header {
@@ -365,12 +357,14 @@
   border-color: var(--primary, #00e554);
 }
 
+.post-progress-wrap {
+  margin-bottom: 20px;
+}
 .post-progress-bar {
   height: 4px;
   background: var(--border, #e4e4e7);
   border-radius: 2px;
-  margin-bottom: 20px;
-  position: relative;
+  margin-bottom: 6px;
 }
 .post-progress-fill {
   height: 100%;
@@ -379,9 +373,54 @@
   transition: width 0.4s ease;
 }
 .post-progress-label {
-  position: absolute;
-  top: 8px;
-  right: 0;
+  display: block;
   font-size: 11px;
   color: var(--text-muted, #888);
+  text-align: right;
+}
+
+/* Toggle button improvements */
+.toggle-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.toggle-btn:active { transform: scale(0.97); }
+.toggle-emoji { display: block; font-size: 18px; margin-bottom: 2px; }
+.toggle-label  { display: block; font-size: 13px; font-weight: 600; }
+
+.toggle-btn.active.free {
+  border-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+.toggle-btn.active.service {
+  border-color: #8b5cf6;
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #7c3aed;
+}
+
+@media (max-width: 480px) {
+  .create-listing-page { padding-top: 0; padding-bottom: 80px; }
+  .form-container { border-radius: 0; border-left: none; border-right: none; padding: 1rem; }
+  .form-section { margin-bottom: 1.25rem; padding-bottom: 1.25rem; }
+  .section-subtitle { font-size: 1rem; margin-bottom: 1rem; }
+  .post-nav-title { font-size: 0.9rem; padding-right: 40px; }
+
+  /* Type toggle — 2x2 grid */
+  .toggle-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .toggle-btn { padding: 0.6rem 0.5rem; }
+
+  /* Photo */
+  .photo-upload-btn { width: 96px; height: 96px; }
+  .photo-preview-grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
+
+  /* Price */
+  .price-input { font-size: 1.1rem; }
+  .currency-prefix { font-size: 1.1rem; }
+
+  /* Footer — submit button on top */
+  .post-footer-actions { grid-template-columns: 1fr; direction: rtl; }
+  .post-footer-actions > * { direction: ltr; }
 }
