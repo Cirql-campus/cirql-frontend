@@ -21,8 +21,8 @@ export interface ListingCardProps {
 
 const getBadgeInfo = (type: string) => {
   const norm = type.toLowerCase();
-  if (norm === 'sell') return { emoji: '🏷️', label: 'Buy' };
-  if (norm === 'rent') return { emoji: '⏰', label: 'Rent' };
+  if (norm === 'sell') return { emoji: '', label: 'Sell' };
+  if (norm === 'rent') return { emoji: '', label: 'Rent' };
   if (norm === 'free') return { emoji: '🎁', label: 'Free' };
   return { emoji: '💼', label: 'Service' };
 };
@@ -63,7 +63,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
         {(!image || image.length < 4) && <div style={{ fontSize: '60px' }}>📦</div>}
         <div className="card-img-bg"></div>
         <div className={`badge badge-${type.toLowerCase()}`}>
-          {badgeInfo.emoji} {badgeInfo.label}
+          {badgeInfo.emoji ? `${badgeInfo.emoji} ` : ''}{badgeInfo.label}
         </div>
         <button className="wishlist-btn" onClick={(e) => { e.stopPropagation(); onSave?.(id); }}>♡</button>
       </div>

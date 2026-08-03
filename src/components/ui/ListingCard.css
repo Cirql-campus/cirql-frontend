@@ -41,8 +41,8 @@
   font-weight: 700;
   z-index: 2;
 }
-.badge-sell { background: #eff6ff; color: #1d4ed8; }
-.badge-rent { background: #fef2f2; color: #ef4444; }
+.badge-sell { background: #eff6ff; color: #1d4ed8; font-weight: 800; }
+.badge-rent { background: #fef2f2; color: #ef4444; font-weight: 800; }
 .badge-free { background: #faf5ff; color: #7e22ce; }
 .badge-service { background: #f1f5f9; color: #475569; }
 .badge-hot { background: #fef3c7; color: #d97706; }
