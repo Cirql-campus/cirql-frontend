@@ -63,25 +63,46 @@ export const Login = () => {
           {error && (
             <div className="auth-error">
               {error}
+              {(error.includes('under review') || error.includes('not approved')) && (
+                <div style={{ marginTop: 8, fontSize: 13 }}>
+                  <a
+                    href="mailto:cirqlofficial1@gmail.com"
+                    style={{ color: 'inherit', fontWeight: 700, textDecoration: 'underline' }}
+                  >
+                    Contact support
+                  </a>
+                  {error.includes('not approved') && (
+                    <>
+                      {' · '}
+                      <a
+                        href="/signup"
+                        style={{ color: 'inherit', fontWeight: 700, textDecoration: 'underline' }}
+                      >
+                        Resubmit ID
+                      </a>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
           <form className="premium-form" onSubmit={handleSubmit}>
             <div className="input-group">
-              <label>College ID / University Email</label>
+              <label>Email Address</label>
               <div className="input-with-icon">
                 <Mail size={18} className="input-icon" />
                 <input
                   type="email"
-                  placeholder="student@college.edu.in"
+                  placeholder="Enter your registered email"
                   required
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setError(''); }}
                 />
               </div>
-              {email && (
-                <div className="campus-detect-text" style={{ color: detectedCampus ? 'var(--accent)' : 'var(--gray-400)' }}>
-                  {detectedCampus ? `Welcome back, ${detectedCampus} student` : 'Type your university email...'}
+              {email && detectedCampus && (
+                <div className="campus-detect-text" style={{ color: 'var(--accent)' }}>
+                  {`Welcome back, ${detectedCampus} student`}
                 </div>
               )}
             </div>
