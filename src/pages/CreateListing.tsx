@@ -142,7 +142,7 @@ export const CreateListing = () => {
       return;
     }
 
-    if (type !== 'free' && (!price || Number(price) < 0)) {
+    if (type !== 'free' && type !== 'service' && (!price || Number(price) < 0)) {
       setError('Please enter a valid price.');
       return;
     }
@@ -157,7 +157,7 @@ export const CreateListing = () => {
         formData.append('condition', condition);
       }
       formData.append('description', description);
-      formData.append('price', type === 'free' ? '0' : price);
+      formData.append('price', (type === 'free' || type === 'service') ? (price || '0') : price);
       formData.append('type', type);
       formData.append('quantity', quantity);
       formData.append('isNegotiable', String(type === 'free' ? false : isNegotiable));
@@ -371,10 +371,26 @@ export const CreateListing = () => {
 
             {/* Section 3: Price */}
             <div className="form-section">
-              <h2 className="section-subtitle">Price</h2>
+              <h2 className="section-subtitle">
+                Price {type === 'free' ? '(Free)' : type === 'service' ? '(optional)' : '*'}
+              </h2>
               <div className="price-input-wrapper">
                 <span className="currency-prefix">₹</span>
-                <input type="number" className="price-input" placeholder="0" required min="0" max="500000" value={type === 'free' ? '0' : price} onChange={(e) => setPrice(e.target.value)} disabled={type === 'free'} />
+                <input
+                  type="number"
+                  className="price-input"
+                  placeholder={
+                    type === 'rent' ? 'Per day / week / month' :
+                    type === 'service' ? 'Leave blank if free or negotiable' :
+                    'Enter price'
+                  }
+                  required={type !== 'free' && type !== 'service'}
+                  min="0"
+                  max="500000"
+                  value={type === 'free' ? '0' : price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  disabled={type === 'free'}
+                />
                 {type === 'rent' && <span className="rent-suffix">/ {rentDuration}</span>}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 12 }}>
