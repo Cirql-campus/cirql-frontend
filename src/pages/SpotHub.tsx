@@ -65,12 +65,12 @@ interface SingleSpotResponse {
 }
 
 const CATEGORIES = [
-  { value: 'all', label: 'All Spots' },
-  { value: 'food', label: 'Food & Drinks' },
-  { value: 'shop', label: 'Shops' },
-  { value: 'hangout', label: 'Hangouts' },
-  { value: 'services', label: 'Services' },
-  { value: 'other', label: 'Others' },
+  { value: 'all',      label: 'All Spots',    short: 'All'      },
+  { value: 'food',     label: 'Food & Drinks', short: 'Food'     },
+  { value: 'shop',     label: 'Shops',         short: 'Shops'    },
+  { value: 'hangout',  label: 'Hangouts',      short: 'Hangouts' },
+  { value: 'services', label: 'Services',      short: 'Services' },
+  { value: 'other',    label: 'Others',        short: 'Others'   },
 ];
 
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -284,14 +284,16 @@ export const SpotHub = () => {
     <div className="spothub-page container">
       {/* Header */}
       <div className="spothub-header">
-        <div className="spothub-header-left">
+        <div>
           <h1 className="spothub-title">Spot Hub</h1>
-          <p className="spothub-subtitle">Discover and upvote the best campus spots around {user?.college || 'your college'}</p>
+          <p className="spothub-subtitle">
+            Best places around {user?.college || 'your campus'} — rated by students
+          </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} className="btn-post-spot">
-          <Plus size={18} />
+        <button className="spothub-post-btn" onClick={() => setShowCreateModal(true)}>
+          <Plus size={16} strokeWidth={2.5} />
           Post a Spot
-        </Button>
+        </button>
       </div>
 
       {/* Category Pills */}
@@ -299,13 +301,13 @@ export const SpotHub = () => {
         {CATEGORIES.map(cat => (
           <button
             key={cat.value}
-            className={`spothub-chip ${category === cat.value ? 'active' : ''}`}
+            className={`spothub-chip${category === cat.value ? ' active' : ''}`}
             onClick={() => {
               setCategory(cat.value);
               setPage(1);
             }}
           >
-            {cat.label}
+            {cat.short}
           </button>
         ))}
       </div>
@@ -345,44 +347,57 @@ export const SpotHub = () => {
               const userHasDownvoted = spot.downvotes.includes(user?._id || '');
               
               return (
-                <div key={spot._id} className="spothub-card" onClick={() => openDetail(spot)}>
+                <div
+                  key={spot._id}
+                  className={`spothub-card spothub-card--${spot.category}`}
+                  onClick={() => openDetail(spot)}
+                >
                   <div className="spothub-card-img-wrapper">
-                    <img 
-                      src={spot.images[0]} 
-                      alt={spot.placeName} 
-                      className="spothub-card-img" 
+                    <img
+                      src={spot.images[0]}
+                      alt={spot.placeName}
+                      className="spothub-card-img"
                       loading="lazy"
                     />
+                    {spot.isOutdated && (
+                      <div className="spothub-outdated-ribbon">Possibly outdated</div>
+                    )}
                   </div>
-                  <div className="spothub-card-content">
-                    <div className="spothub-card-header">
-                      <h3 className="spothub-card-title">{spot.placeName}</h3>
-                      {renderCategoryBadge(spot.category)}
-                    </div>
-                    
-                    <p className="spothub-card-desc">{spot.description}</p>
-                    
-                    <div className="spothub-card-footer">
-                      <span className="spothub-results-count" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem' }}>
-                        <MapPin size={12} /> {spot.college}
-                      </span>
 
-                      {/* Vote display */}
+                  <div className="spothub-card-content">
+                    <div className="spothub-card-top">
+                      <span className={`category-badge ${spot.category}`}>
+                        {CATEGORIES.find(c => c.value === spot.category)?.short || spot.category}
+                      </span>
+                      <span className="spothub-card-score">
+                        {spot.upvotes.length - spot.downvotes.length > 0
+                          ? `+${spot.upvotes.length - spot.downvotes.length}`
+                          : spot.upvotes.length - spot.downvotes.length}
+                      </span>
+                    </div>
+
+                    <h3 className="spothub-card-title">{spot.placeName}</h3>
+                    <p className="spothub-card-desc">{spot.description}</p>
+
+                    <div className="spothub-card-footer">
+                      <span className="spothub-card-college">{spot.poster?.name?.split(' ')[0] || 'Student'}</span>
                       <div className="spothub-votes-mini">
                         <button
-                          className={`spothub-vote-btn-mini ${userHasUpvoted ? 'upvoted' : ''}`}
+                          className={`spothub-vote-btn-mini${spot.upvotes.includes(user?._id || '') ? ' upvoted' : ''}`}
                           onClick={(e) => handleVote(spot._id, 'upvote', e)}
                           title="Upvote"
+                          aria-label="Upvote"
                         >
-                          <ThumbsUp size={13} />
+                          <ThumbsUp size={12} />
                           <span>{spot.upvotes.length}</span>
                         </button>
                         <button
-                          className={`spothub-vote-btn-mini ${userHasDownvoted ? 'downvoted' : ''}`}
+                          className={`spothub-vote-btn-mini${spot.downvotes.includes(user?._id || '') ? ' downvoted' : ''}`}
                           onClick={(e) => handleVote(spot._id, 'downvote', e)}
                           title="Downvote"
+                          aria-label="Downvote"
                         >
-                          <ThumbsDown size={13} />
+                          <ThumbsDown size={12} />
                           <span>{spot.downvotes.length}</span>
                         </button>
                       </div>
@@ -484,7 +499,7 @@ export const SpotHub = () => {
             <div className="spot-modal-body">
               <div className="spot-modal-meta">
                 {renderCategoryBadge(selectedSpot.category)}
-                <span className="text-muted" style={{ fontSize: '0.75rem' }}>
+                <span className="spot-modal-date">
                   {new Date(selectedSpot.createdAt).toLocaleDateString(undefined, { 
                     month: 'short', 
                     day: 'numeric', 
@@ -596,14 +611,15 @@ export const SpotHub = () => {
                 <div className="input-wrapper">
                   <label className="spot-picker-label">Description*</label>
                   <textarea
-                    className="app-dialog-textarea"
-                    style={{ marginTop: '4px' }}
+                    className="spothub-textarea"
                     rows={4}
-                    placeholder="Describe this spot. What makes it special? Any recommended food item or timing?"
+                    placeholder="What makes this place worth visiting? Best time to go, what to order, anything useful for a student."
                     required
                     value={formDescription}
                     onChange={e => setFormDescription(e.target.value)}
+                    maxLength={400}
                   />
+                  <div className="spothub-char-count">{formDescription.length}/400</div>
                 </div>
 
                 {/* Images picker */}
