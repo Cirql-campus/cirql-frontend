@@ -343,8 +343,8 @@ export const SpotHub = () => {
         <>
           <div className="spothub-grid">
             {posts.map(spot => {
-              const userHasUpvoted = spot.upvotes.includes(user?._id || '');
-              const userHasDownvoted = spot.downvotes.includes(user?._id || '');
+              const userHasUpvoted = (spot.upvotes ?? []).includes(user?._id || '');
+              const userHasDownvoted = (spot.downvotes ?? []).includes(user?._id || '');
               
               return (
                 <div
@@ -370,9 +370,10 @@ export const SpotHub = () => {
                         {CATEGORIES.find(c => c.value === spot.category)?.short || spot.category}
                       </span>
                       <span className="spothub-card-score">
-                        {spot.upvotes.length - spot.downvotes.length > 0
-                          ? `+${spot.upvotes.length - spot.downvotes.length}`
-                          : spot.upvotes.length - spot.downvotes.length}
+                        {(() => {
+                          const score = (spot.upvotes?.length ?? 0) - (spot.downvotes?.length ?? 0);
+                          return score > 0 ? `+${score}` : score;
+                        })()}
                       </span>
                     </div>
 
@@ -383,22 +384,22 @@ export const SpotHub = () => {
                       <span className="spothub-card-college">{spot.poster?.name?.split(' ')[0] || 'Student'}</span>
                       <div className="spothub-votes-mini">
                         <button
-                          className={`spothub-vote-btn-mini${spot.upvotes.includes(user?._id || '') ? ' upvoted' : ''}`}
+                          className={`spothub-vote-btn-mini${(spot.upvotes ?? []).includes(user?._id || '') ? ' upvoted' : ''}`}
                           onClick={(e) => handleVote(spot._id, 'upvote', e)}
                           title="Upvote"
                           aria-label="Upvote"
                         >
                           <ThumbsUp size={12} />
-                          <span>{spot.upvotes.length}</span>
+                          <span>{spot.upvotes?.length ?? 0}</span>
                         </button>
                         <button
-                          className={`spothub-vote-btn-mini${spot.downvotes.includes(user?._id || '') ? ' downvoted' : ''}`}
+                          className={`spothub-vote-btn-mini${(spot.downvotes ?? []).includes(user?._id || '') ? ' downvoted' : ''}`}
                           onClick={(e) => handleVote(spot._id, 'downvote', e)}
                           title="Downvote"
                           aria-label="Downvote"
                         >
                           <ThumbsDown size={12} />
-                          <span>{spot.downvotes.length}</span>
+                          <span>{spot.downvotes?.length ?? 0}</span>
                         </button>
                       </div>
                     </div>
@@ -532,18 +533,18 @@ export const SpotHub = () => {
               <div className="spot-modal-actions">
                 <div className="spot-modal-votes">
                   <button
-                    className={`spot-vote-btn ${selectedSpot.upvotes.includes(user?._id || '') ? 'upvoted' : ''}`}
+                    className={`spot-vote-btn ${(selectedSpot.upvotes ?? []).includes(user?._id || '') ? 'upvoted' : ''}`}
                     onClick={() => handleVote(selectedSpot._id, 'upvote')}
                   >
                     <ThumbsUp size={16} />
-                    <span>Upvote ({selectedSpot.upvotes.length})</span>
+                    <span>Upvote ({selectedSpot.upvotes?.length ?? 0})</span>
                   </button>
                   <button
-                    className={`spot-vote-btn ${selectedSpot.downvotes.includes(user?._id || '') ? 'downvoted' : ''}`}
+                    className={`spot-vote-btn ${(selectedSpot.downvotes ?? []).includes(user?._id || '') ? 'downvoted' : ''}`}
                     onClick={() => handleVote(selectedSpot._id, 'downvote')}
                   >
                     <ThumbsDown size={16} />
-                    <span>Downvote ({selectedSpot.downvotes.length})</span>
+                    <span>Downvote ({selectedSpot.downvotes?.length ?? 0})</span>
                   </button>
                 </div>
 

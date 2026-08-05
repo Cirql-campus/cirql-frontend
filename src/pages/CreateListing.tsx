@@ -289,19 +289,18 @@ export const CreateListing = () => {
                 <label className="input-label">Type*</label>
                 <div className="toggle-buttons">
                   {([
-                    { value: 'sell',    label: 'Sell',    emoji: '💰' },
-                    { value: 'rent',    label: 'Rent',    emoji: '🔄' },
-                    { value: 'free',    label: 'Free',    emoji: '🎁' },
-                    { value: 'service', label: 'Service', emoji: '🛠️' },
-                  ] as const).map(({ value, label, emoji }) => (
+                    { value: 'sell',    label: 'Sell'    },
+                    { value: 'rent',    label: 'Rent'    },
+                    { value: 'free',    label: 'Free'    },
+                    { value: 'service', label: 'Service' },
+                  ] as const).map(({ value, label }) => (
                     <button
                       key={value}
                       type="button"
                       className={`toggle-btn ${type === value ? `active ${value}` : ''}`}
                       onClick={() => handleTypeChange(value)}
                     >
-                      <span className="toggle-emoji">{emoji}</span>
-                      <span className="toggle-label">{label}</span>
+                      {label}
                     </button>
                   ))}
                 </div>
