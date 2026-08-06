@@ -223,7 +223,7 @@ export const CreateListing = () => {
               <span className="post-progress-label">
                 {completionScore === 0 ? 'Fill in details below to post' :
                  completionScore < 50 ? 'Keep going...' :
-                 completionScore < 75 ? 'Almost there' : '📷 Add a photo to finish!'}
+                 completionScore < 75 ? 'Almost there' : 'Add a photo to finish'}
               </span>
             )}
           </div>
@@ -244,7 +244,7 @@ export const CreateListing = () => {
 
                 {/Mobi|Android/i.test(navigator.userAgent) && images.length < MAX_IMAGES && (
                   <label className="photo-camera-btn">
-                    📷 Take Photo
+                    Take Photo
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
@@ -288,19 +288,16 @@ export const CreateListing = () => {
               <div className="type-toggle">
                 <label className="input-label">Type*</label>
                 <div className="toggle-buttons">
-                  {([
-                    { value: 'sell',    label: 'Sell'    },
-                    { value: 'rent',    label: 'Rent'    },
-                    { value: 'free',    label: 'Free'    },
-                    { value: 'service', label: 'Service' },
-                  ] as const).map(({ value, label }) => (
+                  {(['sell', 'rent', 'free', 'service'] as const).map(value => (
                     <button
                       key={value}
                       type="button"
                       className={`toggle-btn ${type === value ? `active ${value}` : ''}`}
                       onClick={() => handleTypeChange(value)}
                     >
-                      {label}
+                      {value === 'sell' ? 'Sell' :
+                       value === 'rent' ? 'Rent' :
+                       value === 'free' ? 'Free' : 'Service'}
                     </button>
                   ))}
                 </div>
@@ -326,9 +323,7 @@ export const CreateListing = () => {
                 required
               />
               {categoryAutoDetected && (
-                <p style={{ fontSize: 12, color: 'var(--primary)', marginTop: 4 }}>
-                  ✓ Category auto-detected from title
-                </p>
+                <p className="auto-detect-hint">Category auto-detected from title</p>
               )}
 
               {type !== 'service' && (
@@ -346,7 +341,7 @@ export const CreateListing = () => {
                 />
               )}
 
-              <div className="input-wrapper" style={{ marginTop: 16 }}>
+              <div className="input-wrapper">
                 <label className="input-label">Description*</label>
                 <textarea
                   className="input-field textarea-field"
@@ -357,11 +352,12 @@ export const CreateListing = () => {
                   required
                   maxLength={500}
                 />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {description.length < 30 ? 'Add more detail for faster responses' : description.length < 80 ? 'Good — add a bit more if you can' : '✓ Great description'}
+                <div className="desc-meta-row">
+                  <span className="desc-hint">
+                    {description.length < 30 ? 'Add more detail for faster responses' :
+                     description.length < 80 ? 'Good — keep going' : 'Great description'}
                   </span>
-                  <span style={{ fontSize: 12, color: description.length > 500 ? '#ef4444' : 'var(--text-muted)' }}>
+                  <span className={`desc-count${description.length > 490 ? ' warn' : ''}`}>
                     {description.length}/500
                   </span>
                 </div>
@@ -392,7 +388,7 @@ export const CreateListing = () => {
                 />
                 {type === 'rent' && <span className="rent-suffix">/ {rentDuration}</span>}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 12 }}>
+              <div className="price-extra-grid">
                 <Input
                   label={type === 'free' ? 'Worth around (optional)' : 'Original Price'}
                   type="number"
@@ -433,7 +429,7 @@ export const CreateListing = () => {
                 )}
               </div>
               {type !== 'free' && (
-                <label className="cond-item" style={{ marginTop: 10 }}>
+                <label className="cond-item">
                   <input type="checkbox" checked={isNegotiable} onChange={(e) => setIsNegotiable(e.target.checked)} />
                   Price is negotiable
                 </label>
@@ -508,9 +504,7 @@ export const CreateListing = () => {
               </div>
             )}
 
-            <div style={{ marginTop: 24, marginBottom: -10 }}>
-              {error && <div className="auth-error">{error}</div>}
-            </div>
+
             <div className="post-footer-actions">
               <Button type="button" variant="outline" size="lg" onClick={() => navigate('/dashboard')} disabled={submitting}>
                 Back to Dashboard
