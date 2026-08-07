@@ -65,6 +65,12 @@ export const CreateListing = () => {
 
   const handleTypeChange = (value: typeof type) => {
     setType(value);
+    if (value === 'service') {
+      setCategory('services');
+      setCategoryAutoDetected(false);
+    } else if (category === 'services') {
+      setCategory('academia');
+    }
     if (value !== 'rent') {
       setDeposit('');
       setAvailableFrom('');
@@ -76,6 +82,7 @@ export const CreateListing = () => {
   };
 
   const autoDetectCategory = (titleValue: string) => {
+    if (type === 'service') return;
     if (category !== 'academia') return; // don't override if user already changed it
     const lower = titleValue.toLowerCase();
     for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
@@ -303,27 +310,31 @@ export const CreateListing = () => {
                 </div>
               </div>
 
-              <Select
-                label="Category*"
-                value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value);
-                  setCategoryAutoDetected(false);
-                }}
-                options={[
-                  { value: 'academia', label: 'Academia' },
-                  { value: 'tech', label: 'Tech' },
-                  { value: 'rides', label: 'Rides' },
-                  { value: 'living', label: 'Living' },
-                  { value: 'attire', label: 'Attire' },
-                  { value: 'gifts', label: 'Gifts' },
-                  { value: 'misc', label: 'Misc' },
-                  { value: 'services', label: 'Services & Gigs' }
-                ]}
-                required
-              />
-              {categoryAutoDetected && (
-                <p className="auto-detect-hint">Category auto-detected from title</p>
+              {type !== 'service' && (
+                <>
+                  <Select
+                    label="Category*"
+                    value={category}
+                    onChange={(e) => {
+                      setCategory(e.target.value);
+                      setCategoryAutoDetected(false);
+                    }}
+                    options={[
+                      { value: 'academia', label: 'Academia' },
+                      { value: 'tech', label: 'Tech' },
+                      { value: 'rides', label: 'Rides' },
+                      { value: 'living', label: 'Living' },
+                      { value: 'attire', label: 'Attire' },
+                      { value: 'gifts', label: 'Gifts' },
+                      { value: 'misc', label: 'Misc' },
+                      { value: 'services', label: 'Services & Gigs' }
+                    ]}
+                    required
+                  />
+                  {categoryAutoDetected && (
+                    <p className="auto-detect-hint">Category auto-detected from title</p>
+                  )}
+                </>
               )}
 
               {type !== 'service' && (
