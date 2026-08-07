@@ -1,25 +1,40 @@
 .brand-logo {
   background: var(--black);
-  padding: 6px 20px;
+  padding: 6px 14px 6px 10px;
   border-radius: 16px;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
   flex-shrink: 0;
   white-space: nowrap;
+  gap: 6px;
+  min-width: 0;
+  overflow: visible;
 }
 
 .brand-logo-mark {
   font-family: var(--font-display);
-  font-size: var(--logo-size, 32px);
+  font-size: clamp(16px, var(--logo-size, 32px), var(--logo-size, 32px));
   font-weight: 900;
   color: #fff;
-  letter-spacing: 0;
+  letter-spacing: -0.3px;
   line-height: 1;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
 
 .brand-logo-q {
   color: var(--logo-accent, #00e554);
   text-shadow: 0 0 18px rgba(0, 229, 84, 0.5);
+}
+
+@media (max-width: 380px) {
+  .brand-logo {
+    padding: 5px 10px 5px 8px;
+  }
+  .brand-logo img {
+    height: calc(var(--logo-size, 32px) * 0.85) !important;
+    width: calc(var(--logo-size, 32px) * 0.85) !important;
+  }
 }

@@ -323,7 +323,7 @@
   color: #1e293b;
   background: #f8fafc;
   outline: none;
-  transition: border-color 0.2s, height 0.15s ease-out;
+  transition: border-color 0.2s; /* removed height transition */
   resize: none;
   overflow-y: auto;
 }

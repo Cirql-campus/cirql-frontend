@@ -41,11 +41,23 @@ export const Signup = () => {
   type RegStep = 'choose' | 'college-email' | 'manual-email' | 'otp' | 'submit-id' | 'pending';
   const [step, setStep] = useState<RegStep>('choose');
   const [college, setCollege] = useState('');
+  const [collegeSearch, setCollegeSearch] = useState('');
+  const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
+  const [collegeInputFocused, setCollegeInputFocused] = useState(false);
+  const collegeInputRef = React.useRef<HTMLInputElement>(null);
   const [rollNumber, setRollNumber] = useState('');
   const [idPhoto, setIdPhoto] = useState<File | null>(null);
   const [idPhotoPreview, setIdPhotoPreview] = useState<string | null>(null);
 
   const detectedCampus = useMemo(() => detectCollege(email)?.college || null, [email]);
+
+  const filteredColleges = useMemo(() => {
+    const q = collegeSearch.trim().toLowerCase();
+    if (!q) return COLLEGE_MAP.slice(0, 8); // show first 8 when empty
+    return COLLEGE_MAP
+      .filter(c => c.name.toLowerCase().includes(q))
+      .slice(0, 10); // max 10 results
+  }, [collegeSearch]);
 
   useEffect(() => {
     if (isLoggedIn && !showOTP) navigate('/marketplace', { replace: true });
@@ -412,15 +424,99 @@ export const Signup = () => {
                   </div>
                 </div>
 
-                <div className="input-group">
+                <div className="input-group" style={{ position: 'relative' }}>
                   <label>College / University Name</label>
-                  <input type="text" className="plain-input" placeholder="e.g. AKGEC, GLA University"
-                    required value={college} onChange={(e) => setCollege(e.target.value)} list="colleges-list" />
-                  <datalist id="colleges-list">
-                    {Array.from(new Set(COLLEGE_MAP.map(c => c.name))).map(name => (
-                      <option key={name} value={name} />
-                    ))}
-                  </datalist>
+                  <input
+                    ref={collegeInputRef}
+                    type="text"
+                    className={`plain-input${college && !COLLEGE_MAP.find(c => c.name === college) ? ' plain-input--warning' : college ? ' plain-input--ok' : ''}`}
+                    placeholder="Search your college..."
+                    required
+                    autoComplete="off"
+                    value={collegeSearch || college}
+                    onFocus={() => {
+                      setShowCollegeDropdown(true);
+                      setCollegeInputFocused(true);
+                      if (college) setCollegeSearch('');
+                    }}
+                    onBlur={() => {
+                      // Delay so click on dropdown option registers first
+                      setTimeout(() => {
+                        setShowCollegeDropdown(false);
+                        setCollegeInputFocused(false);
+                        // If user typed but didn't select, allow custom college name
+                        if (collegeSearch && !college) {
+                          setCollege(collegeSearch.trim());
+                        }
+                        setCollegeSearch('');
+                      }, 150);
+                    }}
+                    onChange={(e) => {
+                      setCollegeSearch(e.target.value);
+                      setCollege(''); // clear selection when typing
+                      setShowCollegeDropdown(true);
+                    }}
+                  />
+
+                  {/* Show selected college name when not focused */}
+                  {college && !collegeInputFocused && (
+                    <div className="college-selected-badge">
+                      {college}
+                      <button
+                        type="button"
+                        className="college-clear-btn"
+                        onClick={() => { setCollege(''); setCollegeSearch(''); collegeInputRef.current?.focus(); }}
+                        tabIndex={-1}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+
+                  {showCollegeDropdown && (
+                    <div className="college-dropdown">
+                      {filteredColleges.length > 0 ? (
+                        filteredColleges.map(c => (
+                          <button
+                            key={c.domain}
+                            type="button"
+                            className={`college-option${college === c.name ? ' selected' : ''}`}
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // prevent blur firing before click
+                              setCollege(c.name);
+                              setCollegeSearch('');
+                              setShowCollegeDropdown(false);
+                            }}
+                          >
+                            <span className="college-option-name">{c.name}</span>
+                            <span className="college-option-domain">{c.domain}</span>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="college-option-empty">
+                          <span>No match found</span>
+                          <span style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2 }}>
+                            Type your college name exactly — we'll verify it during ID review
+                          </span>
+                        </div>
+                      )}
+                      {collegeSearch && filteredColleges.length > 0 && !COLLEGE_MAP.find(c => c.name.toLowerCase() === collegeSearch.toLowerCase()) && (
+                        <button
+                          type="button"
+                          className="college-option college-option--custom"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setCollege(collegeSearch.trim());
+                            setCollegeSearch('');
+                            setShowCollegeDropdown(false);
+                          }}
+                        >
+                          <span className="college-option-name">Use "{collegeSearch.trim()}"</span>
+                          <span className="college-option-domain">Not in our list — verified during ID review</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="input-group">

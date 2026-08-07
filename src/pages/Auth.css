@@ -869,3 +869,103 @@
   .reg-step-label { font-size: 8px; }
   .reg-step-dot { width: 20px; height: 20px; font-size: 9px; }
 }
+
+/* ===== COLLEGE DROPDOWN ===== */
+.college-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid var(--border, #e4e4e7);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.college-option {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s;
+  border-bottom: 1px solid var(--gray-100, #f4f4f5);
+}
+
+.college-option:last-child { border-bottom: none; }
+
+.college-option:hover,
+.college-option:focus { background: var(--gray-50, #f9f9f9); outline: none; }
+
+.college-option.selected { background: #ecfdf5; }
+
+.college-option-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-900, #18181b);
+  line-height: 1.3;
+}
+
+.college-option-domain {
+  font-size: 11px;
+  color: var(--gray-400, #a1a1aa);
+  font-family: monospace;
+}
+
+.college-option--custom .college-option-name { color: var(--primary, #00e554); }
+.college-option--custom .college-option-domain { font-family: inherit; }
+
+.college-option-empty {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  color: var(--gray-500, #6b7280);
+}
+
+.college-selected-badge {
+  position: absolute;
+  top: 34px;
+  left: 1px;
+  right: 1px;
+  background: #fff;
+  border-radius: 7px;
+  padding: 9px 36px 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-900, #18181b);
+  pointer-events: none;
+  border: 1.5px solid var(--primary, #00e554);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.college-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  pointer-events: all;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+.plain-input--ok { border-color: var(--primary, #00e554); }
+.plain-input--warning { border-color: #f59e0b; }

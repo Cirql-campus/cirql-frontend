@@ -26,6 +26,11 @@
   -webkit-text-fill-color: transparent;
   display: inline-block;
 }
+.heading-brand {
+  color: var(--accent, #00e554);
+  font-family: var(--font-display);
+  font-weight: 900;
+}
 .hiw-subtitle {
   font-size: 18px;
   color: var(--gray-600);

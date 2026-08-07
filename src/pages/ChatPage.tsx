@@ -317,7 +317,7 @@ export const ChatPage = () => {
         } else {
           const isOwn = lastMsg.senderId === user?._id;
           if (isOwn) {
-            scrollToBottom('smooth');
+            scrollToBottom('auto');
           } else {
             if (shouldStickToBottomRef.current) {
               scrollToBottom('smooth');
@@ -378,6 +378,12 @@ export const ChatPage = () => {
     setSending(true);
     setError('');
     shouldStickToBottomRef.current = true;
+    // Scroll instantly to bottom before adding optimistic message
+    // This prevents the "jump" caused by smooth scroll after textarea shrinks
+    requestAnimationFrame(() => {
+      const container = messagesRef.current;
+      if (container) container.scrollTop = container.scrollHeight;
+    });
     setMessages(prev => reconcileMessage(prev, optimisticMessage));
 
     try {

@@ -81,10 +81,15 @@ export const WhyCirql = () => {
           color: #22c55e;
           font-weight: 700;
         }
+        .heading-brand {
+          color: var(--accent, #00e554);
+          font-family: var(--font-display);
+          font-weight: 900;
+        }
       `}</style>
       
-      <h2 className="why-cirql-heading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-        Why <Logo size={42} /> ?
+      <h2 className="why-cirql-heading">
+        Why <span className="heading-brand">CirQl</span>?
       </h2>
       <p className="why-cirql-desc">
         Campus trading is inefficient. Students lose money to middlemen, 

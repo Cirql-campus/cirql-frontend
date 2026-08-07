@@ -12,8 +12,8 @@ export const HowItWorks = () => {
   return (
     <div className="hiw-page">
       <div className="hiw-header">
-        <h1 className="hiw-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          How <Logo size={56} /> Works
+        <h1 className="hiw-title">
+          How <span className="heading-brand">CirQl</span> Works
         </h1>
         <p className="hiw-subtitle">
           Trading on CirQl is designed to be as frictionless as passing a book to a friend in class. No physical shipping, no online payment gateways, and zero fees. Just 3 simple steps to get what you need.
