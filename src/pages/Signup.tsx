@@ -1,13 +1,27 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Logo } from '../components/ui/Logo';
-import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, GraduationCap, ClipboardList, Camera, ChevronRight, Clock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
 import { detectCollege, COLLEGE_MAP } from '../utils/collegeDetect';
 import { PasswordRequirements, passwordMeetsRequirements } from '../components/ui/PasswordRequirements';
 import { api, getErrorMessage } from '../utils/api';
 import './Auth.css';
+
+const StepIndicator = ({ current }: { current: number }) => {
+  const steps = ['Method', 'Details', 'Verify', 'Upload ID', 'Done'];
+  return (
+    <div className="reg-steps">
+      {steps.map((s, i) => (
+        <div key={s} className={`reg-step ${i + 1 === current ? 'active' : i + 1 < current ? 'done' : ''}`}>
+          <div className="reg-step-dot">{i + 1 < current ? '✓' : i + 1}</div>
+          <span className="reg-step-label">{s}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export const Signup = () => {
   const navigate = useNavigate();
@@ -199,10 +213,10 @@ export const Signup = () => {
 
               <div className="reg-method-cards">
                 <button
-                  className="reg-method-card"
+                  className="reg-method-card reg-method-card--primary"
                   onClick={() => setStep('college-email')}
                 >
-                  <div className="reg-method-icon">🎓</div>
+                  <div className="reg-method-icon"><GraduationCap size={26} strokeWidth={1.8} /></div>
                   <div className="reg-method-content">
                     <div className="reg-method-title">College Email</div>
                     <div className="reg-method-desc">
@@ -211,14 +225,14 @@ export const Signup = () => {
                     </div>
                     <div className="reg-method-badge recommended">Instant access</div>
                   </div>
-                  <span className="reg-method-arrow">→</span>
+                  <span className="reg-method-arrow"><ChevronRight size={18} /></span>
                 </button>
 
                 <button
                   className="reg-method-card"
                   onClick={() => setStep('manual-email')}
                 >
-                  <div className="reg-method-icon">📋</div>
+                  <div className="reg-method-icon"><ClipboardList size={26} strokeWidth={1.8} /></div>
                   <div className="reg-method-content">
                     <div className="reg-method-title">Personal Email + ID</div>
                     <div className="reg-method-desc">
@@ -227,7 +241,7 @@ export const Signup = () => {
                     </div>
                     <div className="reg-method-badge">Verified within 24h</div>
                   </div>
-                  <span className="reg-method-arrow">→</span>
+                  <span className="reg-method-arrow"><ChevronRight size={18} /></span>
                 </button>
               </div>
 
@@ -240,6 +254,7 @@ export const Signup = () => {
           {/* ===== STEP 2A: COLLEGE EMAIL FORM (existing flow, unchanged) ===== */}
           {(step === 'college-email' && !showOTP) && (
             <>
+              <StepIndicator current={2} />
               <h2 className="auth-heading">Create Account</h2>
               <p className="auth-subheading">Your campus email is your admission pass.</p>
 
@@ -333,6 +348,7 @@ export const Signup = () => {
           {/* ===== STEP 2B: OTP (existing, shared between both flows) ===== */}
           {showOTP && (
             <>
+              <StepIndicator current={3} />
               <h2 className="auth-heading">Verify Email</h2>
               <p className="auth-subheading">We sent a 6-digit OTP to <strong>{email}</strong>.</p>
 
@@ -370,8 +386,9 @@ export const Signup = () => {
           )}
 
           {/* ===== STEP 3: MANUAL FLOW — personal details ===== */}
-          {step === 'manual-email' && (
+          {step === 'manual-email' && !showOTP && (
             <>
+              <StepIndicator current={2} />
               <h2 className="auth-heading">Create Account</h2>
               <p className="auth-subheading">Enter your details. We'll verify your identity via your college ID card.</p>
               {error && <div className="auth-error">{error}</div>}
@@ -413,8 +430,8 @@ export const Signup = () => {
                 <span style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 4, display: 'block' }}>
                   This ensures one account per student.
                 </span>
-                <span style={{ fontSize: 11, color: '#f59e0b', marginTop: 2, display: 'block', fontWeight: 500 }}>
-                  ⚠️ Note: Your roll number must match the ID number printed on your college ID card.
+                <span style={{ fontSize: 11, color: '#b45309', marginTop: 2, display: 'block', fontWeight: 500, background: '#fffbeb', padding: '4px 8px', borderRadius: 4, borderLeft: '2px solid #f59e0b' }}>
+                  Your roll number must match the ID number printed on your college ID card.
                 </span>
               </div>
 
@@ -454,6 +471,7 @@ export const Signup = () => {
           {/* ===== STEP 4: UPLOAD ID PHOTO ===== */}
           {step === 'submit-id' && (
             <>
+              <StepIndicator current={4} />
               <h2 className="auth-heading">Upload Your College ID</h2>
               <p className="auth-subheading">
                 Upload a clear photo of your college ID card.<br />
@@ -485,7 +503,7 @@ export const Signup = () => {
                           setIdPhotoPreview(URL.createObjectURL(file));
                           setError('');
                         }} />
-                      <div className="id-upload-icon">📷</div>
+                      <div className="id-upload-icon"><Camera size={28} strokeWidth={1.6} color="var(--gray-400, #a1a1aa)" /></div>
                       <div className="id-upload-text">
                         <strong>Tap to upload ID photo</strong>
                         <span>JPG, PNG or WebP · Max 5MB</span>
@@ -496,10 +514,10 @@ export const Signup = () => {
 
                 <div className="id-tips">
                   <p style={{ fontSize: 12, color: 'var(--gray-500)', margin: '8px 0 4px' }}>
-                    ✓ Make sure your name and roll number are clearly visible
+                    Make sure your name and roll number are clearly visible
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>
-                    ✓ Good lighting, no blur, full card visible
+                    Good lighting, no blur, full card in frame
                   </p>
                 </div>
 
@@ -513,16 +531,38 @@ export const Signup = () => {
           {/* ===== STEP 5: PENDING STATE ===== */}
           {step === 'pending' && (
             <div className="pending-verification-screen">
-              <div className="pending-icon">⏳</div>
+              <StepIndicator current={5} />
+              <div className="pending-icon"><Clock size={44} strokeWidth={1.5} color="var(--primary, #00e554)" /></div>
               <h2 className="auth-heading">Verification Pending</h2>
               <p className="auth-subheading">
                 Your ID has been submitted to your college admin at<br />
                 <strong>{college}</strong>.
               </p>
               <div className="pending-info-box">
-                <p>✓ You'll receive an email at <strong>{email}</strong> once verified</p>
-                <p>✓ Usually verified within 24 hours</p>
-                <p>✓ Questions? Email <a href="mailto:cirqlofficial1@gmail.com">cirqlofficial1@gmail.com</a></p>
+                <div className="pending-timeline">
+                  <div className="pending-timeline-item done">
+                    <div className="pending-timeline-dot" />
+                    <span>Email verified</span>
+                  </div>
+                  <div className="pending-timeline-item done">
+                    <div className="pending-timeline-dot" />
+                    <span>ID submitted</span>
+                  </div>
+                  <div className="pending-timeline-item active">
+                    <div className="pending-timeline-dot" />
+                    <span>College admin review <em>(in progress)</em></span>
+                  </div>
+                  <div className="pending-timeline-item">
+                    <div className="pending-timeline-dot" />
+                    <span>Access granted — you'll get an email at <strong>{email}</strong></span>
+                  </div>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--gray-500)', marginTop: 12, textAlign: 'center' }}>
+                  Questions?{' '}
+                  <a href="mailto:cirqlofficial1@gmail.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                    cirqlofficial1@gmail.com
+                  </a>
+                </p>
               </div>
               <button className="premium-btn" style={{ marginTop: 20 }}
                 onClick={() => navigate('/')}>
