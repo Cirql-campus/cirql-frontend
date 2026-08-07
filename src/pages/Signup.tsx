@@ -9,8 +9,10 @@ import { PasswordRequirements, passwordMeetsRequirements } from '../components/u
 import { api, getErrorMessage } from '../utils/api';
 import './Auth.css';
 
-const StepIndicator = ({ current }: { current: number }) => {
-  const steps = ['Method', 'Details', 'Verify', 'Upload ID', 'Done'];
+const StepIndicator = ({ current, isManual }: { current: number; isManual: boolean }) => {
+  const steps = isManual
+    ? ['Method', 'Details', 'Verify', 'Upload ID', 'Done']
+    : ['Method', 'Details', 'Verify', 'Done'];
   return (
     <div className="reg-steps">
       {steps.map((s, i) => (
@@ -225,7 +227,7 @@ export const Signup = () => {
 
               <div className="reg-method-cards">
                 <button
-                  className="reg-method-card reg-method-card--primary"
+                  className="reg-method-card"
                   onClick={() => setStep('college-email')}
                 >
                   <div className="reg-method-icon"><GraduationCap size={26} strokeWidth={1.8} /></div>
@@ -266,7 +268,7 @@ export const Signup = () => {
           {/* ===== STEP 2A: COLLEGE EMAIL FORM (existing flow, unchanged) ===== */}
           {(step === 'college-email' && !showOTP) && (
             <>
-              <StepIndicator current={2} />
+              <StepIndicator current={2} isManual={false} />
               <h2 className="auth-heading">Create Account</h2>
               <p className="auth-subheading">Your campus email is your admission pass.</p>
 
@@ -360,7 +362,7 @@ export const Signup = () => {
           {/* ===== STEP 2B: OTP (existing, shared between both flows) ===== */}
           {showOTP && (
             <>
-              <StepIndicator current={3} />
+              <StepIndicator current={3} isManual={step === 'manual-email'} />
               <h2 className="auth-heading">Verify Email</h2>
               <p className="auth-subheading">We sent a 6-digit OTP to <strong>{email}</strong>.</p>
 
@@ -400,7 +402,7 @@ export const Signup = () => {
           {/* ===== STEP 3: MANUAL FLOW — personal details ===== */}
           {step === 'manual-email' && !showOTP && (
             <>
-              <StepIndicator current={2} />
+              <StepIndicator current={2} isManual={true} />
               <h2 className="auth-heading">Create Account</h2>
               <p className="auth-subheading">Enter your details. We'll verify your identity via your college ID card.</p>
               {error && <div className="auth-error">{error}</div>}
@@ -567,7 +569,7 @@ export const Signup = () => {
           {/* ===== STEP 4: UPLOAD ID PHOTO ===== */}
           {step === 'submit-id' && (
             <>
-              <StepIndicator current={4} />
+              <StepIndicator current={4} isManual={true} />
               <h2 className="auth-heading">Upload Your College ID</h2>
               <p className="auth-subheading">
                 Upload a clear photo of your college ID card.<br />
@@ -627,7 +629,7 @@ export const Signup = () => {
           {/* ===== STEP 5: PENDING STATE ===== */}
           {step === 'pending' && (
             <div className="pending-verification-screen">
-              <StepIndicator current={5} />
+              <StepIndicator current={5} isManual={true} />
               <div className="pending-icon"><Clock size={44} strokeWidth={1.5} color="var(--primary, #00e554)" /></div>
               <h2 className="auth-heading">Verification Pending</h2>
               <p className="auth-subheading">
