@@ -67,6 +67,26 @@
   cursor: not-allowed;
 }
 
+.pwa-gate-btn-secondary {
+  width: 100%;
+  background: transparent;
+  color: var(--text-muted, #666);
+  font-weight: 700;
+  font-size: 15px;
+  border: 1.5px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  padding: 12px 20px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s ease;
+}
+
+.pwa-gate-btn-secondary:hover {
+  background: var(--surface-alt, #f4f4f5);
+  color: var(--text, #18181b);
+  border-color: var(--gray-300, #cbd5e1);
+}
+
 .pwa-gate-ios-steps {
   background: var(--surface-alt, #f4f4f5);
   border-radius: 10px;

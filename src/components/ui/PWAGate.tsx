@@ -12,6 +12,7 @@ export const PWAGate: React.FC<PWAGateProps> = ({ children }) => {
   const [installing, setInstalling] = React.useState(false);
   const [subscribing, setSubscribing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [bypassed, setBypassed] = React.useState(false);
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
 
@@ -23,8 +24,8 @@ export const PWAGate: React.FC<PWAGateProps> = ({ children }) => {
   // Step 2: push notifications required
   const needsPush = pushStatus === 'not-enabled';
 
-  // If both are satisfied, render children normally
-  if (!needsInstall && !needsPush) {
+  // If both are satisfied or the user bypassed, render children normally
+  if (!needsInstall && !needsPush || bypassed) {
     return <>{children}</>;
   }
 
@@ -98,6 +99,13 @@ export const PWAGate: React.FC<PWAGateProps> = ({ children }) => {
                 {installing ? 'Opening install prompt...' : 'Add to Home Screen'}
               </button>
             )}
+            <button
+              className="pwa-gate-btn-secondary"
+              onClick={() => setBypassed(true)}
+              type="button"
+            >
+              Skip & Proceed anyway
+            </button>
           </>
         ) : (
           <>
@@ -114,6 +122,13 @@ export const PWAGate: React.FC<PWAGateProps> = ({ children }) => {
               disabled={subscribing}
             >
               {subscribing ? 'Enabling...' : 'Enable Notifications'}
+            </button>
+            <button
+              className="pwa-gate-btn-secondary"
+              onClick={() => setBypassed(true)}
+              type="button"
+            >
+              Skip & Proceed anyway
             </button>
             {pushStatus === 'blocked' && (
               <p className="pwa-gate-blocked-hint">
