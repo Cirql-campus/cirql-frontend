@@ -185,9 +185,6 @@ export const Navbar = () => {
           <div className="nav-actions">
             {user ? (
               <>
-                <button className="nav-btn" onClick={() => navigate('/spot-hub')}>
-                  <Compass size={16} /> <span className="nav-label">Spot Hub</span>
-                </button>
                 <button className="nav-btn" onClick={() => navigate('/messages')} style={{ position: 'relative' }}>
                   <MessageCircle size={16} /> <span className="nav-label">Messages</span>
                   {unreadMessages > 0 && <span className="nav-badge">{unreadMessages > 9 ? '9+' : unreadMessages}</span>}
@@ -221,6 +218,9 @@ export const Navbar = () => {
                       </button>
                       <button className="drop-item" onClick={() => { navigate('/profile?tab=listings'); setShowProfile(false); }}>
                         <Package size={16} /> My Listings
+                      </button>
+                      <button className="drop-item" onClick={() => { navigate('/spot-hub'); setShowProfile(false); }}>
+                        <Compass size={16} /> Spot Hub
                       </button>
                       {isAnyAdmin && (
                         <button className="drop-item" onClick={() => { navigate('/admin'); setShowProfile(false); }}>
