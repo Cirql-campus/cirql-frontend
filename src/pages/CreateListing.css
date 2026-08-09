@@ -319,7 +319,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
-  margin-top: 14px;
+  margin-top: 0;
+}
+
+.price-inputs-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* Negotiable checkbox pill design */
@@ -335,7 +341,7 @@
   padding: 12px 18px;
   border-radius: var(--radius-md);
   cursor: pointer;
-  margin-top: 8px;
+  margin-top: 0;
   user-select: none;
   transition: all 0.2s ease;
   align-self: flex-start;

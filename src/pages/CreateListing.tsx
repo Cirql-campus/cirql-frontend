@@ -380,6 +380,7 @@ export const CreateListing = () => {
               <h2 className="section-subtitle">
                 Price {type === 'free' ? '(Free)' : type === 'service' ? '(optional)' : '*'}
               </h2>
+              <div className="price-inputs-group">
               <div className="price-input-wrapper">
                 <span className="currency-prefix">₹</span>
                 <input
@@ -438,6 +439,7 @@ export const CreateListing = () => {
                     min={new Date().toISOString().split('T')[0]}
                   />
                 )}
+              </div>
               </div>
               {type !== 'free' && (
                 <label className="cond-item">
