@@ -517,7 +517,7 @@ export const CreateListing = () => {
 
 
             <div className="post-footer-actions">
-              <Button type="button" variant="outline" size="lg" onClick={() => navigate('/dashboard')} disabled={submitting}>
+              <Button type="button" className="back-btn" size="lg" onClick={() => navigate('/dashboard')} disabled={submitting}>
                 Back to Dashboard
               </Button>
               <Button type="submit" size="lg" className="submit-btn" disabled={submitting || processingImages}>
