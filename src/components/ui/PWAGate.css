@@ -3,6 +3,7 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,116 +12,165 @@
 }
 
 .pwa-gate-card {
-  background: var(--surface, #fff);
+  background: #fff;
   border-radius: 16px;
-  padding: 32px 28px;
-  max-width: 420px;
+  padding: 28px 24px 24px;
+  max-width: 400px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
+/* X button — top right */
+.pwa-gate-skip {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f4f4f5;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: #6b7280;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pwa-gate-skip:hover {
+  background: #e4e4e7;
+  color: #18181b;
+}
+
+/* Step counter */
 .pwa-gate-steps {
-  font-size: 12px;
-  color: var(--text-muted, #888);
+  font-size: 11px;
+  color: #a1a1aa;
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin-bottom: 16px;
 }
 
-.pwa-gate-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
+/* Icon — lucide icon in a circle */
+.pwa-gate-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f4f4f5;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  color: #18181b;
 }
 
 .pwa-gate-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--text, #18181b);
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0 0 10px;
+  color: #18181b;
   line-height: 1.3;
+  letter-spacing: -0.3px;
 }
 
 .pwa-gate-desc {
-  font-size: 15px;
-  color: var(--text-muted, #666);
+  font-size: 14px;
+  color: #6b7280;
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin: 0 0 20px;
 }
 
+/* Primary action button */
 .pwa-gate-btn-primary {
   width: 100%;
-  background: var(--primary, #00e554);
-  color: #000;
+  background: #050505;
+  color: #fff;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14px;
   border: none;
   border-radius: 10px;
-  padding: 14px 20px;
+  padding: 13px 20px;
   cursor: pointer;
   transition: opacity 0.15s;
+  font-family: inherit;
+}
+
+.pwa-gate-btn-primary:hover:not(:disabled) {
+  opacity: 0.85;
 }
 
 .pwa-gate-btn-primary:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pwa-gate-btn-secondary {
-  width: 100%;
-  background: transparent;
-  color: var(--text-muted, #666);
-  font-weight: 700;
-  font-size: 15px;
-  border: 1.5px solid var(--border-color, #e2e8f0);
-  border-radius: 10px;
-  padding: 12px 20px;
-  cursor: pointer;
-  margin-top: 12px;
-  transition: all 0.2s ease;
-}
-
-.pwa-gate-btn-secondary:hover {
-  background: var(--surface-alt, #f4f4f5);
-  color: var(--text, #18181b);
-  border-color: var(--gray-300, #cbd5e1);
-}
-
+/* iOS manual instructions */
 .pwa-gate-ios-steps {
-  background: var(--surface-alt, #f4f4f5);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px 16px;
   text-align: left;
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--text, #18181b);
+  font-size: 13px;
+  line-height: 1.65;
+  color: #18181b;
+  margin-bottom: 4px;
 }
 
 .pwa-gate-ios-steps ol {
-  margin: 8px 0 0 16px;
-  padding: 0;
+  margin: 0;
+  padding-left: 18px;
 }
 
+.pwa-gate-ios-steps li {
+  margin-bottom: 4px;
+}
+
+/* Skip text link — below primary button */
+.pwa-gate-skip-link {
+  display: block;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #a1a1aa;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.pwa-gate-skip-link:hover {
+  color: #6b7280;
+}
+
+/* Error and hint text */
 .pwa-gate-error {
-  margin-top: 16px;
-  font-size: 13px;
-  color: var(--danger, #ef4444);
+  margin-top: 12px;
+  font-size: 12px;
+  color: #dc2626;
   line-height: 1.5;
 }
 
 .pwa-gate-blocked-hint {
-  margin-top: 12px;
-  font-size: 13px;
-  color: var(--text-muted, #888);
+  margin-top: 10px;
+  font-size: 12px;
+  color: #9ca3af;
   line-height: 1.5;
 }
 
 @media (max-width: 480px) {
   .pwa-gate-card {
-    padding: 24px 18px;
+    padding: 24px 18px 20px;
+    border-radius: 14px;
   }
   .pwa-gate-title {
-    font-size: 18px;
+    font-size: 17px;
+  }
+  .pwa-gate-desc {
+    font-size: 13px;
   }
 }
