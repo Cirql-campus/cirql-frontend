@@ -17,9 +17,8 @@ export const PushNotificationNudge: React.FC<PushNotificationNudgeProps> = ({ on
   useEffect(() => {
     const checkConditions = async () => {
       const isDismissed = localStorage.getItem('push-nudge-dismissed');
-      const cooldown = 14 * 24 * 60 * 60 * 1000; // 14 days
 
-      if (isDismissed && (Date.now() - parseInt(isDismissed, 10) < cooldown)) {
+      if (isDismissed) {
         setTimeout(onDismiss, 0);
         return;
       }
@@ -86,9 +85,9 @@ export const PushNotificationNudge: React.FC<PushNotificationNudgeProps> = ({ on
           </>
         ) : (
           <>
-            <h4 className="pwa-nudge-headline">Message sent ✓</h4>
+            <h4 className="pwa-nudge-headline">Enable Notifications</h4>
             <p className="pwa-nudge-body">
-              Turn on notifications so you don't miss the reply — sellers respond faster when they know you're watching.
+              Turn on notifications so you don't miss chat replies and updates from buyers and sellers.
             </p>
           </>
         )}

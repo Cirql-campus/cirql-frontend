@@ -14,9 +14,8 @@ export const PWAInstallNudge: React.FC<PWAInstallNudgeProps> = ({ onDismiss }) =
 
   useEffect(() => {
     const isDismissed = localStorage.getItem('pwa-nudge-dismissed');
-    const cooldown = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-    if (isDismissed && (Date.now() - parseInt(isDismissed, 10) < cooldown)) {
+    if (isDismissed) {
       setTimeout(onDismiss, 0);
       return;
     }
@@ -59,11 +58,11 @@ export const PWAInstallNudge: React.FC<PWAInstallNudgeProps> = ({ onDismiss }) =
   return (
     <div className="pwa-install-nudge slide-up">
       <div className="pwa-nudge-bar-content">
-        <h4 className="pwa-nudge-headline">Your listing is live! 🎉</h4>
+        <h4 className="pwa-nudge-headline">Install CirQl PWA 🎉</h4>
         <p className="pwa-nudge-body">
           {isIOS 
             ? "Tap the share icon → 'Add to Home Screen' to get instant notifications"
-            : "Add CirQl to your home screen — get notified the moment someone messages you about it, even when the browser is closed."}
+            : "Add CirQl to your home screen to get instant alerts and chat messages when the app is closed."}
         </p>
       </div>
       <div className="pwa-nudge-bar-actions">

@@ -54,14 +54,23 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Listen to route changes to show nudges after redirects
   useEffect(() => {
     const pendingNudge = sessionStorage.getItem('show_pwa_nudge');
-    if (pendingNudge === 'listing') {
+    if (pendingNudge === 'listing' || pendingNudge === 'login') {
       sessionStorage.removeItem('show_pwa_nudge');
+      
+      const isDismissedInstall = localStorage.getItem('pwa-nudge-dismissed');
+      const isDismissedPush = localStorage.getItem('push-nudge-dismissed');
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
+
       const timer = setTimeout(() => {
-        showInstallNudge();
+        if ((installState === 'available' || isIOS) && !isDismissedInstall) {
+          showInstallNudge();
+        } else if (pushStatus === 'not-enabled' && !isDismissedPush) {
+          showPushNudge();
+        }
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [location.pathname, showInstallNudge]);
+  }, [location.pathname, installState, pushStatus, showInstallNudge, showPushNudge]);
 
   const dismissNudge = useCallback(() => {
     setActiveNudge(null);

@@ -120,7 +120,7 @@ export const Signup = () => {
       const result = await verifyOTP(email, otp);
       setLoading(false);
       if (result.ok) {
-        showInstallNudge();
+        sessionStorage.setItem('show_pwa_nudge', 'login');
         navigate('/marketplace');
       } else {
         setError(result.error || 'Invalid OTP. Please try again.');

@@ -13,7 +13,9 @@ export const PWAGate: React.FC<PWAGateProps> = ({ children }) => {
   const [installing, setInstalling] = React.useState(false);
   const [subscribing, setSubscribing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [skipped, setSkipped] = React.useState(false);
+  const [skipped, setSkipped] = React.useState(() => {
+    return localStorage.getItem('pwa-gate-skipped') === 'true';
+  });
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
 
@@ -66,6 +68,7 @@ export const PWAGate: React.FC<PWAGateProps> = ({ children }) => {
 
   const handleSkip = () => {
     setSkipped(true);
+    localStorage.setItem('pwa-gate-skipped', 'true');
   };
 
   const currentStep = needsInstall ? 1 : 2;

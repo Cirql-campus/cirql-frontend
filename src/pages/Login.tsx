@@ -28,6 +28,7 @@ export const Login = () => {
     const result = await login(email, password);
     setLoading(false);
     if (result.ok) {
+      sessionStorage.setItem('show_pwa_nudge', 'login');
       navigate('/marketplace');
     } else {
       setError(result.error || 'Login failed.');
