@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ThumbsUp, 
   ThumbsDown, 
@@ -12,7 +13,8 @@ import {
   ChevronRight, 
   ArrowLeft,
   Loader2,
-  Compass
+  Compass,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -33,6 +35,13 @@ interface UserInfo {
   reviewCount: number;
 }
 
+interface SpotComment {
+  _id: string;
+  poster: UserInfo;
+  text: string;
+  createdAt: string;
+}
+
 interface SpotPost {
   _id: string;
   placeName: string;
@@ -47,6 +56,7 @@ interface SpotPost {
   status: 'active' | 'flagged' | 'removed';
   createdAt: string;
   voteScore: number;
+  comments?: SpotComment[];
 }
 
 interface SpotHubResponse {
@@ -78,10 +88,13 @@ const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'im
 
 export const SpotHub = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<SpotPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
   
   // Filtering & Sorting
   const [category, setCategory] = useState<string>('all');
@@ -181,6 +194,56 @@ export const SpotHub = () => {
       setSelectedSpot(null);
     } catch (err) {
       alert(getErrorMessage(err, 'Failed to delete post'));
+    }
+  };
+
+  // Add Comment
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim() || !selectedSpot) return;
+
+    setSubmittingComment(true);
+    try {
+      const res = await api.post<SingleSpotResponse>(`/spot-hub/${selectedSpot._id}/comments`, {
+        text: commentText.trim()
+      });
+      const updatedPost = res.post;
+      setPosts(prev => prev.map(p => p._id === selectedSpot._id ? updatedPost : p));
+      setSelectedSpot(updatedPost);
+      setCommentText('');
+    } catch (err) {
+      alert(getErrorMessage(err, 'Failed to add comment'));
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  // Delete Comment
+  const handleDeleteComment = async (commentId: string) => {
+    if (!selectedSpot) return;
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      const res = await api.delete<SingleSpotResponse>(`/spot-hub/${selectedSpot._id}/comments/${commentId}`);
+      const updatedPost = res.post;
+      setPosts(prev => prev.map(p => p._id === selectedSpot._id ? updatedPost : p));
+      setSelectedSpot(updatedPost);
+    } catch (err) {
+      alert(getErrorMessage(err, 'Failed to delete comment'));
+    }
+  };
+
+  // Start Chat
+  const handleStartChat = async (otherUserId: string) => {
+    if (otherUserId === user?._id) return;
+    try {
+      const res = await api.post<{ conversation: { _id: string } }>('/chat/conversations', {
+        sellerId: otherUserId
+      });
+      setSelectedSpot(null);
+      navigate(`/messages/${res.conversation._id}`);
+    } catch (err) {
+      alert(getErrorMessage(err, 'Failed to start chat'));
     }
   };
 
@@ -513,20 +576,33 @@ export const SpotHub = () => {
               <p className="spot-modal-desc">{selectedSpot.description}</p>
 
               {/* Poster info */}
-              <div className="spot-modal-poster">
-                <div className="spot-poster-avatar">
-                  {selectedSpot.poster.avatar ? (
-                    <img src={selectedSpot.poster.avatar} alt={selectedSpot.poster.name} className="spot-poster-img" />
-                  ) : (
-                    selectedSpot.poster.initials
-                  )}
+              <div className="spot-modal-poster" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div className="spot-poster-avatar">
+                    {selectedSpot.poster.avatar ? (
+                      <img src={selectedSpot.poster.avatar} alt={selectedSpot.poster.name} className="spot-poster-img" />
+                    ) : (
+                      selectedSpot.poster.initials
+                    )}
+                  </div>
+                  <div className="spot-poster-info">
+                    <span className="spot-poster-name">{selectedSpot.poster.name}</span>
+                    <span className="spot-poster-sub">
+                      <MapPin size={11} /> {selectedSpot.college}
+                    </span>
+                  </div>
                 </div>
-                <div className="spot-poster-info">
-                  <span className="spot-poster-name">{selectedSpot.poster.name}</span>
-                  <span className="spot-poster-sub">
-                    <MapPin size={11} /> {selectedSpot.college}
-                  </span>
-                </div>
+                {selectedSpot.poster._id !== user?._id && (
+                  <button
+                    className="spot-chat-btn"
+                    onClick={() => handleStartChat(selectedSpot.poster._id)}
+                    title="Chat with poster"
+                    aria-label="Chat with poster"
+                  >
+                    <MessageCircle size={15} />
+                    <span>Chat</span>
+                  </button>
+                )}
               </div>
 
               {/* Actions */}
@@ -566,6 +642,103 @@ export const SpotHub = () => {
                     {selectedSpot.isOutdated ? 'Flagged as Outdated' : 'Flag as Outdated'}
                   </button>
                 )}
+              </div>
+
+              {/* Comments Section */}
+              <div className="spot-comments-section" style={{ marginTop: '24px', borderTop: '1px solid var(--gray-100)', paddingTop: '20px' }}>
+                <h3 className="spot-comments-title" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--gray-900)', margin: '0 0 12px', fontFamily: 'var(--font-display)' }}>
+                  Comments ({selectedSpot.comments?.length ?? 0})
+                </h3>
+                
+                <form onSubmit={handleAddComment} className="spot-comment-form" style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                  <input
+                    type="text"
+                    className="spot-comment-input"
+                    placeholder="Ask a question or add a tip..."
+                    value={commentText}
+                    onChange={e => setCommentText(e.target.value)}
+                    maxLength={500}
+                    required
+                    style={{
+                      flex: 1,
+                      border: '1px solid var(--gray-200)',
+                      borderRadius: 'var(--radius)',
+                      padding: '8px 12px',
+                      fontSize: '0.85rem',
+                      fontFamily: 'var(--font-body)',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className="spot-comment-submit-btn"
+                    disabled={submittingComment}
+                    style={{
+                      background: 'var(--black)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 'var(--radius)',
+                      padding: '8px 16px',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {submittingComment ? '...' : 'Send'}
+                  </button>
+                </form>
+
+                <div className="spot-comments-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {selectedSpot.comments && selectedSpot.comments.length > 0 ? (
+                    selectedSpot.comments.map(comment => (
+                      <div key={comment._id} className="spot-comment-item" style={{ background: 'var(--gray-50)', borderRadius: 'var(--radius)', padding: '10px 12px' }}>
+                        <div className="spot-comment-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div className="spot-comment-poster-info" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="spot-comment-poster-name" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--gray-800)' }}>
+                              {comment.poster.name}
+                            </span>
+                            <span className="spot-comment-date" style={{ fontSize: '0.7rem', color: 'var(--gray-400)' }}>
+                              {new Date(comment.createdAt).toLocaleDateString(undefined, {
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                          
+                          <div className="spot-comment-actions" style={{ display: 'flex', gap: '6px' }}>
+                            {comment.poster._id !== user?._id && (
+                              <button
+                                className="spot-comment-action-btn"
+                                onClick={() => handleStartChat(comment.poster._id)}
+                                title="Chat with user"
+                                style={{ background: 'none', border: 'none', color: 'var(--gray-400)', cursor: 'pointer', padding: '2px' }}
+                              >
+                                <MessageCircle size={14} />
+                              </button>
+                            )}
+                            {(comment.poster._id === user?._id || selectedSpot.poster._id === user?._id || user?.role === 'admin' || user?.role === 'super_admin') && (
+                              <button
+                                className="spot-comment-action-btn spot-comment-delete-btn"
+                                onClick={() => handleDeleteComment(comment._id)}
+                                title="Delete comment"
+                                style={{ background: 'none', border: 'none', color: 'var(--danger, #ef4444)', cursor: 'pointer', padding: '2px' }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <p className="spot-comment-text" style={{ fontSize: '0.85rem', color: 'var(--gray-700)', margin: 0, lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>
+                          {comment.text}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="spot-comments-empty" style={{ fontSize: '0.8rem', color: 'var(--gray-400)', textAlign: 'center', margin: '12px 0' }}>
+                      No comments yet. Start the conversation!
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

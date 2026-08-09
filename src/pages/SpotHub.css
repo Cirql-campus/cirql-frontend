@@ -856,3 +856,23 @@
     padding: 18px 16px 20px;
   }
 }
+
+.spot-chat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--black);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.spot-chat-btn:hover {
+  opacity: 0.85;
+}

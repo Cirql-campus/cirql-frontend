@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   User,
+  Compass,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Logo } from '../ui/Logo';
@@ -183,6 +184,9 @@ export const Navbar = () => {
           <div className="nav-actions">
             {user ? (
               <>
+                <button className="nav-btn" onClick={() => navigate('/spot-hub')}>
+                  <Compass size={16} /> <span className="nav-label">Spot Hub</span>
+                </button>
                 <button className="nav-btn" onClick={() => navigate('/messages')} style={{ position: 'relative' }}>
                   <MessageCircle size={16} /> <span className="nav-label">Messages</span>
                   {unreadMessages > 0 && <span className="nav-badge">{unreadMessages > 9 ? '9+' : unreadMessages}</span>}
