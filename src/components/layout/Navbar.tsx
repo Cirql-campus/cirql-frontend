@@ -36,6 +36,7 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const showSubnav = isHomePage || location.pathname === '/marketplace';
   const { user, logout, unreadMessages, unreadAlerts, isAnyAdmin } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -248,16 +249,18 @@ export const Navbar = () => {
         </div>
       </nav>
 
-      <div className="subnav">
-        <div className="subnav-inner">
-          {NAV_CATEGORIES.map(({ label, value, Icon }) => (
-            <button key={value} className="cat-pill" type="button" onClick={() => goToMarketplace(value, '')}>
-              <Icon size={16} />
-              {label}
-            </button>
-          ))}
+      {showSubnav && (
+        <div className="subnav">
+          <div className="subnav-inner">
+            {NAV_CATEGORIES.map(({ label, value, Icon }) => (
+              <button key={value} className="cat-pill" type="button" onClick={() => goToMarketplace(value, '')}>
+                <Icon size={16} />
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       
       {toast && (
         <div
