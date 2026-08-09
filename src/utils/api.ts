@@ -122,6 +122,20 @@ const readJsonSafely = async (
   }
 };
 
+let csrfToken: string | null = null;
+
+const ensureCsrfToken = async () => {
+  if (csrfToken) return csrfToken;
+  try {
+    const res = await fetch(`${BASE_URL}/auth/csrf-token`, { credentials: "include" });
+    const data = await res.json();
+    csrfToken = (data.csrfToken || null) as string | null;
+  } catch (err) {
+    console.error("Failed to fetch CSRF token:", err);
+  }
+  return csrfToken;
+};
+
 export const fetchAPI = async <T>(
   endpoint: string,
   options: FetchOptions = {},
@@ -134,6 +148,14 @@ export const fetchAPI = async <T>(
   // Only set Content-Type to JSON if it is NOT FormData
   if (!options.isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
+  }
+
+  const method = (options.method || "GET").toUpperCase();
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    const csrf = await ensureCsrfToken();
+    if (csrf) {
+      headers.set("x-csrf-token", csrf);
+    }
   }
 
   // Fallback to Bearer token in case cross-site cookies are blocked by the browser
