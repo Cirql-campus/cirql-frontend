@@ -21,4 +21,9 @@ if ('serviceWorker' in navigator) {
       console.warn('SW registration failed:', err)
     );
   });
+
+  // Clear app badge count when user opens the app
+  if ('clearAppBadge' in navigator) {
+    navigator.clearAppBadge().catch(() => {});
+  }
 }

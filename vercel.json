@@ -5,6 +5,7 @@
     { "source": "/icon-192.png",   "destination": "/icon-192.png" },
     { "source": "/icon-512.png",   "destination": "/icon-512.png" },
     { "source": "/favicon.png",    "destination": "/favicon.png" },
+    { "source": "/icon-badge.png", "destination": "/icon-badge.png" },
     { "source": "/(.*)",           "destination": "/index.html" }
   ],
   "headers": [
