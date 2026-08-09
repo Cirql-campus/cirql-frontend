@@ -285,6 +285,10 @@ export const ChatPage = () => {
     requestAnimationFrame(() => {
       bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
     });
+    // Backup scroll to handle keyboard/layout reflows on mobile
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+    }, 100);
   };
 
   const updateStickiness = () => {
@@ -336,6 +340,10 @@ export const ChatPage = () => {
     if (!textarea) return;
     textarea.style.height = 'auto';
     textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    // Scroll to bottom when text composer changes size (growth or shrinkage)
+    if (shouldStickToBottomRef.current) {
+      scrollToBottom('auto');
+    }
   }, [text]);
 
   useEffect(() => {
