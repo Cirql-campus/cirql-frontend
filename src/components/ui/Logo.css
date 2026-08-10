@@ -12,10 +12,7 @@
   overflow: visible;
 }
 
-.brand-logo img {
-  border-radius: 50%;
-  clip-path: circle(48.5% at 50% 50%);
-}
+
 
 .brand-logo-mark {
   font-family: var(--font-display);
