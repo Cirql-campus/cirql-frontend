@@ -2,6 +2,9 @@
 .chat-page {
   display: flex;
   flex-direction: column;
+  /* Chat routes hide the bottom tab bar — only subtract top navbar (64px) */
+  /* Use dvh with vh fallback for older Android browsers */
+  height: calc(100vh - 64px);
   height: calc(100dvh - 64px);
   min-height: 0;
   background: #f1f5f9;
@@ -157,11 +160,13 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 20px 16px;
+  padding: 20px 16px 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   scroll-behavior: smooth;
+  /* Ensure last message never hides behind input bar */
+  scroll-padding-bottom: 12px;
 }
 
 .chat-date-separator {
@@ -304,11 +309,12 @@
   background: #fff;
   border-top: 1px solid #e2e8f0;
   flex-shrink: 0;
-  position: sticky;
-  bottom: 0;
+  /* relative position — flex column layout handles placement correctly */
+  position: relative;
   z-index: 20;
+  /* Account for Android gesture navigation bar */
   padding-bottom: max(14px, env(safe-area-inset-bottom));
-  max-height: 40vh; /* never let the input take more than 40% of viewport */
+  max-height: 40vh;
 }
 
 .chat-input {
@@ -355,7 +361,10 @@
 
 @media (max-width: 768px) {
   .chat-page {
-    height: calc(100dvh - 64px); /* mobile: only top navbar (bottom tab bar is hidden on chat page) */
+    /* Chat hides the tab bar — only top navbar (64px) subtracted */
+    /* env(safe-area-inset-bottom) handles gesture nav bar on Samsung/Pixel */
+    height: calc(100vh - 64px - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - 64px - env(safe-area-inset-bottom, 0px));
   }
 
   .chat-messages {
@@ -431,8 +440,8 @@
 @media (max-width: 480px) {
   /* Fix chat input bar disappearing on older Android (dvh not supported) */
   .chat-page {
-    height: calc(100vh - 64px); /* fallback without dvh */
-    height: calc(100dvh - 64px); /* modern override */
+    height: calc(100vh - 64px - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - 64px - env(safe-area-inset-bottom, 0px));
   }
 
   /* Message bubbles — slightly wider on small screens */

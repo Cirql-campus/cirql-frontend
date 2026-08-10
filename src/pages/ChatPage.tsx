@@ -267,6 +267,21 @@ export const ChatPage = () => {
     }
   }, [partnerTyping]);
 
+  // Scroll to bottom when keyboard opens on mobile (visualViewport resize)
+  useEffect(() => {
+    if (!window.visualViewport) return;
+    const handleViewportResize = () => {
+      if (shouldStickToBottomRef.current) {
+        requestAnimationFrame(() => {
+          const container = messagesRef.current;
+          if (container) container.scrollTop = container.scrollHeight;
+        });
+      }
+    };
+    window.visualViewport.addEventListener('resize', handleViewportResize);
+    return () => window.visualViewport?.removeEventListener('resize', handleViewportResize);
+  }, []);
+
   const handleTyping = () => {
     if (!roomId) return;
     const now = Date.now();
@@ -346,17 +361,7 @@ export const ChatPage = () => {
     }
   }, [text]);
 
-  useEffect(() => {
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-    const handleResize = () => {
-      if (shouldStickToBottomRef.current) {
-        scrollToBottom('auto');
-      }
-    };
-    viewport.addEventListener('resize', handleResize);
-    return () => viewport.removeEventListener('resize', handleResize);
-  }, []);
+
 
   const partnerName = useMemo(() => {
     const partner = conversation?.participants.find(participant => participant._id !== user?._id);
