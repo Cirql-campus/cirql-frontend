@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cirql-shell-v3';
+const CACHE_NAME = 'cirql-shell-v2';
 const SHELL_ASSETS = ['/', '/index.html', '/favicon.png', '/icon-192.png', '/icon-badge.png'];
 
 self.addEventListener('install', event => {
