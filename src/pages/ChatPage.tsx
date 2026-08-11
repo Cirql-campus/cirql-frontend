@@ -267,17 +267,28 @@ export const ChatPage = () => {
     }
   }, [partnerTyping]);
 
-  // Scroll to bottom when keyboard opens on mobile (visualViewport resize)
+  // Scroll input into view when keyboard opens on mobile
   useEffect(() => {
     if (!window.visualViewport) return;
+
     const handleViewportResize = () => {
-      if (shouldStickToBottomRef.current) {
-        requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        // Scroll messages to bottom
+        if (shouldStickToBottomRef.current) {
           const container = messagesRef.current;
           if (container) container.scrollTop = container.scrollHeight;
-        });
-      }
+        }
+        // Always scroll the input bar into view when keyboard opens
+        // This fixes "input hidden behind keyboard" on Android Chrome
+        if (textareaRef.current) {
+          textareaRef.current.scrollIntoView({
+            behavior: 'instant',
+            block: 'end',
+          });
+        }
+      });
     };
+
     window.visualViewport.addEventListener('resize', handleViewportResize);
     return () => window.visualViewport?.removeEventListener('resize', handleViewportResize);
   }, []);
@@ -670,6 +681,19 @@ export const ChatPage = () => {
               handleTyping();
             }}
             onKeyDown={handleComposerKeyDown}
+            onFocus={() => {
+              // Small delay to let keyboard animate up first
+              setTimeout(() => {
+                textareaRef.current?.scrollIntoView({
+                  behavior: 'instant',
+                  block: 'end',
+                });
+                if (shouldStickToBottomRef.current) {
+                  const container = messagesRef.current;
+                  if (container) container.scrollTop = container.scrollHeight;
+                }
+              }, 300);
+            }}
             rows={1}
             autoFocus
           />

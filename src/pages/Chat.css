@@ -2,8 +2,8 @@
 .chat-page {
   display: flex;
   flex-direction: column;
-  flex: 1;              /* fills the constrained main element */
-  min-height: 0;        /* critical for flex children to shrink */
+  flex: 1;
+  min-height: 0;
   background: #f1f5f9;
   overflow: hidden;
 }
