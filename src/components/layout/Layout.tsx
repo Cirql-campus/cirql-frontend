@@ -13,9 +13,26 @@ export const Layout = () => {
   const showMobileTabBar = !location.pathname.startsWith('/messages/');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      // On chat/messages routes: exact height so chat layout is contained
+      // On all other routes: min-height so pages can scroll freely
+      ...(isMessagesRoute
+        ? { height: '100dvh', overflow: 'hidden' }
+        : { minHeight: '100vh' }
+      ),
+    }}>
       <Navbar />
-      <main className={showMobileTabBar ? 'main-content-with-tabbar' : ''} style={{ flexGrow: 1, minHeight: 0 }}>
+      <main
+        className={showMobileTabBar ? 'main-content-with-tabbar' : ''}
+        style={{
+          flexGrow: 1,
+          minHeight: 0,
+          // On messages route: overflow hidden so chat-page controls its own scroll
+          ...(isMessagesRoute ? { overflow: 'hidden', display: 'flex', flexDirection: 'column' } : {}),
+        }}
+      >
         <Outlet />
       </main>
       {!isMessagesRoute && <Footer />}

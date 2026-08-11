@@ -2,11 +2,8 @@
 .chat-page {
   display: flex;
   flex-direction: column;
-  /* Chat routes hide the bottom tab bar — only subtract top navbar (64px) */
-  /* Use dvh with vh fallback for older Android browsers */
-  height: calc(100vh - 64px);
-  height: calc(100dvh - 64px);
-  min-height: 0;
+  flex: 1;              /* fills the constrained main element */
+  min-height: 0;        /* critical for flex children to shrink */
   background: #f1f5f9;
   overflow: hidden;
 }
@@ -360,12 +357,7 @@
 .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
 
 @media (max-width: 768px) {
-  .chat-page {
-    /* Chat hides the tab bar — only top navbar (64px) subtracted */
-    /* env(safe-area-inset-bottom) handles gesture nav bar on Samsung/Pixel */
-    height: calc(100vh - 64px - env(safe-area-inset-bottom, 0px));
-    height: calc(100dvh - 64px - env(safe-area-inset-bottom, 0px));
-  }
+
 
   .chat-messages {
     padding-bottom: 8px;
@@ -438,11 +430,7 @@
 }
 
 @media (max-width: 480px) {
-  /* Fix chat input bar disappearing on older Android (dvh not supported) */
-  .chat-page {
-    height: calc(100vh - 64px - env(safe-area-inset-bottom, 0px));
-    height: calc(100dvh - 64px - env(safe-area-inset-bottom, 0px));
-  }
+
 
   /* Message bubbles — slightly wider on small screens */
   .msg-bubble-wrap {
