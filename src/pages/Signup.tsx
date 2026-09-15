@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
 import { detectCollege, COLLEGE_MAP } from '../utils/collegeDetect';
 import { PasswordRequirements, passwordMeetsRequirements } from '../components/ui/PasswordRequirements';
-import { api, getErrorMessage } from '../utils/api';
+import { api, getErrorMessage, ensureCsrfToken } from '../utils/api';
 import './Auth.css';
 
 const StepIndicator = ({ current, isManual }: { current: number; isManual: boolean }) => {
@@ -106,6 +106,8 @@ export const Signup = () => {
           // AuthContext.verifyOTP would do this — we replicate only what's needed here
           // The full auth state will be set when user logs in after admin approval
           sessionStorage.setItem('cirql_pending_token', res.accessToken);
+          // Fetch a fresh CSRF token so it matches the new auth session cookies set by verify-otp
+          await ensureCsrfToken(true);
           setShowOTP(false);
           setStep('submit-id');
         } else {
@@ -154,6 +156,9 @@ export const Signup = () => {
     setError('');
     setLoading(true);
     try {
+      // Ensure fresh CSRF token before submitting the form
+      await ensureCsrfToken(true);
+
       const formData = new FormData();
       formData.append('idPhoto', idPhoto);
 
@@ -161,24 +166,11 @@ export const Signup = () => {
       // since the user is not fully logged in yet (isVerified = false)
       const pendingToken = sessionStorage.getItem('cirql_pending_token');
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_ORIGIN?.replace(/\/$/, '') || 'https://cirql-backend.onrender.com'}/api/v1/auth/register/submit-id`,
-        {
-          method: 'POST',
-          headers: pendingToken
-            ? { Authorization: `Bearer ${pendingToken}` }
-            : {},
-          credentials: 'include',
-          body: formData,
-          // Do NOT set Content-Type — browser sets multipart/form-data boundary automatically
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message || 'Upload failed');
-      }
+      await api.post('/auth/register/submit-id', formData, true, {
+        headers: pendingToken
+          ? { Authorization: `Bearer ${pendingToken}` }
+          : undefined,
+      });
 
       // Clear the pending token — user must wait for admin approval and then log in
       sessionStorage.removeItem('cirql_pending_token');

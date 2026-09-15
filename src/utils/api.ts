@@ -124,8 +124,13 @@ const readJsonSafely = async (
 
 let csrfToken: string | null = null;
 
-const ensureCsrfToken = async () => {
-  if (csrfToken) return csrfToken;
+export const clearCsrfToken = () => {
+  csrfToken = null;
+};
+
+export const ensureCsrfToken = async (forceRefresh = false) => {
+  if (csrfToken && !forceRefresh) return csrfToken;
+  csrfToken = null;
   try {
     const res = await fetch(`${BASE_URL}/auth/csrf-token`, { credentials: "include" });
     const data = await res.json();
@@ -139,6 +144,7 @@ const ensureCsrfToken = async () => {
 export const fetchAPI = async <T>(
   endpoint: string,
   options: FetchOptions = {},
+  isCsrfRetry = false,
 ): Promise<T> => {
   const headers = new Headers(options.headers);
   const timeoutMs = options.timeoutMs ?? (options.isFormData ? 60000 : 60000);
@@ -152,7 +158,7 @@ export const fetchAPI = async <T>(
 
   const method = (options.method || "GET").toUpperCase();
   if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-    const csrf = await ensureCsrfToken();
+    const csrf = await ensureCsrfToken(isCsrfRetry);
     if (csrf) {
       headers.set("x-csrf-token", csrf);
     }
@@ -198,6 +204,17 @@ export const fetchAPI = async <T>(
   }
 
   if (!response.ok) {
+    // Retry once if CSRF token was invalid/expired
+    const msg = typeof data.message === "string" ? data.message.toLowerCase() : "";
+    if (
+      (response.status === 403 || response.status === 400) &&
+      (msg.includes("csrf") || msg.includes("token")) &&
+      !isCsrfRetry
+    ) {
+      console.warn("[API] CSRF token invalid, retrying with fresh token...");
+      return fetchAPI<T>(endpoint, options, true);
+    }
+
     if (response.status >= 500) {
       captureFrontendException(
         new Error(`API ${response.status}: ${endpoint}`),
@@ -258,19 +275,32 @@ export const fetchAPI = async <T>(
     throw new Error(getFriendlyErrorMessage(response.status, data));
   }
 
+  // Clear cached CSRF token after auth state changes so subsequent requests fetch fresh CSRF token
+  if (
+    endpoint.includes("/auth/login") ||
+    endpoint.includes("/auth/verify-otp") ||
+    endpoint.includes("/auth/logout") ||
+    endpoint.includes("/auth/refresh")
+  ) {
+    csrfToken = null;
+  }
+
   return data as T;
 };
 
 // Typed quick helpers
 export const api = {
-  get: <T>(endpoint: string) => fetchAPI<T>(endpoint),
+  get: <T>(endpoint: string, options?: FetchOptions) =>
+    fetchAPI<T>(endpoint, options),
 
   post: <T, TBody = unknown>(
     endpoint: string,
     body: TBody,
     isFormData = false,
+    options?: FetchOptions,
   ) =>
     fetchAPI<T>(endpoint, {
+      ...options,
       method: "POST",
       body: isFormData ? (body as BodyInit) : JSON.stringify(body),
       isFormData,
@@ -280,8 +310,10 @@ export const api = {
     endpoint: string,
     body: TBody,
     isFormData = false,
+    options?: FetchOptions,
   ) =>
     fetchAPI<T>(endpoint, {
+      ...options,
       method: "PUT",
       body: isFormData ? (body as BodyInit) : JSON.stringify(body),
       isFormData,
@@ -291,15 +323,22 @@ export const api = {
     endpoint: string,
     body: TBody,
     isFormData = false,
+    options?: FetchOptions,
   ) =>
     fetchAPI<T>(endpoint, {
+      ...options,
       method: "PATCH",
       body: isFormData ? (body as BodyInit) : JSON.stringify(body),
       isFormData,
     }),
 
-  delete: <T, TBody = unknown>(endpoint: string, body?: TBody) =>
+  delete: <T, TBody = unknown>(
+    endpoint: string,
+    body?: TBody,
+    options?: FetchOptions,
+  ) =>
     fetchAPI<T>(endpoint, {
+      ...options,
       method: "DELETE",
       body: body === undefined ? undefined : JSON.stringify(body),
     }),
