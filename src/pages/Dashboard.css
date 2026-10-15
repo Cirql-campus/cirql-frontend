@@ -691,6 +691,67 @@
   color: #fff;
 }
 
+/* -- OTHER CAMPUSES BANNER -- */
+.other-campuses-banner {
+  max-width: 1280px;
+  margin: 12px auto 0;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--black);
+  color: #fff;
+}
+.other-campuses-banner-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(35, 209, 96, 0.15);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.other-campuses-banner-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.other-campuses-banner-text strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+}
+.other-campuses-banner-text span {
+  font-size: 13px;
+  color: var(--gray-300);
+}
+.other-campuses-banner button {
+  flex-shrink: 0;
+  padding: 9px 18px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #000;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.other-campuses-banner button:hover { background: var(--accent-dark); }
+
+@media (max-width: 1320px) {
+  .other-campuses-banner { margin-left: 20px; margin-right: 20px; }
+}
+@media (max-width: 600px) {
+  .other-campuses-banner { flex-wrap: wrap; }
+  .other-campuses-banner button { width: 100%; }
+}
+
 /* -- WANTED ITEMS -- */
 .wanted-section {
   max-width: 1320px;

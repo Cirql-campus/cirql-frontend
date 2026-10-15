@@ -3,7 +3,7 @@ import { ListingCard } from '../components/ui/ListingCard';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Logo } from '../components/ui/Logo';
-import { Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package, Briefcase } from 'lucide-react';
+import { Grid, BookOpen, Laptop, Bike, Bed, Shirt, Gift, Package, Briefcase, Globe } from 'lucide-react';
 import './Dashboard.css';
 
 import { api } from '../utils/api';
@@ -391,6 +391,17 @@ export const Dashboard = () => {
             ))}
           </div>
         </div>
+
+        {isLoggedIn && (
+          <div className="other-campuses-banner">
+            <div className="other-campuses-banner-icon"><Globe size={22} strokeWidth={2.2} /></div>
+            <div className="other-campuses-banner-text">
+              <strong>Explore other campuses</strong>
+              <span>Browse items from students at other colleges and message them directly.</span>
+            </div>
+            <button type="button" onClick={() => navigate('/other-campuses')}>Browse →</button>
+          </div>
+        )}
 
         <div className="wanted-section">
           <div className="wanted-section-head">

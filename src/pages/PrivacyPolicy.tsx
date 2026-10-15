@@ -51,7 +51,7 @@ export const PrivacyPolicy = () => {
         <ul>
           <li><strong>Database:</strong> Hosted on MongoDB Atlas.</li>
           <li><strong>Media Assets:</strong> Listing and profile images are stored on Cloudinary.</li>
-          <li><strong>Authentication:</strong> Sessions are secured using HTTP-only JSON Web Token (JWT) cookies and 30-day refresh tokens stored in MongoDB.</li>
+          <li><strong>Authentication:</strong> Sessions are secured using HTTP-only JSON Web Token (JWT) cookies and 45-day refresh tokens stored in MongoDB.</li>
           <li>We do not process payments on-platform; all deals are completed in-person.</li>
         </ul>
 
