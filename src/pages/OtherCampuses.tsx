@@ -104,6 +104,8 @@ export const OtherCampuses = () => {
   const selectedCollege = searchParams.get('college') || '';
 
   const [colleges, setColleges] = useState<CampusSummary[]>([]);
+  const [allColleges, setAllColleges] = useState<CampusSummary[]>([]);
+  const [campusQuery, setCampusQuery] = useState('');
   const [collegesLoaded, setCollegesLoaded] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
@@ -124,8 +126,12 @@ export const OtherCampuses = () => {
   // ── Campus list (chips) ────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
-    api.get<{ colleges: CampusSummary[] }>('/listings/other-campuses/colleges')
-      .then(res => { if (!cancelled) setColleges(res.colleges || []); })
+    api.get<{ colleges: CampusSummary[]; allColleges?: CampusSummary[] }>('/listings/other-campuses/colleges')
+      .then(res => {
+        if (cancelled) return;
+        setColleges(res.colleges || []);
+        setAllColleges(res.allColleges || res.colleges || []);
+      })
       .catch(() => { /* chips are optional — the list below still works */ })
       .finally(() => { if (!cancelled) setCollegesLoaded(true); });
     return () => { cancelled = true; };
@@ -230,6 +236,17 @@ export const OtherCampuses = () => {
   const totalItems = useMemo(() => colleges.reduce((sum, c) => sum + c.count, 0), [colleges]);
   const hasFilters = Boolean(selectedCollege || search || category !== 'all');
 
+  // "Find a campus": picking a campus from the list (e.g. HIMT, SRM) opens it, even
+  // if nobody there has listed anything yet.
+  const handleCampusQuery = (value: string) => {
+    setCampusQuery(value);
+    const match = allColleges.find(c => c.name.toLowerCase() === value.trim().toLowerCase());
+    if (match) {
+      selectCollege(match.name);
+      setCampusQuery('');
+    }
+  };
+
   const clearFilters = () => {
     setSearchInput('');
     setSearch('');
@@ -281,6 +298,26 @@ export const OtherCampuses = () => {
         )}
       </div>
 
+      {allColleges.length > 0 && (
+        <div className="oc-campus-find">
+          <label htmlFor="oc-campus-input">Find a campus</label>
+          <input
+            id="oc-campus-input"
+            list="oc-campus-list"
+            type="text"
+            autoComplete="off"
+            placeholder={`Type a college name — ${allColleges.length} campuses (HIMT, SRM, …)`}
+            value={campusQuery}
+            onChange={event => handleCampusQuery(event.target.value)}
+          />
+          <datalist id="oc-campus-list">
+            {allColleges.map(c => (
+              <option key={c.name} value={c.name} label={`${c.count} item${c.count === 1 ? '' : 's'}`} />
+            ))}
+          </datalist>
+        </div>
+      )}
+
       <div className="oc-toolbar">
         <label className="oc-search">
           <Search size={16} aria-hidden="true" />
@@ -308,13 +345,19 @@ export const OtherCampuses = () => {
         <div className="oc-state">Loading items from other campuses…</div>
       ) : listings.length === 0 ? (
         <div className="oc-state oc-empty">
-          <strong>{hasFilters ? 'No items match these filters' : 'No items from other campuses yet'}</strong>
+          <strong>
+            {selectedCollege && !search && category === 'all'
+              ? `No items from ${selectedCollege} yet`
+              : hasFilters ? 'No items match these filters' : 'No items from other campuses yet'}
+          </strong>
           <p>
-            {hasFilters
-              ? 'Try another campus, category or search.'
-              : 'When students at other colleges post items, they will show up here.'}
+            {selectedCollege && !search && category === 'all'
+              ? 'Nobody at this campus has listed anything yet. Check back soon, or pick another campus.'
+              : hasFilters
+                ? 'Try another campus, category or search.'
+                : 'When students at other colleges post items, they will show up here.'}
           </p>
-          {hasFilters && <button type="button" className="oc-clear" onClick={clearFilters}>Clear filters</button>}
+          {hasFilters && <button type="button" className="oc-clear" onClick={clearFilters}>{selectedCollege && !search && category === 'all' ? 'See all campuses' : 'Clear filters'}</button>}
         </div>
       ) : (
         <>
