@@ -90,6 +90,32 @@
   color: #000;
 }
 
+/* Campus finder */
+.oc-campus-find {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.oc-campus-find label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+.oc-campus-find input {
+  height: 42px;
+  padding: 0 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: var(--white);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--gray-900);
+}
+.oc-campus-find input:focus { border-color: var(--black); outline: none; }
+
 /* Search + filters */
 .oc-toolbar {
   display: grid;
