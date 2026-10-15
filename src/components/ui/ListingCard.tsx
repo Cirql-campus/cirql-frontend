@@ -17,10 +17,6 @@ export interface ListingCardProps {
   sellerName?: string;
   rentDuration?: string;
   sellerTier?: string;
-  /** Replaces the default "Request Deal" action (e.g. "Message" on the Other Campuses page). */
-  onContact?: (id: string) => void;
-  contactLabel?: string;
-  contactDisabled?: boolean;
 }
 
 const getBadgeInfo = (type: string) => {
@@ -57,9 +53,6 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   sellerName,
   rentDuration,
   sellerTier,
-  onContact,
-  contactLabel,
-  contactDisabled = false,
 }) => {
   const navigate = useNavigate();
   const badgeInfo = getBadgeInfo(type);
@@ -109,17 +102,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       {!hideFooter && (
         <div className="card-footer">
           <button className="add-cart-btn" onClick={(e) => { e.stopPropagation(); navigate(`/item/${id}`); }}>Details</button>
-          <button
-            className="contact-btn"
-            disabled={contactDisabled}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onContact) onContact(id);
-              else navigate(`/item/${id}`);
-            }}
-          >
-            {contactLabel ?? 'Request Deal'}
-          </button>
+          <button className="contact-btn" onClick={(e) => { e.stopPropagation(); navigate(`/item/${id}`); }}>Request Deal</button>
         </div>
       )}
     </div>

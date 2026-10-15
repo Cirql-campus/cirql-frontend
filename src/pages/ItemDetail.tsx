@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Flag, Globe, Handshake, MessageCircle, Pencil, ShieldCheck, UserX, X } from 'lucide-react';
+import { Flag, Handshake, MessageCircle, Pencil, ShieldCheck, UserX, X } from 'lucide-react';
 import { TextDialog } from '../components/ui/AppDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { api, getErrorMessage } from '../utils/api';
@@ -63,7 +63,7 @@ const formatViews = (views?: number) => {
 export const ItemDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, isLoggedIn, isAnyAdmin } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const [listing, setListing] = useState<Listing | null>(null);
   const [sellerTrust, setSellerTrust] = useState<Seller | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -124,25 +124,12 @@ export const ItemDetail = () => {
     loadListing();
   }, [id]);
 
-  // A student viewing an item from another campus (opened via "Other campuses").
-  // Admins can already filter any campus on the main feed, so they're excluded.
-  const isOtherCampus = Boolean(
-    !isAnyAdmin && user?.college && listing?.college && listing.college !== user.college
-  );
-
   useEffect(() => {
-    setSimilarListings([]);
     if (!listing?.category || !listing?.college) return;
-    let cancelled = false;
-    // The main feed always returns the viewer's own campus, so items from another
-    // campus must come from the dedicated endpoint or "More from X" would show the
-    // wrong college.
-    const base = isOtherCampus ? '/listings/other-campuses' : '/listings';
     api.get<{ listings: any[] }>(
-      `${base}?category=${encodeURIComponent(listing.category)}&college=${encodeURIComponent(listing.college)}&limit=6`
+      `/listings?category=${encodeURIComponent(listing.category)}&college=${encodeURIComponent(listing.college)}&limit=6`
     )
       .then(res => {
-        if (cancelled) return;
         setSimilarListings(
           (res.listings || [])
             .filter((l: any) => l._id !== listing._id)
@@ -150,8 +137,7 @@ export const ItemDetail = () => {
         );
       })
       .catch(() => {}); // non-critical — silently ignore errors
-    return () => { cancelled = true; };
-  }, [listing?.category, listing?.college, listing?._id, isOtherCampus]);
+  }, [listing?.category, listing?.college, listing?._id]);
 
   const listingImages = useMemo(
     () => listing?.images?.filter(Boolean) ?? [],
@@ -297,11 +283,6 @@ export const ItemDetail = () => {
             </div>
 
             <div className="detail-content">
-              {isOtherCampus && (
-                <div className="other-campus-chip">
-                  <Globe size={13} /> Other campus · {listing.college}
-                </div>
-              )}
               <div className="detail-price">₹{listing.price}</div>
               {listing.savedBy && listing.savedBy.length > 0 && (
                 <div className="watchers-badge">

@@ -541,16 +541,3 @@
   margin-top: 6px;
   margin-bottom: 4px;
 }
-
-.other-campus-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--black);
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 700;
-}

@@ -197,12 +197,6 @@
   transform: translateY(-0.5px);
   box-shadow: 0 3px 8px rgba(0,0,0,0.1);
 }
-.contact-btn:disabled {
-  opacity: 0.6;
-  cursor: wait;
-  transform: none;
-  box-shadow: none;
-}
 
 @media (max-width: 480px) {
   .card-price {
