@@ -17,6 +17,7 @@ import {
   ShoppingCart,
   User,
   Compass,
+  Globe,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Logo } from '../ui/Logo';
@@ -219,6 +220,9 @@ export const Navbar = () => {
                       <button className="drop-item" onClick={() => { navigate('/profile?tab=listings'); setShowProfile(false); }}>
                         <Package size={16} /> My Listings
                       </button>
+                      <button className="drop-item" onClick={() => { navigate('/other-campuses'); setShowProfile(false); }}>
+                        <Globe size={16} /> Other Campuses
+                      </button>
                       <button className="drop-item" onClick={() => { navigate('/spot-hub'); setShowProfile(false); }}>
                         <Compass size={16} /> Spot Hub
                       </button>
@@ -258,6 +262,12 @@ export const Navbar = () => {
                 {label}
               </button>
             ))}
+            {user && (
+              <button className="cat-pill" type="button" onClick={() => navigate('/other-campuses')}>
+                <Globe size={16} />
+                Other Campuses
+              </button>
+            )}
           </div>
         </div>
       )}

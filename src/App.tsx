@@ -13,6 +13,7 @@ const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword').then(m 
 const ResetPassword = React.lazy(() => import('./pages/ResetPassword').then(m => ({ default: m.ResetPassword })));
 const UserDashboard = React.lazy(() => import('./pages/UserDashboard').then(m => ({ default: m.UserDashboard })));
 const Dashboard = React.lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const OtherCampuses = React.lazy(() => import('./pages/OtherCampuses').then(m => ({ default: m.OtherCampuses })));
 const ItemDetail = React.lazy(() => import('./pages/ItemDetail').then(m => ({ default: m.ItemDetail })));
 const CreateListing = React.lazy(() => import('./pages/CreateListing').then(m => ({ default: m.CreateListing })));
 const CreateWantedItem = React.lazy(() => import('./pages/CreateWantedItem').then(m => ({ default: m.CreateWantedItem })));
@@ -57,6 +58,7 @@ function App() {
                 <Route path="browse" element={<Navigate to="/marketplace" replace />} />
                 <Route path="dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
                 <Route path="marketplace" element={<Dashboard />} />
+                <Route path="other-campuses" element={<ProtectedRoute><OtherCampuses /></ProtectedRoute>} />
                 <Route path="why-cirql" element={<WhyCirql />} />
                 <Route path="how-it-works" element={<HowItWorks />} />
                 <Route path="privacy" element={<PrivacyPolicy />} />

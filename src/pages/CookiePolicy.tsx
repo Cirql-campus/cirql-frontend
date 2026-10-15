@@ -31,7 +31,7 @@ export const CookiePolicy = () => {
           We use exactly one cookie on our platform:
         </p>
         <ul>
-          <li><strong>Session Cookie (refreshToken):</strong> This cookie keeps you logged in to your account. It expires automatically after 30 days of inactivity.</li>
+          <li><strong>Session Cookie (refreshToken):</strong> This cookie keeps you logged in to your account. It expires automatically after 45 days of inactivity, so you stay signed in on a device you use regularly.</li>
         </ul>
 
         <h2>3. Security and Protection</h2>
